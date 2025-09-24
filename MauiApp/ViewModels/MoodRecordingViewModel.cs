@@ -29,8 +29,6 @@ public class MoodRecordingViewModel : ViewModelBase
     private bool _isLoading;
     private string _morningMoodLabel = "No mood selected";
     private string _eveningMoodLabel = "Save morning mood first";
-    private string _summaryText = "";
-    private bool _isSummaryVisible;
     private bool _isMorningInfoVisible;
     private bool _isEveningInfoVisible;
     private bool _isEditMorningVisible;
@@ -187,18 +185,6 @@ public class MoodRecordingViewModel : ViewModelBase
     {
         get => _eveningMoodLabel;
         set => SetProperty(ref _eveningMoodLabel, value);
-    }
-
-    public string SummaryText
-    {
-        get => _summaryText;
-        set => SetProperty(ref _summaryText, value);
-    }
-
-    public bool IsSummaryVisible
-    {
-        get => _isSummaryVisible;
-        set => SetProperty(ref _isSummaryVisible, value);
     }
 
     public bool IsMorningInfoVisible
@@ -589,7 +575,6 @@ public class MoodRecordingViewModel : ViewModelBase
     {
         UpdateMorningMoodLabel();
         UpdateEveningMoodLabel();
-        UpdateSummary();
         UpdateEditButtonVisibility();
         UpdateInfoLabelVisibility();
         
@@ -600,25 +585,6 @@ public class MoodRecordingViewModel : ViewModelBase
         // Notify command state changes
         (SaveMorningCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (SaveEveningCommand as RelayCommand)?.RaiseCanExecuteChanged();
-    }
-
-    private void UpdateSummary()
-    {
-        if (SelectedMorningMood.HasValue && SelectedEveningMood.HasValue)
-        {
-            var average = (SelectedMorningMood.Value + SelectedEveningMood.Value) / 2.0;
-            SummaryText = $"Morning: {SelectedMorningMood.Value}\nEvening: {SelectedEveningMood.Value}\nAverage: {average:F1}";
-            IsSummaryVisible = true;
-        }
-        else if (SelectedMorningMood.HasValue)
-        {
-            SummaryText = $"Morning: {SelectedMorningMood.Value}\nEvening: Not recorded yet";
-            IsSummaryVisible = true;
-        }
-        else
-        {
-            IsSummaryVisible = false;
-        }
     }
 
     private void UpdateEditButtonVisibility()

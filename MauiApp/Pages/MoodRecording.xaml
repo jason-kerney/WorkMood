@@ -215,24 +215,6 @@
                     </StackLayout>
                 </Border>
 
-                <!-- Today's Summary -->
-                <Border BackgroundColor="{StaticResource Gray100}" 
-                        Padding="20" 
-                        StrokeThickness="0"
-                        StrokeShape="RoundRectangle 10"
-                        IsVisible="{Binding IsSummaryVisible}">
-                    <StackLayout Spacing="10">
-                        <Label Text="📊 Today's Summary" 
-                               FontSize="18" 
-                               FontAttributes="Bold" 
-                               HorizontalOptions="Center" />
-                        
-                        <Label Text="{Binding SummaryText}"
-                               HorizontalOptions="Center"
-                               HorizontalTextAlignment="Center" />
-                    </StackLayout>
-                </Border>
-
             </StackLayout>
         </ScrollView>
 
