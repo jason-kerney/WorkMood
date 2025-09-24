@@ -1,0 +1,20 @@
+(documents
+    (document
+        (readme
+            (source ./readme/_main.dlisp)
+            (output ../README.md)
+        )
+    )
+    (document
+        (build-guide
+            (source ./build/_main.dlisp)
+            (output ../BUILD.md)
+        )
+    )
+    (document
+        (user-guide
+            (source ./userguide/_main.dlisp)
+            (output ../USER-GUIDE.md)
+        )
+    )
+)

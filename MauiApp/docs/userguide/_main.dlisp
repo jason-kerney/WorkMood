@@ -1,0 +1,21 @@
+(section-meta
+    (title WorkMood User Guide)
+    (subtitle Complete guide to using WorkMood - the workday mood impact tracker)
+    (author WorkMood Team)
+    (include
+        (Getting-Started ./getting-started.md)
+        (Main-Dashboard ./main-dashboard.md)
+        (Recording-Your-Mood ./mood-recording.md)
+        (Viewing-History ./history.md)
+        (Mood-Visualization ./visualization.md)
+        (Application-Settings ./settings.md)
+        (About ./about.md)
+    )
+)
+
+(content
+    (toc
+        (label Table of Contents)
+        (style numbered)
+    )
+)

@@ -1,0 +1,43 @@
+{
+  "projectName": "WorkMood",
+  "projectOwner": "jason-kerney",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "./MauiApp/docs/readme/contributors.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "gitmoji",
+  "contributors": [
+    {
+      "login": "Hunter-Industries",
+      "name": "Hunter Industries Software Development",
+      "avatar_url": "https://avatars.githubusercontent.com/u/30634197?v=4",
+      "profile": "https://github.com/Hunter-Industries",
+      "contributions": [
+        "financial"
+      ]
+    },
+    {
+      "login": "jason-kerney",
+      "name": "Jason Kerney",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5097968?v=4",
+      "profile": "https://github.com/jason-kerney",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "JKerney-HunterIndustries",
+      "name": "Jason Kerney",
+      "avatar_url": "https://avatars.githubusercontent.com/u/16826501?v=4",
+      "profile": "https://github.com/JKerney-HunterIndustries",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "linkToUsage": true
+}

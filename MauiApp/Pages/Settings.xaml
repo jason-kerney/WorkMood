@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="WorkMood.MauiApp.Pages.Settings"
+             x:Name="SettingsRef"
+             Title="Settings - Schedule Configuration">
+
+    <ScrollView>
+        <Grid RowDefinitions="Auto,*,Auto" Padding="40">
+            
+            <!-- Header -->
+            <StackLayout Grid.Row="0" Spacing="15" Margin="0,0,0,30">
+                <Label Text="⚙️ Settings" 
+                       Style="{StaticResource Headline}"
+                       FontSize="28"
+                       HorizontalOptions="Center"
+                       SemanticProperties.HeadingLevel="Level1" />
+                
+                <Label Text="Configure your mood tracking schedule" 
+                       Style="{StaticResource SubHeadline}"
+                       FontSize="16"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center"
+                       SemanticProperties.HeadingLevel="Level2" />
+            </StackLayout>
+
+            <!-- Configuration Form -->
+            <StackLayout Grid.Row="1" Spacing="30">
+                
+                <!-- Morning Reminder Section -->
+                <Border BackgroundColor="{StaticResource Secondary}" 
+                        Padding="20" 
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 15">
+                    <StackLayout Spacing="15">
+                        <Label Text="🌅 Morning Reminder" 
+                               FontSize="20" 
+                               FontAttributes="Bold" 
+                               TextColor="White"
+                               HorizontalOptions="Start" />
+                        
+                        <Label Text="When would you like to be reminded to record your morning mood?" 
+                               FontSize="14"
+                               TextColor="White"
+                               HorizontalTextAlignment="Start" />
+                        
+                        <TimePicker x:Name="MorningTimePicker"
+                                    Time="{Binding MorningTime}"
+                                    BackgroundColor="White"
+                                    TextColor="Black"
+                                    FontSize="16"
+                                    HorizontalOptions="Start" />
+                    </StackLayout>
+                </Border>
+
+                <!-- Evening Reminder Section -->
+                <Border BackgroundColor="{StaticResource Primary}" 
+                        Padding="20" 
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 15">
+                    <StackLayout Spacing="15">
+                        <Label Text="🌙 Evening Reminder" 
+                               FontSize="20" 
+                               FontAttributes="Bold" 
+                               TextColor="White"
+                               HorizontalOptions="Start" />
+                        
+                        <Label Text="When would you like to be reminded to record your evening mood?" 
+                               FontSize="14"
+                               TextColor="White"
+                               HorizontalTextAlignment="Start" />
+                        
+                        <TimePicker x:Name="EveningTimePicker"
+                                    Time="{Binding EveningTime}"
+                                    BackgroundColor="White"
+                                    TextColor="Black"
+                                    FontSize="16"
+                                    HorizontalOptions="Start" />
+                    </StackLayout>
+                </Border>
+
+                <!-- Schedule Override Section -->
+                <Border BackgroundColor="{StaticResource Tertiary}" 
+                        Padding="20" 
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 15">
+                    <StackLayout Spacing="15">
+                        <Label Text="📝 Schedule Overrides" 
+                               FontSize="20" 
+                               FontAttributes="Bold" 
+                               TextColor="White"
+                               HorizontalOptions="Start" />
+                        
+                        <Label Text="Manage date-specific schedule overrides" 
+                               FontSize="14"
+                               TextColor="White"
+                               HorizontalTextAlignment="Start" />
+                        
+                        <!-- Existing Overrides List -->
+                        <CollectionView x:Name="ExistingOverridesList" 
+                                        ItemsSource="{Binding ExistingOverrides}"
+                                        BackgroundColor="Transparent">
+                            
+                            <CollectionView.EmptyView>
+                                <Label Text="No schedule overrides configured"
+                                       FontSize="14"
+                                       TextColor="White"
+                                       HorizontalTextAlignment="Center"
+                                       Margin="0,10" />
+                            </CollectionView.EmptyView>
+                            
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="White"
+                                            Padding="15"
+                                            StrokeThickness="1"
+                                            Stroke="LightGray"
+                                            Margin="0,5"
+                                            StrokeShape="RoundRectangle 8">
+                                        
+                                        <StackLayout Spacing="10">
+                                            
+                                            <!-- Date header -->
+                                            <Label Text="{Binding Date, StringFormat='📅 {0:dddd, MMMM d, yyyy}'}"
+                                                   FontSize="16"
+                                                   FontAttributes="Bold"
+                                                   TextColor="Black" />
+                                            
+                                            <!-- Override details -->
+                                            <StackLayout Spacing="5">
+                                                
+                                                <Label IsVisible="{Binding MorningTime, Converter={StaticResource IsNotNullConverter}}"
+                                                       Text="{Binding MorningTime, StringFormat='🌅 Morning: {0:hh\\:mm}'}"
+                                                       FontSize="14"
+                                                       TextColor="DarkBlue" />
+                                                
+                                                <Label IsVisible="{Binding EveningTime, Converter={StaticResource IsNotNullConverter}}"
+                                                       Text="{Binding EveningTime, StringFormat='🌙 Evening: {0:hh\\:mm}'}"
+                                                       FontSize="14"
+                                                       TextColor="DarkBlue" />
+                                                
+                                            </StackLayout>
+                                            
+                                            <!-- Action buttons -->
+                                            <StackLayout Orientation="Horizontal"
+                                                         Spacing="10"
+                                                         HorizontalOptions="End">
+                                                
+                                                <Button Text="✏️ Edit"
+                                                        FontSize="12"
+                                                        BackgroundColor="LightBlue"
+                                                        TextColor="White"
+                                                        Padding="10,5"
+                                                        CornerRadius="5"
+                                                        Command="{Binding Source={x:Reference SettingsRef}, Path=BindingContext.EditOverrideCommand}"
+                                                        CommandParameter="{Binding}" />
+                                                
+                                                <Button Text="🗑️ Delete"
+                                                        FontSize="12"
+                                                        BackgroundColor="LightCoral"
+                                                        TextColor="White"
+                                                        Padding="10,5"
+                                                        CornerRadius="5"
+                                                        Command="{Binding Source={x:Reference SettingsRef}, Path=BindingContext.DeleteOverrideCommand}"
+                                                        CommandParameter="{Binding}" />
+                                                
+                                            </StackLayout>
+                                            
+                                        </StackLayout>
+                                        
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                            
+                        </CollectionView>
+                        
+                        <!-- Add New Override Section -->
+                        <Border BackgroundColor="{StaticResource Gray100}" 
+                                Padding="15" 
+                                StrokeThickness="1"
+                                Stroke="{StaticResource Gray300}"
+                                StrokeShape="RoundRectangle 10">
+                            <StackLayout Spacing="15">
+                                <Label Text="➕ Add New Override" 
+                                       FontSize="18" 
+                                       FontAttributes="Bold" 
+                                       TextColor="{StaticResource Gray900}"
+                                       HorizontalOptions="Start" />
+                                
+                                <!-- Enable New Override Toggle -->
+                                <StackLayout Orientation="Horizontal" Spacing="15">
+                                    <Switch x:Name="EnableNewOverrideSwitch"
+                                            IsToggled="{Binding IsNewOverrideEnabled}"
+                                            OnColor="{StaticResource Primary}"
+                                            ThumbColor="White" />
+                                    <Label Text="Enable new override"
+                                           FontSize="16"
+                                           TextColor="{StaticResource Gray900}"
+                                           VerticalOptions="Center" />
+                                </StackLayout>
+                                
+                                <!-- New Override Configuration -->
+                                <StackLayout x:Name="NewOverrideConfigSection" 
+                                             Spacing="15"
+                                             IsVisible="{Binding IsNewOverrideEnabled}">
+                                    
+                                    <!-- Date Picker -->
+                                    <StackLayout Spacing="8">
+                                        <Label Text="Override Date:"
+                                               FontSize="14"
+                                               FontAttributes="Bold"
+                                               TextColor="{StaticResource Gray900}" />
+                                        <DatePicker x:Name="NewOverrideDatePicker"
+                                                    Date="{Binding NewOverrideDate}"
+                                                    BackgroundColor="White"
+                                                    TextColor="Black"
+                                                    FontSize="16" />
+                                    </StackLayout>
+                                    
+                                    <!-- Morning Override -->
+                                    <StackLayout Spacing="8">
+                                        <StackLayout Orientation="Horizontal" Spacing="15">
+                                            <Switch x:Name="NewOverrideMorningSwitch"
+                                                    IsToggled="{Binding HasNewMorningOverride}"
+                                                    OnColor="{StaticResource Secondary}"
+                                                    ThumbColor="White" />
+                                            <Label Text="Override morning time"
+                                                   FontSize="14"
+                                                   FontAttributes="Bold"
+                                                   TextColor="{StaticResource Gray900}"
+                                                   VerticalOptions="Center" />
+                                        </StackLayout>
+                                        <TimePicker x:Name="NewOverrideMorningTimePicker"
+                                                    Time="{Binding NewOverrideMorningTime}"
+                                                    IsVisible="{Binding HasNewMorningOverride}"
+                                                    BackgroundColor="White"
+                                                    TextColor="Black"
+                                                    FontSize="14" />
+                                    </StackLayout>
+                                    
+                                    <!-- Evening Override -->
+                                    <StackLayout Spacing="8">
+                                        <StackLayout Orientation="Horizontal" Spacing="15">
+                                            <Switch x:Name="NewOverrideEveningSwitch"
+                                                    IsToggled="{Binding HasNewEveningOverride}"
+                                                    OnColor="{StaticResource Secondary}"
+                                                    ThumbColor="White" />
+                                            <Label Text="Override evening time"
+                                                   FontSize="14"
+                                                   FontAttributes="Bold"
+                                                   TextColor="{StaticResource Gray900}"
+                                                   VerticalOptions="Center" />
+                                        </StackLayout>
+                                        <TimePicker x:Name="NewOverrideEveningTimePicker"
+                                                    Time="{Binding NewOverrideEveningTime}"
+                                                    IsVisible="{Binding HasNewEveningOverride}"
+                                                    BackgroundColor="White"
+                                                    TextColor="Black"
+                                                    FontSize="14" />
+                                    </StackLayout>
+                                    
+                                </StackLayout>
+                            </StackLayout>
+                        </Border>
+                    </StackLayout>
+                </Border>
+
+                <!-- Preview Section -->
+                <Border BackgroundColor="{StaticResource Gray100}" 
+                        Padding="20" 
+                        StrokeThickness="1"
+                        Stroke="{StaticResource Gray300}"
+                        StrokeShape="RoundRectangle 10">
+                    <StackLayout Spacing="10">
+                        <Label Text="📅 Schedule Preview" 
+                               FontSize="18" 
+                               FontAttributes="Bold" 
+                               TextColor="{StaticResource Gray900}"
+                               HorizontalOptions="Start" />
+                        
+                        <Label x:Name="MorningPreviewLabel"
+                               Text="{Binding MorningPreviewText}"
+                               FontSize="14"
+                               TextColor="{StaticResource Gray600}" />
+                        
+                        <Label x:Name="EveningPreviewLabel"
+                               Text="{Binding EveningPreviewText}"
+                               FontSize="14"
+                               TextColor="{StaticResource Gray600}" />
+                    </StackLayout>
+                </Border>
+
+            </StackLayout>
+
+            <!-- Action Buttons -->
+            <StackLayout Grid.Row="2" Spacing="15" Margin="0,30,0,0">
+                <Button Text="💾 Save Settings"
+                        x:Name="SaveButton"
+                        Command="{Binding SaveCommand}"
+                        BackgroundColor="{StaticResource Primary}"
+                        TextColor="White"
+                        FontSize="18"
+                        FontAttributes="Bold"
+                        Padding="20"
+                        CornerRadius="10" />
+                
+                <Button Text="❌ Cancel"
+                        x:Name="CancelButton"
+                        Command="{Binding CancelCommand}"
+                        BackgroundColor="{StaticResource Gray500}"
+                        TextColor="White"
+                        FontSize="16"
+                        Padding="15"
+                        CornerRadius="10" />
+            </StackLayout>
+            
+        </Grid>
+    </ScrollView>
+
+</ContentPage>

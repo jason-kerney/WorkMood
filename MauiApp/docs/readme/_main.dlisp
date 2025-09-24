@@ -1,0 +1,18 @@
+(section-meta
+    (title WorkMood)
+    (subtitle Work mood impact tracker for understanding how your workday affects your emotional well-being)
+    (include
+        (Overview ./overview.md)
+        (Key-Features ./features.md)
+        (Getting-Started ./getting-started.md)
+        (Documentation ./references.md)
+        (Contributors ./contributors.md)
+    )
+)
+
+(content
+    (toc
+        (label Table of Contents)
+        (style numbered)
+    )
+)

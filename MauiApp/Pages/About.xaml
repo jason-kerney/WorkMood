@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="WorkMood.MauiApp.Pages.About"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:WorkMood.MauiApp.ViewModels"
+             x:DataType="vm:AboutViewModel"
+             Title="About">
+    
+    <ScrollView>
+        <StackLayout Padding="20" Spacing="20">
+            
+            <!-- App Logo and Title -->
+            <StackLayout HorizontalOptions="Center" Spacing="10">
+                <Image Source="smiles.png" 
+                       WidthRequest="100" 
+                       HeightRequest="100"
+                       HorizontalOptions="Center" />
+                <Label Text="{Binding AppTitle}" 
+                       FontSize="24" 
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center" />
+                <Label Text="{Binding AppVersion}" 
+                       FontSize="16" 
+                       TextColor="Gray"
+                       HorizontalOptions="Center" />
+            </StackLayout>
+
+            <!-- App Description -->
+            <StackLayout Spacing="10">
+                <Label Text="About This App" 
+                       FontSize="20" 
+                       FontAttributes="Bold" />
+                <Label Text="{Binding AppDescription}"
+                       FontSize="16"
+                       TextColor="Gray" />
+            </StackLayout>
+
+            <!-- Special Thanks -->
+            <StackLayout Spacing="10">
+                <Label Text="Special Thanks" 
+                       FontSize="20" 
+                       FontAttributes="Bold" />
+                
+                <!-- Hunter Industries -->
+                <Frame BackgroundColor="LightGreen" 
+                       Padding="15" 
+                       CornerRadius="8"
+                       HasShadow="True">
+                    <StackLayout Spacing="8">
+                        <Label Text="Hunter Industries" 
+                               FontSize="18" 
+                               FontAttributes="Bold"
+                               TextColor="DarkGreen" />
+                        <Label Text="Thank you for providing the opportunity and environment to develop this application. Your support for innovative projects makes tools like WorkMood possible." 
+                               FontSize="14"
+                               TextColor="DarkGreen" />
+                    </StackLayout>
+                </Frame>
+
+                <!-- GitHub Copilot -->
+                <Frame BackgroundColor="LightCyan" 
+                       Padding="15" 
+                       CornerRadius="8"
+                       HasShadow="True">
+                    <StackLayout Spacing="8">
+                        <Label Text="GitHub Copilot" 
+                               FontSize="18" 
+                               FontAttributes="Bold"
+                               TextColor="DarkCyan" />
+                        <Label Text="Thank you for assistance with code development, UI design, and helping bring this mood tracking application to life." 
+                               FontSize="14"
+                               TextColor="DarkCyan" />
+                    </StackLayout>
+                </Frame>
+            </StackLayout>
+
+            <!-- Icon Attribution -->
+            <StackLayout Spacing="10">
+                <Label Text="Icon Attribution" 
+                       FontSize="20" 
+                       FontAttributes="Bold" />
+                <Label Text="The beautiful smiles icon used in this app was created by:" 
+                       FontSize="16"
+                       TextColor="Gray" />
+                
+                <Frame BackgroundColor="LightBlue" 
+                       Padding="15" 
+                       CornerRadius="8"
+                       HasShadow="True">
+                    <StackLayout Spacing="8">
+                        <Label Text="riajulislam" 
+                               FontSize="18" 
+                               FontAttributes="Bold"
+                               TextColor="DarkBlue" />
+                        <Label Text="Thank you for creating this wonderful icon!" 
+                               FontSize="14"
+                               TextColor="DarkBlue" />
+                    </StackLayout>
+                </Frame>
+
+                <Button Text="View Icon on Flaticon" 
+                        Command="{Binding OpenIconLinkCommand}"
+                        BackgroundColor="Orange"
+                        TextColor="White"
+                        CornerRadius="8"
+                        Margin="0,10,0,0" />
+            </StackLayout>
+
+            <!-- Developer Info -->
+            <StackLayout Spacing="10">
+                <Label Text="Developer" 
+                       FontSize="20" 
+                       FontAttributes="Bold" />
+                <Label Text="{Binding DeveloperInfo}"
+                       FontSize="16"
+                       TextColor="Gray"
+                       HorizontalOptions="Center" />
+            </StackLayout>
+
+        </StackLayout>
+    </ScrollView>
+    
+</ContentPage>

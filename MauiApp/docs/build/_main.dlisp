@@ -1,0 +1,18 @@
+(section-meta
+    (title WorkMood - Build & Installation Guide)
+    (subtitle Complete guide for building and deploying WorkMood on Windows and macOS)
+    (author Development Team)
+    (include
+        (Prerequisites ./prerequisites.md)
+        (Building-the-Application ./building.md)
+        (Windows-Deployment ./windows-deploy.md)
+        (macOS-Deployment ./macos-deploy.md)
+    )
+)
+
+(content
+    (toc
+        (label Table of Contents)
+        (style numbered-labeled)
+    )
+)
