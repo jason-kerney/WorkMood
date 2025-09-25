@@ -30,7 +30,8 @@ public partial class About : ContentPage
     /// <param name="navigationService">The navigation service (optional for DI scenarios)</param>
     /// <param name="browserService">The browser service (optional for DI scenarios)</param>
     /// <param name="versionRetriever">The version retriever service (optional for DI scenarios)</param>
-    public About(INavigationService? navigationService = null, IBrowserService? browserService = null, IVersionRetriever? versionRetriever = null)
+    /// <param name="moodDataService">The mood data service (optional for DI scenarios)</param>
+    public About(INavigationService? navigationService = null, IBrowserService? browserService = null, IVersionRetriever? versionRetriever = null, IMoodDataService? moodDataService = null)
     {
         InitializeComponent();
         
@@ -38,9 +39,10 @@ public partial class About : ContentPage
         var navService = navigationService ?? new NavigationService(this);
         var browService = browserService ?? new BrowserService();
         var verService = versionRetriever ?? new VersionRetriever(AssemblyWrapper.From<App>());
+        var moodService = moodDataService ?? new MoodDataService(new DataArchiveService());
         
         // Create and set the ViewModel
-        _viewModel = new AboutViewModel(navService, browService, verService);
+        _viewModel = new AboutViewModel(navService, browService, verService, moodService);
         BindingContext = _viewModel;
     }
 }

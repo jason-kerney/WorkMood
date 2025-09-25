@@ -81,13 +81,17 @@ public class MoodCollection
     }
 
     /// <summary>
-    /// Gets the most recent mood entries
+    /// Gets the most recent mood entries (excluding today's entry for historical view)
     /// </summary>
     /// <param name="count">Number of entries to return</param>
-    /// <returns>Most recent mood entries</returns>
+    /// <returns>Most recent mood entries excluding today</returns>
     public IEnumerable<MoodEntry> GetRecentEntries(int count = 7)
     {
-        return _entries.OrderByDescending(e => e.Date).Take(count);
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        return _entries
+            .Where(e => e.Date < today) // Exclude today's entry for historical view
+            .OrderByDescending(e => e.Date)
+            .Take(count);
     }
 
     /// <summary>

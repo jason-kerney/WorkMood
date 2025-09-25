@@ -8,7 +8,7 @@
         
         <!-- Header -->
         <StackLayout Grid.Row="0" Spacing="10" Margin="0,0,0,20">
-            <Label Text="📊 Mood History &amp; Analytics" 
+            <Label Text="📊 Your Mood Journey &amp; Insights" 
                    Style="{StaticResource Headline}"
                    HorizontalOptions="Center"
                    SemanticProperties.HeadingLevel="Level1" />
@@ -24,7 +24,7 @@
             <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,*" ColumnSpacing="20" RowSpacing="10">
                 
                 <Label Grid.Row="0" Grid.ColumnSpan="2"
-                       Text="📈 Statistics" 
+                       Text="📈 Your Progress" 
                        FontSize="18" 
                        FontAttributes="Bold" 
                        HorizontalOptions="Center" />
@@ -40,12 +40,12 @@
                 </StackLayout>
                 
                 <StackLayout Grid.Row="2" Grid.Column="0">
-                    <Label Text="Last 7 Days" FontAttributes="Bold" />
+                    <Label Text="Recent Week" FontAttributes="Bold" />
                     <Label Text="{Binding Last7Days}" FontSize="20" TextColor="{StaticResource Secondary}" />
                 </StackLayout>
                 
                 <StackLayout Grid.Row="2" Grid.Column="1">
-                    <Label Text="Last 30 Days" FontAttributes="Bold" />
+                    <Label Text="Past Month" FontAttributes="Bold" />
                     <Label Text="{Binding Last30Days}" FontSize="20" TextColor="{StaticResource Secondary}" />
                 </StackLayout>
                 
@@ -54,7 +54,7 @@
                     <Label Text="{Binding Trend}" FontSize="18" HorizontalOptions="Center" TextColor="{Binding TrendColor}" />
                     
                     <!-- Visualization Button -->
-                    <Button Text="📊 View 2-Week Visualization" 
+                    <Button Text="📊 View Recent Activity Pattern" 
                             Command="{Binding OpenVisualizationCommand}"
                             BackgroundColor="{StaticResource Primary}"
                             TextColor="White"
@@ -69,7 +69,7 @@
         <ScrollView Grid.Row="2">
             <StackLayout Spacing="10">
                 
-                <Label Text="🗓️ Recent Entries" 
+                <Label Text="🗓️ Your Recent Check-ins" 
                        FontSize="18" 
                        FontAttributes="Bold" 
                        Margin="0,0,0,10" />
@@ -81,7 +81,7 @@
                                    Margin="0,20" />
                 
                 <!-- No Data Message -->
-                <Label Text="No mood entries found."
+                <Label Text="No check-ins recorded yet. Start tracking your mood to see insights here!"
                        FontSize="16"
                        TextColor="Gray"
                        HorizontalOptions="Center"
@@ -96,9 +96,9 @@
                        Margin="0,20"
                        IsVisible="{Binding HasError}" />
                 
-                <!-- Recent Entries Container -->
+                <!-- Recent Check-ins Container -->
                 <StackLayout x:Name="HistoryEntriesStack" Spacing="5">
-                    <!-- Entries will be added programmatically using the factory -->
+                    <!-- Check-ins will be added programmatically using the factory -->
                 </StackLayout>
                 
             </StackLayout>

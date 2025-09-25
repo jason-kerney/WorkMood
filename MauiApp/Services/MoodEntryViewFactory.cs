@@ -117,14 +117,14 @@ public class MoodEntryViewFactory : IMoodEntryViewFactory
         var moodStack = new StackLayout { VerticalOptions = LayoutOptions.Center, Spacing = 5 };
         
         var moodRow = new StackLayout { Orientation = StackOrientation.Horizontal, Spacing = 10 };
-        moodRow.Children.Add(new Label { Text = "🌅", FontSize = 16 });
+        moodRow.Children.Add(new Label { Text = "🟢", FontSize = 16 });
         moodRow.Children.Add(new Label 
         { 
             Text = entry.MorningMood?.ToString() ?? "—", 
             FontSize = 16, 
             FontAttributes = FontAttributes.Bold 
         });
-        moodRow.Children.Add(new Label { Text = "🌙", FontSize = 16 });
+        moodRow.Children.Add(new Label { Text = "🔴", FontSize = 16 });
         moodRow.Children.Add(new Label 
         { 
             Text = entry.EveningMood?.ToString() ?? "—", 

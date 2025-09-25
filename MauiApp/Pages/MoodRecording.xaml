@@ -33,19 +33,19 @@
         <ScrollView Grid.Row="1">
             <StackLayout Spacing="30">
                 
-                <!-- Morning Mood Section -->
+                <!-- First Check-in Section -->
                 <Border BackgroundColor="{Binding MorningMoodBorderColor}" 
                         Padding="20" 
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 10">
                     <StackLayout Spacing="15">
-                        <Label Text="🌅 Morning Mood" 
+                        <Label Text="📝 First Check-in" 
                                FontSize="18" 
                                FontAttributes="Bold" 
                                TextColor="White"
                                HorizontalOptions="Center" />
                         
-                        <Label Text="How are you feeling this morning? (1 = Very Bad, 10 = Excellent)" 
+                        <Label Text="How are you feeling right now? (1 = Very Bad, 10 = Excellent)" 
                                TextColor="White"
                                HorizontalOptions="Center" />
                         
@@ -73,7 +73,7 @@
                                 HorizontalOptions="Center"
                                 IsVisible="{Binding IsEditMorningVisible}" />
                         
-                        <!-- Morning Mood Radio Buttons -->
+                        <!-- First Check-in Radio Buttons -->
                         <Grid ColumnDefinitions="*,*,*,*,*,*,*,*,*,*" ColumnSpacing="5" IsVisible="{Binding AreMorningMoodButtonsVisible}">
                             <Button Grid.Column="0" Text="1" Command="{Binding MorningMoodSelectedCommand}" CommandParameter="1"
                                     BackgroundColor="{Binding IsMorningMood1Selected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='White,Transparent'}" 
@@ -119,19 +119,19 @@
                     </StackLayout>
                 </Border>
 
-                <!-- Evening Mood Section -->
+                <!-- Second Check-in Section -->
                 <Border BackgroundColor="{Binding EveningMoodBorderColor}" 
                         Padding="20" 
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 10">
                     <StackLayout Spacing="15">
-                        <Label Text="🌙 Evening Mood" 
+                        <Label Text="📝 Second Check-in" 
                                FontSize="18" 
                                FontAttributes="Bold" 
                                TextColor="White"
                                HorizontalOptions="Center" />
                         
-                        <Label Text="How are you feeling this evening? (1 = Very Bad, 10 = Excellent)" 
+                        <Label Text="How are you feeling now? (1 = Very Bad, 10 = Excellent)" 
                                TextColor="White"
                                HorizontalOptions="Center" />
                         
@@ -159,7 +159,7 @@
                                 HorizontalOptions="Center"
                                 IsVisible="{Binding IsEditEveningVisible}" />
                         
-                        <!-- Evening Mood Radio Buttons -->
+                        <!-- Second Check-in Radio Buttons -->
                         <Grid ColumnDefinitions="*,*,*,*,*,*,*,*,*,*" ColumnSpacing="5" IsVisible="{Binding AreEveningMoodButtonsVisible}">
                             <Button Grid.Column="0" Text="1" Command="{Binding EveningMoodSelectedCommand}" CommandParameter="1"
                                     BackgroundColor="{Binding IsEveningMood1Selected, Converter={StaticResource BoolToColorConverter}, ConverterParameter='White,Transparent'}" 
@@ -222,13 +222,13 @@
         <StackLayout Grid.Row="2" Spacing="10" Margin="0,20,0,0">
             <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                 <Button Grid.Column="0"
-                        Text="Save Morning Mood"
+                        Text="Save First Check-in"
                         Command="{Binding SaveMorningCommand}"
                         BackgroundColor="{Binding SaveMorningButtonColor}"
                         IsEnabled="{Binding IsSaveMorningEnabled}" />
                 
                 <Button Grid.Column="1"
-                        Text="Save Evening Mood"
+                        Text="Save Second Check-in"
                         Command="{Binding SaveEveningCommand}"
                         BackgroundColor="{Binding SaveEveningButtonColor}"
                         IsEnabled="{Binding IsSaveEveningEnabled}" />

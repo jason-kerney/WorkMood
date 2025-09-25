@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using WorkMood.MauiApp.Infrastructure;
 using WorkMood.MauiApp.Services;
+using WorkMood.MauiApp.Tests;
 using WhatsYourVersion;
 
 namespace WorkMood.MauiApp.ViewModels;
@@ -14,6 +15,7 @@ public class AboutViewModel : ViewModelBase
     private readonly INavigationService _navigationService;
     private readonly IBrowserService _browserService;
     private readonly IVersionRetriever _versionRetriever;
+    private readonly IMoodDataService _moodDataService;
 
     private string _appTitle = "WorkMood - Daily Mood Tracker";
     private string _appVersion = string.Empty;
@@ -27,17 +29,22 @@ public class AboutViewModel : ViewModelBase
     /// <param name="navigationService">Service for navigation operations</param>
     /// <param name="browserService">Service for opening external URLs</param>
     /// <param name="versionRetriever">Service for retrieving version information</param>
-    public AboutViewModel(INavigationService navigationService, IBrowserService browserService, IVersionRetriever versionRetriever)
+    /// <param name="moodDataService">Service for mood data operations</param>
+    public AboutViewModel(INavigationService navigationService, IBrowserService browserService, IVersionRetriever versionRetriever, IMoodDataService moodDataService)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _browserService = browserService ?? throw new ArgumentNullException(nameof(browserService));
         _versionRetriever = versionRetriever ?? throw new ArgumentNullException(nameof(versionRetriever));
+        _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
 
         // Initialize version information
         InitializeVersionInfo();
 
         // Initialize commands
         OpenIconLinkCommand = new RelayCommand(ExecuteOpenIconLink, CanExecuteOpenIconLink);
+        TestArchivingCommand = new Command(ExecuteTestArchiving);
+        TestYearBoundaryCommand = new Command(ExecuteTestYearBoundary);
+        TestYearBoundaryCommand = new RelayCommand(ExecuteTestYearBoundary);
     }
 
     #region Properties
@@ -117,6 +124,16 @@ public class AboutViewModel : ViewModelBase
     /// </summary>
     public ICommand OpenIconLinkCommand { get; }
 
+    /// <summary>
+    /// Command to test the data archiving functionality (debug/testing purposes)
+    /// </summary>
+    public ICommand TestArchivingCommand { get; }
+
+    /// <summary>
+    /// Command to test the year boundary archive functionality (debug/testing purposes)
+    /// </summary>
+    public ICommand TestYearBoundaryCommand { get; }
+
     #endregion
 
     #region Command Implementations
@@ -144,6 +161,40 @@ public class AboutViewModel : ViewModelBase
     private bool CanExecuteOpenIconLink()
     {
         return !string.IsNullOrEmpty(IconUrl);
+    }
+
+    /// <summary>
+    /// Executes the test archiving command (for debugging/testing purposes)
+    /// </summary>
+    private async void ExecuteTestArchiving()
+    {
+        try
+        {
+            await _navigationService.ShowAlertAsync("Testing", "Running archiving test...", "OK");
+            await ArchivingTestRunner.RunTestAsync();
+            await _navigationService.ShowAlertAsync("Success", "Archiving test completed successfully!", "OK");
+        }
+        catch (Exception ex)
+        {
+            await _navigationService.ShowAlertAsync("Error", $"Test failed: {ex.Message}", "OK");
+        }
+    }
+
+    /// <summary>
+    /// Executes the test year boundary command (for debugging/testing purposes)
+    /// </summary>
+    private async void ExecuteTestYearBoundary()
+    {
+        try
+        {
+            await _navigationService.ShowAlertAsync("Testing", "Running year boundary test...", "OK");
+            await YearBoundaryTestDataCreator.CreateYearBoundaryTestDataAsync((MoodDataService)_moodDataService);
+            await _navigationService.ShowAlertAsync("Success", "Year boundary test data created successfully!", "OK");
+        }
+        catch (Exception ex)
+        {
+            await _navigationService.ShowAlertAsync("Error", $"Test failed: {ex.Message}", "OK");
+        }
     }
 
     #endregion

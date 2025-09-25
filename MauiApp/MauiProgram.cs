@@ -18,6 +18,7 @@ public static class MauiProgram
 			});
 
 		// Register core services for dependency injection
+		builder.Services.AddSingleton<IDataArchiveService, DataArchiveService>();
 		builder.Services.AddSingleton<MoodDataService>();
 		builder.Services.AddSingleton<ScheduleConfigService>();
 		builder.Services.AddSingleton<AutoSaveCommand>();

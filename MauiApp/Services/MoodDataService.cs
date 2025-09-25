@@ -11,13 +11,17 @@ public class MoodDataService : IMoodDataService
 {
     private readonly string _dataFilePath;
     private readonly JsonSerializerOptions _jsonOptions;
+    private readonly IDataArchiveService _archiveService;
     private MoodCollection? _cachedCollection;
 
     /// <summary>
     /// Creates a new mood data service
     /// </summary>
-    public MoodDataService()
+    /// <param name="archiveService">Service for handling data archiving</param>
+    public MoodDataService(IDataArchiveService archiveService)
     {
+        _archiveService = archiveService ?? throw new ArgumentNullException(nameof(archiveService));
+        
         Log("MoodDataService: Constructor starting");
         
         // Store data in the app's local data directory
@@ -39,6 +43,13 @@ public class MoodDataService : IMoodDataService
         };
         
         Log("MoodDataService: Constructor completed");
+    }
+
+    /// <summary>
+    /// Creates a new mood data service with default archive service (for backwards compatibility)
+    /// </summary>
+    public MoodDataService() : this(new DataArchiveService())
+    {
     }
 
     private void Log(string message)
@@ -113,15 +124,25 @@ public class MoodDataService : IMoodDataService
     {
         try
         {
-            var json = JsonSerializer.Serialize(collection.Entries, _jsonOptions);
+            Log("SaveMoodDataAsync: Starting save operation");
+            
+            // Archive old data before saving if needed
+            var archivedCollection = await _archiveService.ArchiveOldDataAsync(collection);
+            
+            // Save the current (non-archived) data
+            var json = JsonSerializer.Serialize(archivedCollection.Entries, _jsonOptions);
             await File.WriteAllTextAsync(_dataFilePath, json);
             
-            _cachedCollection = collection;
+            // Update cached collection with the archived collection
+            _cachedCollection = archivedCollection;
+            
+            Log($"SaveMoodDataAsync: Successfully saved {archivedCollection.Entries.Count} entries");
         }
         catch (Exception ex)
         {
             // Log error in production app
             System.Diagnostics.Debug.WriteLine($"Error saving mood data: {ex.Message}");
+            Log($"SaveMoodDataAsync: Error saving mood data: {ex.Message}");
             throw new InvalidOperationException("Failed to save mood data", ex);
         }
     }
@@ -169,6 +190,81 @@ public class MoodDataService : IMoodDataService
     {
         var collection = await LoadMoodDataAsync();
         return collection.GetRecentEntries(count);
+    }
+
+    /// <summary>
+    /// Gets recent mood entries, including archived data if needed when near year transitions
+    /// and there isn't enough recent data in the active file
+    /// </summary>
+    /// <param name="count">Number of entries to return</param>
+    /// <returns>Recent mood entries from active and archived data as needed</returns>
+    public async Task<IEnumerable<MoodEntry>> GetRecentMoodEntriesWithArchiveAsync(int count = 7)
+    {
+        Log($"GetRecentMoodEntriesWithArchiveAsync: Requesting {count} recent entries");
+        
+        // First, get entries from the active file
+        var activeCollection = await LoadMoodDataAsync();
+        var activeEntries = activeCollection.GetRecentEntries(count).ToList();
+        
+        Log($"GetRecentMoodEntriesWithArchiveAsync: Found {activeEntries.Count} active entries");
+        
+        // If we have enough entries or we're not near a year transition, return active entries
+        if (activeEntries.Count >= count || !_archiveService.IsNearYearTransition(14))
+        {
+            Log($"GetRecentMoodEntriesWithArchiveAsync: Sufficient active data or not near year transition, returning {activeEntries.Count} entries");
+            return activeEntries;
+        }
+        
+        // We need more data and we're near a year transition - check archives
+        Log("GetRecentMoodEntriesWithArchiveAsync: Need more data and near year transition, checking archives");
+        
+        try
+        {
+            // Calculate how many more entries we need
+            var needed = count - activeEntries.Count;
+            Log($"GetRecentMoodEntriesWithArchiveAsync: Need {needed} more entries from archives");
+            
+            // Define search range - look back from the oldest active entry or current date
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var oldestActiveDate = activeEntries.Any() ? activeEntries.Min(e => e.Date) : today;
+            
+            // Search in a reasonable range around the year transition
+            var searchStartDate = oldestActiveDate.AddDays(-60); // Look back 60 days from oldest active
+            var searchEndDate = today.AddDays(14); // Look forward 14 days
+            
+            Log($"GetRecentMoodEntriesWithArchiveAsync: Searching archives from {searchStartDate} to {searchEndDate}");
+            
+            // Get archived entries in the search range
+            var archivedEntries = await _archiveService.GetArchivedEntriesInRangeAsync(searchStartDate, searchEndDate);
+            
+            // Combine active and archived entries, remove duplicates, and sort by date (newest first)
+            var allEntries = new List<MoodEntry>(activeEntries);
+            
+            foreach (var archived in archivedEntries)
+            {
+                // Only add if we don't already have an entry for this date
+                if (!allEntries.Any(e => e.Date == archived.Date))
+                {
+                    allEntries.Add(archived);
+                }
+            }
+            
+            // Sort by date (newest first) and take the requested count
+            var result = allEntries
+                .OrderByDescending(e => e.Date)
+                .Take(count)
+                .ToList();
+            
+            Log($"GetRecentMoodEntriesWithArchiveAsync: Returning {result.Count} combined entries (active + archived)");
+            
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Log($"GetRecentMoodEntriesWithArchiveAsync: Error accessing archives: {ex.Message}");
+            // If there's an error with archives, just return the active entries
+            return activeEntries;
+        }
     }
 
     /// <summary>

@@ -231,10 +231,10 @@ public class HistoryViewModel : ViewModelBase
     /// </summary>
     private async Task LoadRecentEntriesAsync()
     {
-        var recentEntries = await _moodDataService.GetRecentMoodEntriesAsync(10);
+        var recentEntries = await _moodDataService.GetRecentMoodEntriesWithArchiveAsync(10);
         
         // Debug logging
-        System.Diagnostics.Debug.WriteLine($"LoadRecentEntriesAsync: Found {recentEntries.Count()} entries");
+        System.Diagnostics.Debug.WriteLine($"LoadRecentEntriesAsync: Found {recentEntries.Count()} entries (including archived data if applicable)");
         
         RecentEntries.Clear();
         HasNoData = !recentEntries.Any();

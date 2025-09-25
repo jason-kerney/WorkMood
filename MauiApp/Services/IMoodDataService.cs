@@ -47,6 +47,14 @@ public interface IMoodDataService
     Task<IEnumerable<MoodEntry>> GetRecentMoodEntriesAsync(int count = 7);
 
     /// <summary>
+    /// Gets recent mood entries, including archived data if needed when near year transitions
+    /// and there isn't enough recent data in the active file
+    /// </summary>
+    /// <param name="count">Number of entries to retrieve</param>
+    /// <returns>Collection of recent mood entries from active and archived data as needed</returns>
+    Task<IEnumerable<MoodEntry>> GetRecentMoodEntriesWithArchiveAsync(int count = 7);
+
+    /// <summary>
     /// Gets mood statistics
     /// </summary>
     /// <returns>Mood statistics</returns>
