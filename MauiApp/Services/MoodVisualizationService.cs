@@ -34,13 +34,14 @@ public class MoodVisualizationService : IMoodVisualizationService
     /// Creates visualization data from the last 2 weeks of mood data values.
     /// If there's less than 2 weeks of data, positions the available data proportionally 
     /// from the beginning while keeping the visualization the same size.
+    /// Excludes today to prevent anchoring bias during mood entry.
     /// </summary>
     /// <param name="moodCollection">The mood data collection</param>
     /// <returns>Array of mood value data for visualization</returns>
     public MoodVisualizationData CreateTwoWeekValueVisualization(MoodCollection moodCollection)
     {
-        // Calculate date range for last 2 weeks
-        var endDate = DateOnly.FromDateTime(DateTime.Today);
+        // Calculate date range for last 2 weeks, excluding today to prevent anchoring bias
+        var endDate = DateOnly.FromDateTime(DateTime.Today).AddDays(-1); // End yesterday
         var startDate = endDate.AddDays(-DAYS_TO_SHOW + 1);
         
         // Get entries in the date range

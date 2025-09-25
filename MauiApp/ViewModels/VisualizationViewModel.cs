@@ -230,7 +230,7 @@ public class VisualizationViewModel : ViewModelBase
     {
         await Task.Run(() =>
         {
-            var endDate = DateOnly.FromDateTime(DateTime.Today);
+            var endDate = DateOnly.FromDateTime(DateTime.Today).AddDays(-1); // End yesterday to prevent anchoring bias
             var startDate = endDate.AddDays(-13); // 14 days total
 
             var emptyDailyValues = new DailyMoodValue[14];
@@ -259,7 +259,7 @@ public class VisualizationViewModel : ViewModelBase
             {
                 DailyDataItems.Clear();
                 DailyDataItems.Add(new DailyDataItemViewModel(
-                    DateOnly.FromDateTime(DateTime.Today),
+                    endDate, // Show yesterday instead of today
                     null,
                     false,
                     Colors.Gray,

@@ -66,6 +66,8 @@ All Doculisp code follows this pattern:
 5. **ALL headings must be dynamic**: In .md files for Doculisp compilation, use `<!-- (dl (# Title)) -->` not `# Title`
 6. **Parameter limits**: Max 255 characters, no newlines, no unescaped parentheses
 7. **Escape parentheses**: Use backslash `\)` to include literal parentheses
+8. **Section Meta Starts a File**: The `section-meta` block defines the first header in a file
+9. **Dynamic Headers Reference Depth From Section Meta**: When determining dynamic header depth, they need to be from the `section-meta` block.
 
 ### The Master Block
 
