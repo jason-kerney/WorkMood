@@ -207,7 +207,11 @@ The app displays reminder notifications directly on the dashboard:
 
 ## Recording Your Mood ##
 
-The **Mood Recording** page is the core feature of WorkMood, designed specifically to track **how your workday impacts your mood**. Unlike general mood trackers, WorkMood focuses on measuring the change in your emotional state from the start to the end of your work day.
+The1. **Complete Morning First**: Ensure your morning mood has been saved
+2. **End-of-Workday Check**: Record your mood as you finish your work day
+3. **Reflect on Work Impact**: Consider how your work experiences affected your mood
+4. **Select Rating**: Choose number that best represents your current emotional state (buttons are now enabled)
+5. **Save Mood**: Click "Save Evening Mood" button to confirm and save your selectiond Recording** page is the core feature of WorkMood, designed specifically to track **how your workday impacts your mood**. Unlike general mood trackers, WorkMood focuses on measuring the change in your emotional state from the start to the end of your work day.
 
 ![Mood Recording Interface](./images/mood-recording-main.png)
 *Figure 1: Complete mood recording interface*
@@ -218,7 +222,6 @@ The mood recording page displays as **"Daily Mood Tracker"** with the current da
 
 - **Morning Mood**: Record how you feel when your **work day starts**
 - **Evening Mood**: Log your mood near the **end of your work day**
-- **Today's Summary**: Automatic analysis of your mood change throughout the day
 - **Manual Save System**: Explicit save buttons for both morning and evening moods
 - **Sequential Workflow**: Evening mood selection is enabled only after morning mood is saved
 - **Schedule-Based Reminders**: Automatic reminders based on your work schedule configuration
@@ -274,7 +277,6 @@ The evening section uses a **calming sunset theme** with a **🌙 moon emoji** f
 3. **Reflect on Work Impact**: Consider how your work experiences affected your mood
 4. **Select Rating**: Choose number that best represents your current emotional state (buttons are now enabled)
 5. **Save Mood**: Click "Save Evening Mood" button to confirm and save your selection
-6. **View Summary**: The app automatically generates a summary showing your mood change
 
 ### Mood Scale Guide ###
 
@@ -291,36 +293,12 @@ WorkMood uses a standardized **10-point scale** for consistent tracking of your 
 - **7-8 (Good)**: Happy, positive, generally feeling good about work
 - **9-10 (Excellent)**: Energized, extremely positive, or exceptionally good work mood
 
-### Today's Summary Section ###
-
-When both morning and evening moods are recorded, WorkMood automatically displays a **"📊 Today's Summary"** section that provides insights into your workday's emotional impact.
-
-![Today's Summary](./images/mood-summary-section.png)
-*Figure 6: Automatic workday mood summary display*
-
-#### Summary Features ####
-
-- **Automatic Generation**: Appears only when both moods are recorded
-- **Mood Change Analysis**: Shows how your mood shifted during your work day
-- **Visual Indicator**: 📊 Chart emoji with clear summary text
-- **Work Impact Assessment**: Specifically focuses on work-related mood changes
-- **Daily Insights**: Provides context for understanding your workday's emotional journey
-
-#### Summary Analysis Types ####
-
-The summary provides different insights based on your mood change:
-
-- **Positive Change**: When evening mood is higher than morning mood
-- **Negative Change**: When evening mood is lower than morning mood
-- **Stable Mood**: When morning and evening moods are similar
-- **Magnitude Assessment**: Shows the degree of change between morning and evening
-
 ### Action Buttons Section ###
 
 The mood recording page includes dedicated action buttons at the bottom for saving your mood entries and navigation.
 
 ![Action Buttons](./images/action-buttons-section.png)
-*Figure 7: Action buttons for saving moods and navigation*
+*Figure 6: Action buttons for saving moods and navigation*
 
 #### Save Buttons ####
 
@@ -386,7 +364,6 @@ The interface provides **clear visual feedback** throughout the mood recording p
 4. **Manual Save Confirmation**: Use save buttons to confirm your mood selections
 5. **Be Specific**: Use the full 1-10 range based on work-related feelings
 6. **Track Work Patterns**: Look for trends in how different work situations impact mood
-7. **Review Daily Summary**: Pay attention to the automatic summary to understand your workday impact
 
 #### Data Quality Tips ####
 
@@ -396,7 +373,6 @@ The interface provides **clear visual feedback** throughout the mood recording p
 - **Use Save Buttons**: Confirm your selections with the dedicated save buttons
 - **Use the Full Scale**: Don't avoid extreme ratings when work situations warrant them
 - **Be Consistent**: Use the same interpretation of the work mood scale each time
-- **Review Summary**: Check the daily summary to understand your workday's emotional impact
 - **Regular Recording**: Daily work mood tracking provides the most useful data
 
 ## Viewing History ##

@@ -208,54 +208,6 @@ WorkMood-v1.0-Windows/
 └── README-Installation.txt       # Installation instructions
 ```
 
-#### Step 3: Create Installation Script ####
-
-Create `install.bat` with the following content:
-
-```batch
-@echo off
-echo Installing WorkMood...
-
-REM Create application directory
-if not exist "%USERPROFILE%\AppData\Local\WorkMood" (
-    mkdir "%USERPROFILE%\AppData\Local\WorkMood"
-)
-
-REM Copy application files
-xcopy /Y /E *.* "%USERPROFILE%\AppData\Local\WorkMood\"
-
-REM Create desktop shortcut (optional)
-echo Creating desktop shortcut...
-powershell -command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%USERPROFILE%\Desktop\WorkMood.lnk'); $Shortcut.TargetPath = '%USERPROFILE%\AppData\Local\WorkMood\WorkMood.MauiApp.exe'; $Shortcut.Save()"
-
-echo Installation complete!
-echo You can run WorkMood from your desktop or from:
-echo %USERPROFILE%\AppData\Local\WorkMood\WorkMood.MauiApp.exe
-pause
-```
-
-#### Step 4: Create Uninstallation Script ####
-
-Create `uninstall.bat`:
-
-```batch
-@echo off
-echo Uninstalling WorkMood...
-
-REM Remove desktop shortcut
-if exist "%USERPROFILE%\Desktop\WorkMood.lnk" (
-    del "%USERPROFILE%\Desktop\WorkMood.lnk"
-)
-
-REM Remove application directory
-if exist "%USERPROFILE%\AppData\Local\WorkMood" (
-    rmdir /S /Q "%USERPROFILE%\AppData\Local\WorkMood"
-)
-
-echo WorkMood has been uninstalled.
-pause
-```
-
 ### Manual Installation Instructions ###
 
 For users who prefer manual installation:
@@ -346,81 +298,6 @@ WorkMood-v1.0-macOS/
 ├── install.sh                    # Installation script
 ├── uninstall.sh                  # Uninstallation script
 └── README-Installation.txt       # Installation instructions
-```
-
-#### Step 3: Create Installation Script ####
-
-Create `install.sh` with the following content:
-
-```bash
-#!/bin/bash
-
-echo "Installing WorkMood for macOS..."
-
-# Check if running on macOS
-if [[ "$OSTYPE" != "darwin"* ]]; then
-    echo "Error: This installer is for macOS only."
-    exit 1
-fi
-
-# Create Applications directory if it doesn't exist (shouldn't happen)
-if [ ! -d "/Applications" ]; then
-    echo "Error: /Applications directory not found."
-    exit 1
-fi
-
-# Copy the app bundle to Applications
-echo "Copying WorkMood to /Applications..."
-cp -R "WorkMood.MauiApp.app" "/Applications/"
-
-# Set proper permissions
-chmod +x "/Applications/WorkMood.MauiApp.app/Contents/MacOS/WorkMood.MauiApp"
-
-echo "Installation complete!"
-echo "You can now find WorkMood in your Applications folder or launch it from Spotlight."
-
-# Ask if user wants to launch the app
-read -p "Would you like to launch WorkMood now? (y/n): " launch_app
-if [[ $launch_app =~ ^[Yy]$ ]]; then
-    open "/Applications/WorkMood.MauiApp.app"
-fi
-```
-
-#### Step 4: Create Uninstallation Script ####
-
-Create `uninstall.sh`:
-
-```bash
-#!/bin/bash
-
-echo "Uninstalling WorkMood from macOS..."
-
-# Remove the application
-if [ -d "/Applications/WorkMood.MauiApp.app" ]; then
-    echo "Removing WorkMood from Applications..."
-    rm -rf "/Applications/WorkMood.MauiApp.app"
-    echo "WorkMood has been uninstalled."
-else
-    echo "WorkMood is not installed in /Applications."
-fi
-
-# Optional: Remove user data (ask user first)
-read -p "Would you like to remove all WorkMood user data? This cannot be undone. (y/n): " remove_data
-if [[ $remove_data =~ ^[Yy]$ ]]; then
-    rm -rf "$HOME/Library/Application Support/WorkMood"
-    rm -rf "$HOME/Library/Preferences/com.workmood.mauiapp.plist"
-    rm -rf "$HOME/Library/Caches/com.workmood.mauiapp"
-    echo "User data removed."
-fi
-
-echo "Uninstallation complete."
-```
-
-#### Step 5: Make Scripts Executable ####
-
-```bash
-chmod +x install.sh
-chmod +x uninstall.sh
 ```
 
 ### Manual Installation Instructions ###

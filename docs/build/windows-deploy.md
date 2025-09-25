@@ -50,54 +50,6 @@ WorkMood-v1.0-Windows/
 └── README-Installation.txt       # Installation instructions
 ```
 
-<!-- (dl (## Step 3: Create Installation Script)) -->
-
-Create `install.bat` with the following content:
-
-```batch
-@echo off
-echo Installing WorkMood...
-
-REM Create application directory
-if not exist "%USERPROFILE%\AppData\Local\WorkMood" (
-    mkdir "%USERPROFILE%\AppData\Local\WorkMood"
-)
-
-REM Copy application files
-xcopy /Y /E *.* "%USERPROFILE%\AppData\Local\WorkMood\"
-
-REM Create desktop shortcut (optional)
-echo Creating desktop shortcut...
-powershell -command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%USERPROFILE%\Desktop\WorkMood.lnk'); $Shortcut.TargetPath = '%USERPROFILE%\AppData\Local\WorkMood\WorkMood.MauiApp.exe'; $Shortcut.Save()"
-
-echo Installation complete!
-echo You can run WorkMood from your desktop or from:
-echo %USERPROFILE%\AppData\Local\WorkMood\WorkMood.MauiApp.exe
-pause
-```
-
-<!-- (dl (## Step 4: Create Uninstallation Script)) -->
-
-Create `uninstall.bat`:
-
-```batch
-@echo off
-echo Uninstalling WorkMood...
-
-REM Remove desktop shortcut
-if exist "%USERPROFILE%\Desktop\WorkMood.lnk" (
-    del "%USERPROFILE%\Desktop\WorkMood.lnk"
-)
-
-REM Remove application directory
-if exist "%USERPROFILE%\AppData\Local\WorkMood" (
-    rmdir /S /Q "%USERPROFILE%\AppData\Local\WorkMood"
-)
-
-echo WorkMood has been uninstalled.
-pause
-```
-
 <!-- (dl (# Manual Installation Instructions)) -->
 
 For users who prefer manual installation:
