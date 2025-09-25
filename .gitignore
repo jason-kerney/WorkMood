@@ -485,3 +485,6 @@ $RECYCLE.BIN/
 
 # Deployment Folders
 WorkMood-v*/
+*.zip
+*.7z
+*.rar
