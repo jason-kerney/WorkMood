@@ -1,6 +1,7 @@
 ﻿using WorkMood.MauiApp.Services;
 using WorkMood.MauiApp.ViewModels;
 using WorkMood.MauiApp.Pages;
+using WhatsYourVersion;
 
 namespace WorkMood.MauiApp;
 
@@ -27,6 +28,11 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ILoggingService, LoggingService>();
 		builder.Services.AddSingleton<IWindowActivationService, WindowActivationService>();
 		builder.Services.AddSingleton<IBrowserService, BrowserService>();
+		
+		// Register version retriever service
+		builder.Services.AddSingleton<IVersionRetriever>((serviceProvider) => 
+			new VersionRetriever(AssemblyWrapper.From<App>())
+		);
 		
 		// Register ViewModels
 		builder.Services.AddTransient<AboutViewModel>();

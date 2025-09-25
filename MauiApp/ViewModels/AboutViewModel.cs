@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using WorkMood.MauiApp.Infrastructure;
 using WorkMood.MauiApp.Services;
+using WhatsYourVersion;
 
 namespace WorkMood.MauiApp.ViewModels;
 
@@ -12,9 +13,10 @@ public class AboutViewModel : ViewModelBase
 {
     private readonly INavigationService _navigationService;
     private readonly IBrowserService _browserService;
+    private readonly IVersionRetriever _versionRetriever;
 
     private string _appTitle = "WorkMood - Daily Mood Tracker";
-    private string _appVersion = "Version 1.0";
+    private string _appVersion = string.Empty;
     private string _appDescription = "WorkMood helps you track your daily mood and build healthy emotional awareness habits. Record your feelings throughout the day and view your mood patterns over time.";
     private string _developerInfo = "Built with ❤️ using .NET MAUI";
     private string _iconUrl = "https://www.flaticon.com/free-icon/smiles_10949258?term=smiles&page=1&position=41&origin=style&related_id=10949258";
@@ -24,10 +26,15 @@ public class AboutViewModel : ViewModelBase
     /// </summary>
     /// <param name="navigationService">Service for navigation operations</param>
     /// <param name="browserService">Service for opening external URLs</param>
-    public AboutViewModel(INavigationService navigationService, IBrowserService browserService)
+    /// <param name="versionRetriever">Service for retrieving version information</param>
+    public AboutViewModel(INavigationService navigationService, IBrowserService browserService, IVersionRetriever versionRetriever)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _browserService = browserService ?? throw new ArgumentNullException(nameof(browserService));
+        _versionRetriever = versionRetriever ?? throw new ArgumentNullException(nameof(versionRetriever));
+
+        // Initialize version information
+        InitializeVersionInfo();
 
         // Initialize commands
         OpenIconLinkCommand = new RelayCommand(ExecuteOpenIconLink, CanExecuteOpenIconLink);
@@ -78,6 +85,27 @@ public class AboutViewModel : ViewModelBase
     {
         get => _iconUrl;
         set => SetProperty(ref _iconUrl, value);
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    /// <summary>
+    /// Initializes the version information from the version retriever
+    /// </summary>
+    private void InitializeVersionInfo()
+    {
+        try
+        {
+            var versionInfo = _versionRetriever.GetVersion();
+            AppVersion = $"Version {versionInfo.Version}";
+        }
+        catch (Exception)
+        {
+            // Fallback to default version if retrieval fails
+            AppVersion = "Version 0.1.0";
+        }
     }
 
     #endregion
