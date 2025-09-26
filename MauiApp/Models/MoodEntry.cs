@@ -7,6 +7,10 @@ namespace WorkMood.MauiApp.Models;
 /// </summary>
 public class MoodEntry
 {
+    // Backing fields for synchronized properties
+    private int? _morningStartOfWork;
+    private int? _eveningEndOfWork;
+
     /// <summary>
     /// The date of this mood entry (date only, no time component)
     /// </summary>
@@ -14,14 +18,60 @@ public class MoodEntry
 
     /// <summary>
     /// Morning mood rating (1-10). Null if not recorded.
+    /// Synchronized with StartOfWork - both properties reflect the same value.
     /// </summary>
-    public int? MorningMood { get; set; }
+    public int? MorningMood 
+    { 
+        get => _morningStartOfWork;
+        set 
+        {
+            if (value.HasValue)
+                _morningStartOfWork = value;
+        }
+    }
 
     /// <summary>
     /// Evening mood rating (1-10). Null if not recorded.
+    /// Synchronized with EndOfWork - both properties reflect the same value.
     /// If not explicitly set and MorningMood exists, defaults to MorningMood value when saving.
     /// </summary>
-    public int? EveningMood { get; set; }
+    public int? EveningMood 
+    { 
+        get => _eveningEndOfWork;
+        set 
+        {
+            if (value.HasValue)
+                _eveningEndOfWork = value;
+        }
+    }
+
+    /// <summary>
+    /// Start of work mood rating (1-10). Null if not recorded.
+    /// Synchronized with MorningMood - both properties reflect the same value.
+    /// </summary>
+    public int? StartOfWork 
+    { 
+        get => _morningStartOfWork;
+        set 
+        {
+            if (value.HasValue)
+                _morningStartOfWork = value;
+        }
+    }
+
+    /// <summary>
+    /// End of work mood rating (1-10). Null if not recorded.
+    /// Synchronized with EveningMood - both properties reflect the same value.
+    /// </summary>
+    public int? EndOfWork 
+    { 
+        get => _eveningEndOfWork;
+        set 
+        {
+            if (value.HasValue)
+                _eveningEndOfWork = value;
+        }
+    }
 
     /// <summary>
     /// Timestamp when this entry was created
@@ -44,11 +94,11 @@ public class MoodEntry
     {
         get
         {
-            if (!MorningMood.HasValue)
+            if (!StartOfWork.HasValue)
                 return null;
             
-            var eveningOrMorning = EveningMood ?? MorningMood.Value;
-            return eveningOrMorning - MorningMood.Value;
+            var endOfWorkOrStartOfWork = EndOfWork ?? StartOfWork.Value;
+            return endOfWorkOrStartOfWork - StartOfWork.Value;
         }
     }
 
@@ -79,10 +129,12 @@ public class MoodEntry
     /// <returns>True if all set mood values are valid</returns>
     public bool IsValid()
     {
-        if (MorningMood.HasValue && (MorningMood < 1 || MorningMood > 10))
+        // Since MorningMood and StartOfWork are synchronized, only need to validate the backing field once
+        if (_morningStartOfWork.HasValue && (_morningStartOfWork < 1 || _morningStartOfWork > 10))
             return false;
         
-        if (EveningMood.HasValue && (EveningMood < 1 || EveningMood > 10))
+        // Since EveningMood and EndOfWork are synchronized, only need to validate the backing field once
+        if (_eveningEndOfWork.HasValue && (_eveningEndOfWork < 1 || _eveningEndOfWork > 10))
             return false;
         
         return true;
@@ -90,27 +142,27 @@ public class MoodEntry
 
     /// <summary>
     /// Determines if this entry should be saved based on business rules:
-    /// - Must have a morning mood to be saved
-    /// - Evening mood is optional and defaults to morning mood if not set
+    /// - Must have a start of work mood to be saved
+    /// - End of work mood is optional and defaults to start of work mood if not set
     /// </summary>
     /// <returns>True if this entry should be saved</returns>
     public bool ShouldSave()
     {
-        return MorningMood.HasValue && IsValid();
+        return StartOfWork.HasValue && IsValid();
     }
 
     /// <summary>
     /// Prepares the entry for saving by applying business rules
     /// </summary>
-    /// <param name="useAutoSaveDefaults">If true, applies auto-save defaults like setting evening mood to morning mood</param>
+    /// <param name="useAutoSaveDefaults">If true, applies auto-save defaults like setting end of work mood to start of work mood</param>
     public void PrepareForSave(bool useAutoSaveDefaults = false)
     {
         if (ShouldSave())
         {
             // Apply auto-save defaults only when explicitly requested (e.g., end of day auto-save)
-            if (useAutoSaveDefaults && !EveningMood.HasValue && MorningMood.HasValue)
+            if (useAutoSaveDefaults && !EndOfWork.HasValue && StartOfWork.HasValue)
             {
-                EveningMood = MorningMood;
+                EndOfWork = StartOfWork;
             }
             
             LastModified = DateTime.Now;
@@ -123,9 +175,9 @@ public class MoodEntry
     /// <returns>Average mood or null if insufficient data</returns>
     public double? GetAverageMood()
     {
-        if (MorningMood.HasValue && EveningMood.HasValue)
+        if (StartOfWork.HasValue && EndOfWork.HasValue)
         {
-            return (MorningMood.Value + EveningMood.Value) / 2.0;
+            return (StartOfWork.Value + EndOfWork.Value) / 2.0;
         }
         
         return null;
@@ -137,8 +189,8 @@ public class MoodEntry
     /// <returns>Formatted string representation</returns>
     public override string ToString()
     {
-        var morning = MorningMood?.ToString() ?? "Not recorded";
-        var evening = EveningMood?.ToString() ?? "Not recorded";
-        return $"{Date:yyyy-MM-dd}: Morning {morning}, Evening {evening}";
+        var startOfWork = StartOfWork?.ToString() ?? "Not recorded";
+        var endOfWork = EndOfWork?.ToString() ?? "Not recorded";
+        return $"{Date:yyyy-MM-dd}: Start of Work {startOfWork}, End of Work {endOfWork}";
     }
 }

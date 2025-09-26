@@ -242,7 +242,7 @@ public class HistoryViewModel : ViewModelBase
         foreach (var entry in recentEntries)
         {
             RecentEntries.Add(entry);
-            System.Diagnostics.Debug.WriteLine($"Added entry for {entry.Date}: Morning={entry.MorningMood}, Evening={entry.EveningMood}");
+            System.Diagnostics.Debug.WriteLine($"Added entry for {entry.Date}: StartOfWork={entry.StartOfWork}, EndOfWork={entry.EndOfWork}");
         }
         
         System.Diagnostics.Debug.WriteLine($"RecentEntries collection now has {RecentEntries.Count} items");

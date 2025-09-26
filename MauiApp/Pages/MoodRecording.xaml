@@ -33,13 +33,13 @@
         <ScrollView Grid.Row="1">
             <StackLayout Spacing="30">
                 
-                <!-- First Check-in Section -->
+                <!-- Start of Work Check-in Section -->
                 <Border BackgroundColor="{Binding MorningMoodBorderColor}" 
                         Padding="20" 
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 10">
                     <StackLayout Spacing="15">
-                        <Label Text="📝 First Check-in" 
+                        <Label Text="📝 Start of Work Check-in" 
                                FontSize="18" 
                                FontAttributes="Bold" 
                                TextColor="White"
@@ -119,13 +119,13 @@
                     </StackLayout>
                 </Border>
 
-                <!-- Second Check-in Section -->
+                <!-- End of Work Check-in Section -->
                 <Border BackgroundColor="{Binding EveningMoodBorderColor}" 
                         Padding="20" 
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 10">
                     <StackLayout Spacing="15">
-                        <Label Text="📝 Second Check-in" 
+                        <Label Text="� End of Work Check-in" 
                                FontSize="18" 
                                FontAttributes="Bold" 
                                TextColor="White"
