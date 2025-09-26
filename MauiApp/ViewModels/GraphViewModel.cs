@@ -25,6 +25,11 @@ public class GraphViewModel : ViewModelBase
     private bool _showDataPoints = true;
     private bool _showAxesAndGrid = true;
     private bool _showTitle = true;
+    private ImageSource? _customBackgroundSource;
+    private bool _hasCustomBackground = false;
+    private int _customBackgroundWidth = 0;
+    private int _customBackgroundHeight = 0;
+    private string _customBackgroundPath = string.Empty;
     
     public GraphViewModel(IMoodDataService moodDataService, ILineGraphService lineGraphService)
     {
@@ -39,6 +44,8 @@ public class GraphViewModel : ViewModelBase
         // Initialize commands
         ExportGraphCommand = new RelayCommand(async () => await ExportGraphAsync());
         ShareGraphCommand = new RelayCommand(async () => await ShareGraphAsync());
+        LoadCustomBackgroundCommand = new RelayCommand(async () => await LoadCustomBackgroundAsync());
+        ClearCustomBackgroundCommand = new RelayCommand(ClearCustomBackground);
     }
     
     #region Properties
@@ -180,6 +187,110 @@ public class GraphViewModel : ViewModelBase
     /// </summary>
     public int ExportGraphWidth => CalculateExportGraphWidth(_selectedDateRange?.DateRange ?? DateRange.Last7Days);
     
+    /// <summary>
+    /// Custom background image source
+    /// </summary>
+    public ImageSource? CustomBackgroundSource
+    {
+        get => _customBackgroundSource;
+        set => SetProperty(ref _customBackgroundSource, value);
+    }
+    
+    /// <summary>
+    /// Whether a custom background is loaded
+    /// </summary>
+    public bool HasCustomBackground
+    {
+        get => _hasCustomBackground;
+        set 
+        { 
+            if (SetProperty(ref _hasCustomBackground, value))
+            {
+                OnPropertyChanged(nameof(EffectiveGraphWidth));
+                OnPropertyChanged(nameof(EffectiveGraphHeight));
+                OnPropertyChanged(nameof(DisplayWidth));
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Width of the custom background image
+    /// </summary>
+    public int CustomBackgroundWidth
+    {
+        get => _customBackgroundWidth;
+        set 
+        { 
+            if (SetProperty(ref _customBackgroundWidth, value))
+            {
+                OnPropertyChanged(nameof(EffectiveGraphWidth));
+                OnPropertyChanged(nameof(EffectiveGraphHeight));
+                OnPropertyChanged(nameof(DisplayWidth));
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Height of the custom background image
+    /// </summary>
+    public int CustomBackgroundHeight
+    {
+        get => _customBackgroundHeight;
+        set 
+        { 
+            if (SetProperty(ref _customBackgroundHeight, value))
+            {
+                OnPropertyChanged(nameof(EffectiveGraphWidth));
+                OnPropertyChanged(nameof(EffectiveGraphHeight));
+                OnPropertyChanged(nameof(DisplayWidth));
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Path to the custom background image file
+    /// </summary>
+    public string CustomBackgroundPath
+    {
+        get => _customBackgroundPath;
+        set => SetProperty(ref _customBackgroundPath, value);
+    }
+    
+    /// <summary>
+    /// Gets the effective graph width - either custom background width or calculated width
+    /// </summary>
+    public int EffectiveGraphWidth => HasCustomBackground ? CustomBackgroundWidth : GraphWidth;
+    
+    /// <summary>
+    /// Gets the effective graph height - either custom background height or default height
+    /// </summary>
+    public int EffectiveGraphHeight => HasCustomBackground ? CustomBackgroundHeight : 900;
+    
+    /// <summary>
+    /// Gets the display width for the image control - scaled appropriately for the view area
+    /// </summary>
+    public int DisplayWidth 
+    {
+        get
+        {
+            if (!HasCustomBackground)
+                return GraphWidth;
+                
+            // Scale the background to fit within reasonable display bounds while maintaining aspect ratio
+            const int maxDisplayWidth = 1000;
+            const int maxDisplayHeight = 400;
+            
+            if (CustomBackgroundWidth <= maxDisplayWidth && CustomBackgroundHeight <= maxDisplayHeight)
+                return CustomBackgroundWidth;
+                
+            double widthRatio = (double)maxDisplayWidth / CustomBackgroundWidth;
+            double heightRatio = (double)maxDisplayHeight / CustomBackgroundHeight;
+            double scale = Math.Min(widthRatio, heightRatio);
+            
+            return (int)(CustomBackgroundWidth * scale);
+        }
+    }
+    
     #endregion
     
     #region Commands
@@ -193,6 +304,16 @@ public class GraphViewModel : ViewModelBase
     /// Command to share the graph
     /// </summary>
     public ICommand ShareGraphCommand { get; }
+    
+    /// <summary>
+    /// Command to load a custom background image
+    /// </summary>
+    public ICommand LoadCustomBackgroundCommand { get; }
+    
+    /// <summary>
+    /// Command to clear the custom background image
+    /// </summary>
+    public ICommand ClearCustomBackgroundCommand { get; }
     
     #endregion
     
@@ -227,7 +348,15 @@ public class GraphViewModel : ViewModelBase
                 return;
             }
             
-            var imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, GraphWidth, 900);
+            byte[] imageData;
+            if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
+            {
+                imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, CustomBackgroundPath, EffectiveGraphWidth, EffectiveGraphHeight);
+            }
+            else
+            {
+                imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, EffectiveGraphWidth, EffectiveGraphHeight);
+            }
             GraphImageSource = ImageSource.FromStream(() => new MemoryStream(imageData));
             
             HasGraphData = true;
@@ -266,7 +395,17 @@ public class GraphViewModel : ViewModelBase
             var fileName = $"mood-graph-{_selectedDateRange.DateRange.ToString().ToLower()}-{DateTime.Now:yyyyMMdd-HHmmss}.png";
             var filePath = Path.Combine(documentsPath, fileName);
             
-            await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, ExportGraphWidth, 900);
+            var exportWidth = HasCustomBackground ? CustomBackgroundWidth : ExportGraphWidth;
+            var exportHeight = HasCustomBackground ? CustomBackgroundHeight : 900;
+            
+            if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
+            {
+                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, CustomBackgroundPath, exportWidth, exportHeight);
+            }
+            else
+            {
+                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, exportWidth, exportHeight);
+            }
             
             ShowStatusMessage($"Graph exported to: {filePath}");
         }
@@ -296,7 +435,17 @@ public class GraphViewModel : ViewModelBase
             var fileName = $"mood-graph-{DateTime.Now:yyyyMMdd-HHmmss}.png";
             var filePath = Path.Combine(tempPath, fileName);
             
-            await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, ExportGraphWidth, 900);
+            var exportWidth = HasCustomBackground ? CustomBackgroundWidth : ExportGraphWidth;
+            var exportHeight = HasCustomBackground ? CustomBackgroundHeight : 900;
+            
+            if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
+            {
+                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, CustomBackgroundPath, exportWidth, exportHeight);
+            }
+            else
+            {
+                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, exportWidth, exportHeight);
+            }
             
             await Share.RequestAsync(new ShareFileRequest
             {
@@ -407,6 +556,82 @@ public class GraphViewModel : ViewModelBase
             DateRange.Last3Years => baseWidth + (incrementWidth * 7),
             _ => baseWidth
         };
+    }
+    
+    /// <summary>
+    /// Loads a custom background image from the user's file system
+    /// </summary>
+    private async Task LoadCustomBackgroundAsync()
+    {
+        try
+        {
+            var fileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+            {
+                { DevicePlatform.iOS, new[] { "public.image" } },
+                { DevicePlatform.Android, new[] { "image/*" } },
+                { DevicePlatform.WinUI, new[] { ".png", ".jpg", ".jpeg", ".bmp", ".tiff" } },
+                { DevicePlatform.macOS, new[] { "png", "jpg", "jpeg", "bmp", "tiff" } }
+            });
+
+            var pickOptions = new PickOptions
+            {
+                PickerTitle = "Select Background Image",
+                FileTypes = fileTypes
+            };
+
+            var file = await FilePicker.PickAsync(pickOptions);
+            if (file != null)
+            {
+                // Load the image to get its dimensions
+                using var stream = await file.OpenReadAsync();
+                var imageSource = ImageSource.FromStream(() => stream);
+                
+                // For getting actual image dimensions, we'll need to load it differently
+                // For now, we'll use a default size and the service can determine actual dimensions
+                CustomBackgroundSource = ImageSource.FromFile(file.FullPath);
+                CustomBackgroundPath = file.FullPath;
+                HasCustomBackground = true;
+                
+                // Uncheck all options when custom background is loaded
+                _showDataPoints = false;
+                _showAxesAndGrid = false;
+                _showTitle = false;
+                OnPropertyChanged(nameof(ShowDataPoints));
+                OnPropertyChanged(nameof(ShowAxesAndGrid));
+                OnPropertyChanged(nameof(ShowTitle));
+                
+                // We'll set dimensions when the service processes the image
+                // For now, set reasonable defaults
+                CustomBackgroundWidth = 1200;
+                CustomBackgroundHeight = 800;
+                
+                // Trigger graph update
+                await UpdateGraphAsync();
+                
+                ShowStatusMessage("Custom background loaded successfully!");
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowStatusMessage($"Error loading background: {ex.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// Clears the custom background and returns to normal graph sizing
+    /// </summary>
+    private void ClearCustomBackground()
+    {
+        HasCustomBackground = false;
+        CustomBackgroundSource = null;
+        CustomBackgroundPath = string.Empty;
+        CustomBackgroundWidth = 0;
+        CustomBackgroundHeight = 0;
+        
+        ShowStatusMessage("Custom background cleared.");
+        
+        // Trigger graph update to return to normal sizing
+        _ = UpdateGraphAsync();
     }
     
     #endregion

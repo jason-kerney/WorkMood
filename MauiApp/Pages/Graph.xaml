@@ -44,6 +44,26 @@
                    Margin="5,0,0,0" />
         </StackLayout>
         
+        <!-- Custom Background Controls -->
+        <StackLayout Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0,0,0,10">
+            <Button Text="Load Background"
+                    Command="{Binding LoadCustomBackgroundCommand}"
+                    BackgroundColor="Purple"
+                    TextColor="White"
+                    HorizontalOptions="Start" />
+            <Button Text="Clear Background"
+                    Command="{Binding ClearCustomBackgroundCommand}"
+                    BackgroundColor="Gray"
+                    TextColor="White"
+                    HorizontalOptions="Start"
+                    IsVisible="{Binding HasCustomBackground}" />
+            <Label Text="Custom Background Loaded"
+                   VerticalOptions="Center"
+                   TextColor="Purple"
+                   FontAttributes="Bold"
+                   IsVisible="{Binding HasCustomBackground}" />
+        </StackLayout>
+        
         <!-- Graph Display -->
         <Border Grid.Row="2"
                 Stroke="Gray"
@@ -57,7 +77,7 @@
                        VerticalOptions="Center"
                        HorizontalOptions="Center"
                        HeightRequest="400"
-                       WidthRequest="{Binding GraphWidth}"
+                       WidthRequest="{Binding DisplayWidth}"
                        IsVisible="{Binding HasGraphData}" />
             </ScrollView>
         </Border>

@@ -26,7 +26,7 @@ public class LineGraphService : ILineGraphService
         // Clear canvas with white background
         canvas.Clear(SKColors.White);
         
-        await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height));
+        await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, true)); // Draw white background for normal graphs
         
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
@@ -40,7 +40,46 @@ public class LineGraphService : ILineGraphService
         await File.WriteAllBytesAsync(filePath, imageData);
     }
     
-    private void DrawGraph(SKCanvas canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height)
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string backgroundImagePath, int width = 800, int height = 600)
+    {
+        var filteredEntries = moodEntries
+            .Where(e => e.Value.HasValue)
+            .OrderBy(e => e.Date)
+            .ToList();
+
+        using var bitmap = new SKBitmap(width, height);
+        using var canvas = new SKCanvas(bitmap);
+        
+        // Load and draw custom background
+        if (File.Exists(backgroundImagePath))
+        {
+            using var backgroundBitmap = SKBitmap.Decode(backgroundImagePath);
+            if (backgroundBitmap != null)
+            {
+                canvas.DrawBitmap(backgroundBitmap, new SKRect(0, 0, width, height));
+            }
+        }
+        else
+        {
+            // Fallback to white background if image doesn't exist
+            canvas.Clear(SKColors.White);
+        }
+        
+        await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, false)); // Don't draw white background when using custom background
+        
+        // Convert to PNG
+        using var image = SKImage.FromBitmap(bitmap);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        return data.ToArray();
+    }
+    
+    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, string backgroundImagePath, int width = 800, int height = 600)
+    {
+        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, backgroundImagePath, width, height);
+        await File.WriteAllBytesAsync(filePath, imageData);
+    }
+    
+    private void DrawGraph(SKCanvas canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, bool drawWhiteBackground = true)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
         
@@ -48,8 +87,11 @@ public class LineGraphService : ILineGraphService
         var requestedStartDate = dateRange.GetStartDate();
         var requestedEndDate = dateRange.GetEndDate();
         
-        // Draw background
-        DrawBackground(canvas, graphArea);
+        // Conditionally draw background
+        if (drawWhiteBackground)
+        {
+            DrawBackground(canvas, graphArea);
+        }
         
         // Conditionally draw grid and axes
         if (showAxesAndGrid)
