@@ -22,6 +22,7 @@ public class GraphViewModel : ViewModelBase
     private bool _hasNoData = true;
     private string _statusMessage = string.Empty;
     private bool _hasStatusMessage = false;
+    private bool _showDataPoints = true;
     
     public GraphViewModel(IMoodDataService moodDataService, ILineGraphService lineGraphService)
     {
@@ -34,7 +35,6 @@ public class GraphViewModel : ViewModelBase
         _selectedDateRange = DateRanges.First();
         
         // Initialize commands
-        UpdateGraphCommand = new RelayCommand(async () => await UpdateGraphAsync());
         ExportGraphCommand = new RelayCommand(async () => await ExportGraphAsync());
         ShareGraphCommand = new RelayCommand(async () => await ShareGraphAsync());
     }
@@ -116,14 +116,25 @@ public class GraphViewModel : ViewModelBase
         set => SetProperty(ref _hasStatusMessage, value);
     }
     
+    /// <summary>
+    /// Whether to show individual data points on the graph
+    /// </summary>
+    public bool ShowDataPoints
+    {
+        get => _showDataPoints;
+        set
+        {
+            if (SetProperty(ref _showDataPoints, value))
+            {
+                // Auto-update graph when data points visibility changes
+                _ = UpdateGraphAsync();
+            }
+        }
+    }
+    
     #endregion
     
     #region Commands
-    
-    /// <summary>
-    /// Command to update the graph with selected date range
-    /// </summary>
-    public ICommand UpdateGraphCommand { get; }
     
     /// <summary>
     /// Command to export the graph as PNG
@@ -168,7 +179,7 @@ public class GraphViewModel : ViewModelBase
                 return;
             }
             
-            var imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, 800, 600);
+            var imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, 800, 600);
             GraphImageSource = ImageSource.FromStream(() => new MemoryStream(imageData));
             
             HasGraphData = true;
@@ -207,7 +218,7 @@ public class GraphViewModel : ViewModelBase
             var fileName = $"mood-graph-{_selectedDateRange.DateRange.ToString().ToLower()}-{DateTime.Now:yyyyMMdd-HHmmss}.png";
             var filePath = Path.Combine(documentsPath, fileName);
             
-            await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, filePath, 1200, 800);
+            await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, filePath, 1200, 800);
             
             ShowStatusMessage($"Graph exported to: {filePath}");
         }
@@ -237,7 +248,7 @@ public class GraphViewModel : ViewModelBase
             var fileName = $"mood-graph-{DateTime.Now:yyyyMMdd-HHmmss}.png";
             var filePath = Path.Combine(tempPath, fileName);
             
-            await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, filePath, 1200, 800);
+            await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, filePath, 1200, 800);
             
             await Share.RequestAsync(new ShareFileRequest
             {

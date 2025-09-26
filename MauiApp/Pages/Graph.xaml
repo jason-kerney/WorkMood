@@ -24,6 +24,12 @@
                     ItemDisplayBinding="{Binding DisplayName}"
                     VerticalOptions="Center"
                     MinimumWidthRequest="200" />
+            <CheckBox IsChecked="{Binding ShowDataPoints}"
+                      VerticalOptions="Center"
+                      Margin="20,0,0,0" />
+            <Label Text="Show Data Points"
+                   VerticalOptions="Center"
+                   Margin="5,0,0,0" />
         </StackLayout>
         
         <!-- Graph Display -->

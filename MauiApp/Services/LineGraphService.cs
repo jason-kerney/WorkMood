@@ -13,7 +13,7 @@ public class LineGraphService : ILineGraphService
     private const int Padding = 60;
     private const int GridLineSpacing = 20;
     
-    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, int width = 800, int height = 600)
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, int width = 800, int height = 600)
     {
         var filteredEntries = moodEntries
             .Where(e => e.Value.HasValue)
@@ -26,7 +26,7 @@ public class LineGraphService : ILineGraphService
         // Clear canvas with white background
         canvas.Clear(SKColors.White);
         
-        await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, width, height));
+        await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, width, height));
         
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
@@ -34,13 +34,13 @@ public class LineGraphService : ILineGraphService
         return data.ToArray();
     }
     
-    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, string filePath, int width = 800, int height = 600)
+    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, string filePath, int width = 800, int height = 600)
     {
-        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, width, height);
+        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, width, height);
         await File.WriteAllBytesAsync(filePath, imageData);
     }
     
-    private void DrawGraph(SKCanvas canvas, List<MoodEntry> entries, DateRange dateRange, int width, int height)
+    private void DrawGraph(SKCanvas canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, int width, int height)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
         
@@ -59,13 +59,16 @@ public class LineGraphService : ILineGraphService
             return;
         }
         
-        // Draw data line and points with proportional positioning
+        // Draw data line and optionally points with proportional positioning
         DrawDataLine(canvas, graphArea, entries, requestedStartDate, requestedEndDate);
-        DrawDataPoints(canvas, graphArea, entries, requestedStartDate, requestedEndDate);
+        if (showDataPoints)
+        {
+            DrawDataPoints(canvas, graphArea, entries, requestedStartDate, requestedEndDate);
+        }
         
         // Draw labels
         DrawYAxisLabels(canvas, graphArea);
-        DrawXAxisLabels(canvas, graphArea, entries, requestedStartDate, requestedEndDate);
+        DrawXAxisLabels(canvas, graphArea, entries, requestedStartDate, requestedEndDate, showDataPoints);
         DrawTitle(canvas, width);
     }
     
@@ -219,7 +222,7 @@ public class LineGraphService : ILineGraphService
         }
     }
     
-    private void DrawXAxisLabels(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate)
+    private void DrawXAxisLabels(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints)
     {
         using var labelPaint = new SKPaint
         {
@@ -248,8 +251,8 @@ public class LineGraphService : ILineGraphService
             canvas.DrawText(dateText, x, area.Bottom + 20, labelPaint);
         }
         
-        // Also show data point dates if they don't overlap too much
-        if (entries.Count > 0 && entries.Count <= 10)
+        // Also show data point dates if they don't overlap too much and showDataPoints is true
+        if (showDataPoints && entries.Count > 0 && entries.Count <= 10)
         {
             using var dataLabelPaint = new SKPaint
             {
