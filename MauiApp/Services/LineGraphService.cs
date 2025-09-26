@@ -13,7 +13,7 @@ public class LineGraphService : ILineGraphService
     private const int Padding = 60;
     private const int GridLineSpacing = 20;
     
-    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, int width = 800, int height = 600)
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width = 800, int height = 600)
     {
         var filteredEntries = moodEntries
             .Where(e => e.Value.HasValue)
@@ -26,7 +26,7 @@ public class LineGraphService : ILineGraphService
         // Clear canvas with white background
         canvas.Clear(SKColors.White);
         
-        await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, width, height));
+        await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height));
         
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
@@ -34,13 +34,13 @@ public class LineGraphService : ILineGraphService
         return data.ToArray();
     }
     
-    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, string filePath, int width = 800, int height = 600)
+    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, int width = 800, int height = 600)
     {
-        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, width, height);
+        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height);
         await File.WriteAllBytesAsync(filePath, imageData);
     }
     
-    private void DrawGraph(SKCanvas canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, int width, int height)
+    private void DrawGraph(SKCanvas canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
         
@@ -77,7 +77,12 @@ public class LineGraphService : ILineGraphService
             DrawYAxisLabels(canvas, graphArea);
             DrawXAxisLabels(canvas, graphArea, entries, requestedStartDate, requestedEndDate, showDataPoints);
         }
-        DrawTitle(canvas, width);
+        
+        // Conditionally draw title
+        if (showTitle)
+        {
+            DrawTitle(canvas, width);
+        }
     }
     
     private void DrawBackground(SKCanvas canvas, SKRect area)
