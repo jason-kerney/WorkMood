@@ -16,7 +16,7 @@ public class VisualizationDataProcessor : IVisualizationDataProcessor
         _colorStrategy = colorStrategy ?? throw new ArgumentNullException(nameof(colorStrategy));
     }
 
-    public DailyMoodValue[] ProcessMoodEntries(IEnumerable<MoodEntryOld> entries, DateOnly startDate, DateOnly endDate)
+    public DailyMoodValue[] ProcessMoodEntries(IEnumerable<MoodEntry> entries, DateOnly startDate, DateOnly endDate)
     {
         var entriesList = entries.OrderBy(e => e.Date).ToList();
         var totalDays = (endDate.ToDateTime(TimeOnly.MinValue) - startDate.ToDateTime(TimeOnly.MinValue)).Days + 1;
@@ -41,7 +41,7 @@ public class VisualizationDataProcessor : IVisualizationDataProcessor
     /// <summary>
     /// Calculates the maximum absolute value from mood entries for proper scaling
     /// </summary>
-    private static double CalculateMaxAbsoluteValue(IEnumerable<MoodEntryOld> entries)
+    private static double CalculateMaxAbsoluteValue(IEnumerable<MoodEntry> entries)
     {
         return Math.Max(1.0, entries
             .Where(e => e.Value.HasValue)
@@ -53,7 +53,7 @@ public class VisualizationDataProcessor : IVisualizationDataProcessor
     /// <summary>
     /// Creates a DailyMoodValue from a mood entry
     /// </summary>
-    private DailyMoodValue CreateDailyMoodValue(DateOnly date, MoodEntryOld? entry, double maxAbsValue)
+    private DailyMoodValue CreateDailyMoodValue(DateOnly date, MoodEntry? entry, double maxAbsValue)
     {
         var hasData = entry?.Value.HasValue == true;
         var value = entry?.Value;

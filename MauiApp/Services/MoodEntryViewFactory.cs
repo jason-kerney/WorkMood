@@ -13,7 +13,7 @@ public interface IMoodEntryViewFactory
     /// </summary>
     /// <param name="entry">The mood entry to display</param>
     /// <returns>A view representing the mood entry</returns>
-    View CreateEntryView(MoodEntryOld entry);
+    View CreateEntryView(MoodEntry entry);
 }
 
 /// <summary>
@@ -26,7 +26,7 @@ public class MoodEntryViewFactory : IMoodEntryViewFactory
     /// </summary>
     /// <param name="entry">The mood entry to display</param>
     /// <returns>A view representing the mood entry</returns>
-    public View CreateEntryView(MoodEntryOld entry)
+    public View CreateEntryView(MoodEntry entry)
     {
         var border = CreateEntryContainer();
         var grid = CreateEntryGrid();
@@ -77,7 +77,7 @@ public class MoodEntryViewFactory : IMoodEntryViewFactory
     /// <summary>
     /// Creates the date column for the entry
     /// </summary>
-    private StackLayout CreateDateColumn(MoodEntryOld entry)
+    private StackLayout CreateDateColumn(MoodEntry entry)
     {
         var dateStack = new StackLayout { VerticalOptions = LayoutOptions.Center };
         
@@ -112,7 +112,7 @@ public class MoodEntryViewFactory : IMoodEntryViewFactory
     /// <summary>
     /// Creates the mood values column for the entry
     /// </summary>
-    private StackLayout CreateMoodColumn(MoodEntryOld entry)
+    private StackLayout CreateMoodColumn(MoodEntry entry)
     {
         var moodStack = new StackLayout { VerticalOptions = LayoutOptions.Center, Spacing = 5 };
         
@@ -120,14 +120,14 @@ public class MoodEntryViewFactory : IMoodEntryViewFactory
         moodRow.Children.Add(new Label { Text = "🟢", FontSize = 16 });
         moodRow.Children.Add(new Label 
         { 
-            Text = entry.MorningMood?.ToString() ?? "—", 
+            Text = entry.StartOfWork?.ToString() ?? "—", 
             FontSize = 16, 
             FontAttributes = FontAttributes.Bold 
         });
         moodRow.Children.Add(new Label { Text = "🔴", FontSize = 16 });
         moodRow.Children.Add(new Label 
         { 
-            Text = entry.EveningMood?.ToString() ?? "—", 
+            Text = entry.EndOfWork?.ToString() ?? "—", 
             FontSize = 16, 
             FontAttributes = FontAttributes.Bold 
         });
@@ -147,7 +147,7 @@ public class MoodEntryViewFactory : IMoodEntryViewFactory
     /// <summary>
     /// Creates the average column for the entry
     /// </summary>
-    private StackLayout CreateAverageColumn(MoodEntryOld entry)
+    private StackLayout CreateAverageColumn(MoodEntry entry)
     {
         var avgStack = new StackLayout { VerticalOptions = LayoutOptions.Center };
         
@@ -160,7 +160,7 @@ public class MoodEntryViewFactory : IMoodEntryViewFactory
         });
         
         var avgValue = entry.GetAverageMood()?.ToString("F1") ?? 
-                      (entry.MorningMood?.ToString("F1") ?? "N/A");
+                      (entry.StartOfWork?.ToString("F1") ?? "N/A");
         
         avgStack.Children.Add(new Label
         {
@@ -178,7 +178,7 @@ public class MoodEntryViewFactory : IMoodEntryViewFactory
     /// <summary>
     /// Creates the emoji column for the entry
     /// </summary>
-    private Label CreateEmojiColumn(MoodEntryOld entry)
+    private Label CreateEmojiColumn(MoodEntry entry)
     {
         var emoji = GetMoodEmoji(entry);
         var emojiLabel = new Label
@@ -195,7 +195,7 @@ public class MoodEntryViewFactory : IMoodEntryViewFactory
     /// <summary>
     /// Gets the appropriate emoji for a mood entry
     /// </summary>
-    private string GetMoodEmoji(MoodEntryOld entry)
+    private string GetMoodEmoji(MoodEntry entry)
     {
         var average = entry.GetAverageMood();
         double moodValue;
@@ -204,9 +204,9 @@ public class MoodEntryViewFactory : IMoodEntryViewFactory
         {
             moodValue = average.Value;
         }
-        else if (entry.MorningMood.HasValue)
+        else if (entry.StartOfWork.HasValue)
         {
-            moodValue = entry.MorningMood.Value;
+            moodValue = entry.StartOfWork.Value;
         }
         else
         {

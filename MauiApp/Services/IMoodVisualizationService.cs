@@ -42,5 +42,5 @@ public interface IVisualizationDataProcessor
     /// <param name="startDate">Start date for the visualization period</param>
     /// <param name="endDate">End date for the visualization period</param>
     /// <returns>Processed daily mood values</returns>
-    DailyMoodValue[] ProcessMoodEntries(IEnumerable<MoodEntryOld> entries, DateOnly startDate, DateOnly endDate);
+    DailyMoodValue[] ProcessMoodEntries(IEnumerable<MoodEntry> entries, DateOnly startDate, DateOnly endDate);
 }

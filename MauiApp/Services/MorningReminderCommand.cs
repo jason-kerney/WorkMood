@@ -22,7 +22,7 @@ public class MorningReminderCommand : IDispatcherCommand
     /// <summary>
     /// Processes a timer tick to check if a morning mood reminder should be sent
     /// </summary>
-    public async Task<CommandResult> ProcessTickAsync(DateOnly oldDate, DateOnly newDate, MoodEntryOld? currentRecord = null)
+    public async Task<CommandResult> ProcessTickAsync(DateOnly oldDate, DateOnly newDate, MoodEntry? currentRecord = null)
     {
         try
         {
@@ -57,7 +57,7 @@ public class MorningReminderCommand : IDispatcherCommand
             var todayRecord = currentRecord ?? await _moodDataService.GetMoodEntryAsync(today);
             
             // Check if morning mood has already been saved
-            if (todayRecord?.MorningMood.HasValue == true)
+            if (todayRecord?.StartOfWork.HasValue == true)
             {
                 return CommandResult.NoAction("Morning mood has already been recorded for today");
             }

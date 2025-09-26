@@ -17,7 +17,7 @@ public static class YearBoundaryTestDataCreator
     {
         Console.WriteLine("Creating year boundary test data...");
 
-        var testEntries = new List<MoodEntryOld>();
+        var testEntries = new List<MoodEntry>();
 
         // Get current date info
         var today = DateTime.Today;
@@ -35,10 +35,10 @@ public static class YearBoundaryTestDataCreator
             var entryDate = oldStartDate.AddDays(i);
             if (entryDate.Month == 12) // Only December entries
             {
-                var entry = new MoodEntryOld(entryDate)
+                var entry = new MoodEntry(entryDate)
                 {
-                    MorningMood = Random.Shared.Next(3, 8), // Reasonable mood range
-                    EveningMood = Random.Shared.Next(3, 8)
+                    StartOfWork = Random.Shared.Next(3, 8), // Reasonable mood range
+                    EndOfWork = Random.Shared.Next(3, 8)
                 };
                 testEntries.Add(entry);
             }
@@ -53,10 +53,10 @@ public static class YearBoundaryTestDataCreator
             var entryDate = nextOldStartDate.AddDays(i);
             if (entryDate.Month == 1) // Only January entries
             {
-                var entry = new MoodEntryOld(entryDate)
+                var entry = new MoodEntry(entryDate)
                 {
-                    MorningMood = Random.Shared.Next(4, 9), // Slightly different range
-                    EveningMood = Random.Shared.Next(4, 9)
+                    StartOfWork = Random.Shared.Next(4, 9), // Slightly different range
+                    EndOfWork = Random.Shared.Next(4, 9)
                 };
                 testEntries.Add(entry);
             }
@@ -70,10 +70,10 @@ public static class YearBoundaryTestDataCreator
             var randomDay = Random.Shared.Next(1, 28); // Safe day range
             var entryDate = new DateOnly(middleYear, randomMonth, randomDay);
             
-            var entry = new MoodEntryOld(entryDate)
+            var entry = new MoodEntry(entryDate)
             {
-                MorningMood = Random.Shared.Next(5, 10),
-                EveningMood = Random.Shared.Next(5, 10)
+                StartOfWork = Random.Shared.Next(5, 10),
+                EndOfWork = Random.Shared.Next(5, 10)
             };
             testEntries.Add(entry);
         }
@@ -94,10 +94,10 @@ public static class YearBoundaryTestDataCreator
                 var entryDate = recentStartDate.AddDays(i * 3); // Every 3 days
                 if (entryDate <= DateOnly.FromDateTime(today))
                 {
-                    var entry = new MoodEntryOld(entryDate)
+                    var entry = new MoodEntry(entryDate)
                     {
-                        MorningMood = Random.Shared.Next(6, 10),
-                        EveningMood = Random.Shared.Next(6, 10)
+                        StartOfWork = Random.Shared.Next(6, 10),
+                        EndOfWork = Random.Shared.Next(6, 10)
                     };
                     testEntries.Add(entry);
                 }
@@ -113,10 +113,10 @@ public static class YearBoundaryTestDataCreator
                 var entryDate = recentStartDate.AddDays(i * 4); // Every 4 days
                 if (entryDate <= DateOnly.FromDateTime(today))
                 {
-                    var entry = new MoodEntryOld(entryDate)
+                    var entry = new MoodEntry(entryDate)
                     {
-                        MorningMood = Random.Shared.Next(6, 10),
-                        EveningMood = Random.Shared.Next(6, 10)
+                        StartOfWork = Random.Shared.Next(6, 10),
+                        EndOfWork = Random.Shared.Next(6, 10)
                     };
                     testEntries.Add(entry);
                 }
@@ -129,10 +129,10 @@ public static class YearBoundaryTestDataCreator
                 var entryDate = prevYearEnd.AddDays(i);
                 if (entryDate.Year == currentYear - 1) // Only previous year
                 {
-                    var entry = new MoodEntryOld(entryDate)
+                    var entry = new MoodEntry(entryDate)
                     {
-                        MorningMood = Random.Shared.Next(5, 9),
-                        EveningMood = Random.Shared.Next(5, 9)
+                        StartOfWork = Random.Shared.Next(5, 9),
+                        EndOfWork = Random.Shared.Next(5, 9)
                     };
                     testEntries.Add(entry);
                 }
@@ -145,10 +145,10 @@ public static class YearBoundaryTestDataCreator
             for (int i = 0; i < 15; i++)
             {
                 var entryDate = DateOnly.FromDateTime(today.AddDays(-i));
-                var entry = new MoodEntryOld(entryDate)
+                var entry = new MoodEntry(entryDate)
                 {
-                    MorningMood = Random.Shared.Next(5, 10),
-                    EveningMood = Random.Shared.Next(5, 10)
+                    StartOfWork = Random.Shared.Next(5, 10),
+                    EndOfWork = Random.Shared.Next(5, 10)
                 };
                 testEntries.Add(entry);
             }
@@ -199,7 +199,7 @@ public static class YearBoundaryTestDataCreator
             
             foreach (var entry in regularEntries.OrderByDescending(e => e.Date))
             {
-                Console.WriteLine($"  {entry.Date}: Morning={entry.MorningMood}, Evening={entry.EveningMood}");
+                Console.WriteLine($"  {entry.Date}: StartOfWork={entry.StartOfWork}, EndOfWork={entry.EndOfWork}");
             }
             
             // Test archive-aware recent entries
@@ -209,7 +209,7 @@ public static class YearBoundaryTestDataCreator
             
             foreach (var entry in archiveAwareEntries.OrderByDescending(e => e.Date))
             {
-                Console.WriteLine($"  {entry.Date}: Morning={entry.MorningMood}, Evening={entry.EveningMood}");
+                Console.WriteLine($"  {entry.Date}: StartOfWork={entry.StartOfWork}, EndOfWork={entry.EndOfWork}");
             }
             
             // Compare results

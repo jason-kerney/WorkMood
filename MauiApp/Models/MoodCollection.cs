@@ -5,28 +5,28 @@ namespace WorkMood.MauiApp.Models;
 /// </summary>
 public class MoodCollection
 {
-    private readonly List<MoodEntryOld> _entries;
+    private readonly List<MoodEntry> _entries;
 
     /// <summary>
     /// All mood entries in chronological order
     /// </summary>
-    public IReadOnlyList<MoodEntryOld> Entries => _entries.AsReadOnly();
+    public IReadOnlyList<MoodEntry> Entries => _entries.AsReadOnly();
 
     /// <summary>
     /// Creates a new empty mood collection
     /// </summary>
     public MoodCollection()
     {
-        _entries = new List<MoodEntryOld>();
+        _entries = new List<MoodEntry>();
     }
 
     /// <summary>
     /// Creates a mood collection with existing entries
     /// </summary>
     /// <param name="entries">Existing mood entries</param>
-    public MoodCollection(IEnumerable<MoodEntryOld> entries)
+    public MoodCollection(IEnumerable<MoodEntry> entries)
     {
-        _entries = new List<MoodEntryOld>(entries);
+        _entries = new List<MoodEntry>(entries);
         SortEntries();
     }
 
@@ -35,7 +35,7 @@ public class MoodCollection
     /// </summary>
     /// <param name="entry">The mood entry to add or update</param>
     /// <param name="useAutoSaveDefaults">If true, applies auto-save defaults like setting evening mood to morning mood</param>
-    public void AddOrUpdate(MoodEntryOld entry, bool useAutoSaveDefaults = false)
+    public void AddOrUpdate(MoodEntry entry, bool useAutoSaveDefaults = false)
     {
         if (!entry.ShouldSave())
             return;
@@ -46,10 +46,10 @@ public class MoodCollection
         if (existingEntry != null)
         {
             // Only update the mood values that are actually set in the new entry
-            if (entry.MorningMood.HasValue)
-                existingEntry.MorningMood = entry.MorningMood;
-            if (entry.EveningMood.HasValue)
-                existingEntry.EveningMood = entry.EveningMood;
+            if (entry.StartOfWork.HasValue)
+                existingEntry.StartOfWork = entry.StartOfWork;
+            if (entry.EndOfWork.HasValue)
+                existingEntry.EndOfWork = entry.EndOfWork;
             existingEntry.LastModified = DateTime.Now;
         }
         else
@@ -64,7 +64,7 @@ public class MoodCollection
     /// </summary>
     /// <param name="date">The date to search for</param>
     /// <returns>The mood entry or null if not found</returns>
-    public MoodEntryOld? GetEntry(DateOnly date)
+    public MoodEntry? GetEntry(DateOnly date)
     {
         return _entries.FirstOrDefault(e => e.Date == date);
     }
@@ -75,7 +75,7 @@ public class MoodCollection
     /// <param name="startDate">Start date (inclusive)</param>
     /// <param name="endDate">End date (inclusive)</param>
     /// <returns>Mood entries within the date range</returns>
-    public IEnumerable<MoodEntryOld> GetEntriesInRange(DateOnly startDate, DateOnly endDate)
+    public IEnumerable<MoodEntry> GetEntriesInRange(DateOnly startDate, DateOnly endDate)
     {
         return _entries.Where(e => e.Date >= startDate && e.Date <= endDate);
     }
@@ -85,7 +85,7 @@ public class MoodCollection
     /// </summary>
     /// <param name="count">Number of entries to return</param>
     /// <returns>Most recent mood entries excluding today</returns>
-    public IEnumerable<MoodEntryOld> GetRecentEntries(int count = 7)
+    public IEnumerable<MoodEntry> GetRecentEntries(int count = 7)
     {
         var today = DateOnly.FromDateTime(DateTime.Today);
         return _entries

@@ -14,7 +14,7 @@ public interface IDispatcherCommand
     /// <param name="newDate">The new date</param>
     /// <param name="currentRecord">The current mood record state, if any</param>
     /// <returns>The result of the tick processing operation</returns>
-    Task<CommandResult> ProcessTickAsync(DateOnly oldDate, DateOnly newDate, MoodEntryOld? currentRecord = null);
+    Task<CommandResult> ProcessTickAsync(DateOnly oldDate, DateOnly newDate, MoodEntry? currentRecord = null);
 }
 
 /// <summary>

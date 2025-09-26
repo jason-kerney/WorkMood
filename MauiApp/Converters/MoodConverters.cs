@@ -10,18 +10,18 @@ public class MoodAverageConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is MoodEntryOld entry)
+        if (value is MoodEntry entry)
         {
             var average = entry.GetAverageMood();
             if (average.HasValue)
             {
                 return average.Value.ToString("F1");
             }
-            
-            // If no average but has morning mood, show morning mood
-            if (entry.MorningMood.HasValue)
+
+            // If no average but has end of work mood, show end of work mood
+            if (entry.EndOfWork.HasValue)
             {
-                return entry.MorningMood.Value.ToString("F1");
+                return entry.EndOfWork.Value.ToString("F1");
             }
             
             return "N/A";
@@ -42,7 +42,7 @@ public class MoodEmojiConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is MoodEntryOld entry)
+        if (value is MoodEntry entry)
         {
             var average = entry.GetAverageMood();
             double moodValue;
@@ -51,10 +51,10 @@ public class MoodEmojiConverter : IValueConverter
             {
                 moodValue = average.Value;
             }
-            else if (entry.MorningMood.HasValue)
+            else if (entry.StartOfWork.HasValue)
             {
-                // If no average but has morning mood, use morning mood
-                moodValue = entry.MorningMood.Value;
+                // If no average but has start of work mood, use start of work mood
+                moodValue = entry.StartOfWork.Value;
             }
             else
             {

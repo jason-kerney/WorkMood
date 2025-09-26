@@ -192,11 +192,11 @@ public class DataArchiveService : IDataArchiveService
     /// <param name="startDate">Start date for the desired data range</param>
     /// <param name="endDate">End date for the desired data range</param>
     /// <returns>Collection of archived mood entries within the date range</returns>
-    public async Task<IEnumerable<MoodEntryOld>> GetArchivedEntriesInRangeAsync(DateOnly startDate, DateOnly endDate)
+    public async Task<IEnumerable<MoodEntry>> GetArchivedEntriesInRangeAsync(DateOnly startDate, DateOnly endDate)
     {
         Log($"GetArchivedEntriesInRangeAsync: Searching for entries between {startDate} and {endDate}");
         
-        var allArchivedEntries = new List<MoodEntryOld>();
+        var allArchivedEntries = new List<MoodEntry>();
         
         try
         {
@@ -224,7 +224,7 @@ public class DataArchiveService : IDataArchiveService
         catch (Exception ex)
         {
             Log($"GetArchivedEntriesInRangeAsync: Error loading archived entries: {ex.Message}");
-            return new List<MoodEntryOld>();
+            return new List<MoodEntry>();
         }
     }
 
@@ -259,14 +259,14 @@ public class DataArchiveService : IDataArchiveService
     /// </summary>
     /// <param name="archiveFilePath">Path to the archive file</param>
     /// <returns>Collection of mood entries from the archive file</returns>
-    public async Task<IEnumerable<MoodEntryOld>> LoadFromArchiveFileAsync(string archiveFilePath)
+    public async Task<IEnumerable<MoodEntry>> LoadFromArchiveFileAsync(string archiveFilePath)
     {
         try
         {
             if (!File.Exists(archiveFilePath))
             {
                 Log($"LoadFromArchiveFileAsync: Archive file does not exist: {archiveFilePath}");
-                return new List<MoodEntryOld>();
+                return new List<MoodEntry>();
             }
 
             Log($"LoadFromArchiveFileAsync: Loading from {Path.GetFileName(archiveFilePath)}");
@@ -276,20 +276,19 @@ public class DataArchiveService : IDataArchiveService
             if (string.IsNullOrWhiteSpace(json))
             {
                 Log($"LoadFromArchiveFileAsync: Archive file is empty: {Path.GetFileName(archiveFilePath)}");
-                return new List<MoodEntryOld>();
+                return new List<MoodEntry>();
             }
 
             var entries = JsonSerializer.Deserialize<List<MoodEntryOld>>(json, _jsonOptions);
-            var result = entries ?? new List<MoodEntryOld>();
+            var result = new List<MoodEntry>();
             
-            // Copy each MoodEntryOld to MoodEntry
+            // Copy each MoodEntry to MoodEntry
             if (entries != null)
             {
                 foreach (var oldEntry in entries)
                 {
                     var newEntry = MoodEntry.FromMoodEntryOld(oldEntry);
-                    // Note: This creates the MoodEntry objects but doesn't store them anywhere yet
-                    // This is just to demonstrate the copying as requested
+                    result.Add(newEntry);
                 }
             }
             
@@ -300,7 +299,7 @@ public class DataArchiveService : IDataArchiveService
         catch (Exception ex)
         {
             Log($"LoadFromArchiveFileAsync: Error loading from {Path.GetFileName(archiveFilePath)}: {ex.Message}");
-            return new List<MoodEntryOld>();
+            return new List<MoodEntry>();
         }
     }
 }

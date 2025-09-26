@@ -23,28 +23,28 @@ public interface IMoodDataService
     /// Saves a single mood entry
     /// </summary>
     /// <param name="entry">The entry to save</param>
-    Task SaveMoodEntryAsync(MoodEntryOld entry);
+    Task SaveMoodEntryAsync(MoodEntry entry);
 
     /// <summary>
     /// Saves a single mood entry with auto-save configuration
     /// </summary>
     /// <param name="entry">The entry to save</param>
     /// <param name="useAutoSaveDefaults">Whether to use auto-save defaults</param>
-    Task SaveMoodEntryAsync(MoodEntryOld entry, bool useAutoSaveDefaults);
+    Task SaveMoodEntryAsync(MoodEntry entry, bool useAutoSaveDefaults);
 
     /// <summary>
     /// Gets a mood entry for a specific date
     /// </summary>
     /// <param name="date">The date to search for</param>
     /// <returns>The mood entry if found, null otherwise</returns>
-    Task<MoodEntryOld?> GetMoodEntryAsync(DateOnly date);
+    Task<MoodEntry?> GetMoodEntryAsync(DateOnly date);
 
     /// <summary>
     /// Gets recent mood entries
     /// </summary>
     /// <param name="count">Number of entries to retrieve</param>
     /// <returns>Collection of recent mood entries</returns>
-    Task<IEnumerable<MoodEntryOld>> GetRecentMoodEntriesAsync(int count = 7);
+    Task<IEnumerable<MoodEntry>> GetRecentMoodEntriesAsync(int count = 7);
 
     /// <summary>
     /// Gets recent mood entries, including archived data if needed when near year transitions
@@ -52,7 +52,7 @@ public interface IMoodDataService
     /// </summary>
     /// <param name="count">Number of entries to retrieve</param>
     /// <returns>Collection of recent mood entries from active and archived data as needed</returns>
-    Task<IEnumerable<MoodEntryOld>> GetRecentMoodEntriesWithArchiveAsync(int count = 7);
+    Task<IEnumerable<MoodEntry>> GetRecentMoodEntriesWithArchiveAsync(int count = 7);
 
     /// <summary>
     /// Gets mood statistics

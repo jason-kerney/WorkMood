@@ -19,7 +19,7 @@ public class MoodRecordingViewModel : ViewModelBase
     private readonly MoodDispatcherService _dispatcherService;
     private readonly ILoggingService _loggingService;
     
-    private MoodEntryOld _currentMoodEntry = new();
+    private MoodEntry _currentMoodEntry = new();
     private int? _selectedMorningMood;
     private int? _selectedEveningMood;
     private bool _morningMoodSaved;
@@ -371,15 +371,15 @@ public class MoodRecordingViewModel : ViewModelBase
         {
             _currentMoodEntry = existingEntry;
             
-            if (_currentMoodEntry.MorningMood.HasValue)
+            if (_currentMoodEntry.StartOfWork.HasValue)
             {
-                SelectedMorningMood = _currentMoodEntry.MorningMood.Value;
+                SelectedMorningMood = _currentMoodEntry.StartOfWork.Value;
                 MorningMoodSaved = true;
             }
             
-            if (_currentMoodEntry.EveningMood.HasValue)
+            if (_currentMoodEntry.EndOfWork.HasValue)
             {
-                SelectedEveningMood = _currentMoodEntry.EveningMood.Value;
+                SelectedEveningMood = _currentMoodEntry.EndOfWork.Value;
                 EveningMoodSaved = true;
             }
             
@@ -388,14 +388,14 @@ public class MoodRecordingViewModel : ViewModelBase
         else
         {
             // Create new entry for today
-            _currentMoodEntry = new MoodEntryOld { Date = today };
+            _currentMoodEntry = new MoodEntry { Date = today };
         }
     }
 
     private void ExecuteMorningMoodSelected(int mood)
     {
         SelectedMorningMood = mood;
-        _currentMoodEntry.MorningMood = mood;
+        _currentMoodEntry.StartOfWork = mood;
         _loggingService.LogInfo($"Morning mood selected: {mood}");
     }
 
@@ -418,7 +418,7 @@ public class MoodRecordingViewModel : ViewModelBase
         }
 
         SelectedEveningMood = mood;
-        _currentMoodEntry.EveningMood = mood;
+        _currentMoodEntry.EndOfWork = mood;
         _loggingService.LogInfo($"Setting evening mood to: {mood}");
     }
 
@@ -432,7 +432,7 @@ public class MoodRecordingViewModel : ViewModelBase
                 return;
             }
 
-            _currentMoodEntry.MorningMood = SelectedMorningMood.Value;
+            _currentMoodEntry.StartOfWork = SelectedMorningMood.Value;
             await _moodDataService.SaveMoodEntryAsync(_currentMoodEntry);
             
             MorningMoodSaved = true;
@@ -466,7 +466,7 @@ public class MoodRecordingViewModel : ViewModelBase
                 return;
             }
 
-            _currentMoodEntry.EveningMood = SelectedEveningMood.Value;
+            _currentMoodEntry.EndOfWork = SelectedEveningMood.Value;
             await _moodDataService.SaveMoodEntryAsync(_currentMoodEntry);
             
             EveningMoodSaved = true;
@@ -490,7 +490,7 @@ public class MoodRecordingViewModel : ViewModelBase
         {
             // Cancel edit - restore saved state
             IsEditingMorning = false;
-            SelectedMorningMood = _currentMoodEntry.MorningMood;
+            SelectedMorningMood = _currentMoodEntry.StartOfWork;
             _loggingService.LogInfo("Cancelled morning editing");
         }
         else
@@ -510,7 +510,7 @@ public class MoodRecordingViewModel : ViewModelBase
         {
             // Cancel edit - restore saved state
             IsEditingEvening = false;
-            SelectedEveningMood = _currentMoodEntry.EveningMood;
+            SelectedEveningMood = _currentMoodEntry.EndOfWork;
             _loggingService.LogInfo("Cancelled evening editing");
         }
         else
@@ -624,7 +624,7 @@ public class MoodRecordingViewModel : ViewModelBase
     private async Task CreateNewRecordForToday()
     {
         // Reset all state for new day
-        _currentMoodEntry = new MoodEntryOld { Date = DateOnly.FromDateTime(DateTime.Today) };
+        _currentMoodEntry = new MoodEntry { Date = DateOnly.FromDateTime(DateTime.Today) };
         SelectedMorningMood = null;
         SelectedEveningMood = null;
         MorningMoodSaved = false;

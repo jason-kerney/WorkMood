@@ -17,7 +17,7 @@ public static class TestDataCreator
     {
         Console.WriteLine("Creating test data spanning multiple years...");
 
-        var testEntries = new List<MoodEntryOld>();
+        var testEntries = new List<MoodEntry>();
 
         // Create data from 4 years ago (should trigger archiving)
         var startDate = DateOnly.FromDateTime(DateTime.Today.AddYears(-4));
@@ -26,10 +26,10 @@ public static class TestDataCreator
         for (int i = 0; i < 30; i++)
         {
             var entryDate = startDate.AddDays(i);
-            var entry = new MoodEntryOld(entryDate)
+            var entry = new MoodEntry(entryDate)
             {
-                MorningMood = Random.Shared.Next(1, 11),
-                EveningMood = Random.Shared.Next(1, 11)
+                StartOfWork = Random.Shared.Next(1, 11),
+                EndOfWork = Random.Shared.Next(1, 11)
             };
             testEntries.Add(entry);
         }
@@ -39,10 +39,10 @@ public static class TestDataCreator
         for (int i = 0; i < 20; i++)
         {
             var entryDate = recentStartDate.AddDays(i);
-            var entry = new MoodEntryOld(entryDate)
+            var entry = new MoodEntry(entryDate)
             {
-                MorningMood = Random.Shared.Next(1, 11),
-                EveningMood = Random.Shared.Next(1, 11)
+                StartOfWork = Random.Shared.Next(1, 11),
+                EndOfWork = Random.Shared.Next(1, 11)
             };
             testEntries.Add(entry);
         }
@@ -52,10 +52,10 @@ public static class TestDataCreator
         for (int i = 0; i < 15; i++)
         {
             var entryDate = veryRecentStartDate.AddDays(i);
-            var entry = new MoodEntryOld(entryDate)
+            var entry = new MoodEntry(entryDate)
             {
-                MorningMood = Random.Shared.Next(1, 11),
-                EveningMood = Random.Shared.Next(1, 11)
+                StartOfWork = Random.Shared.Next(1, 11),
+                EndOfWork = Random.Shared.Next(1, 11)
             };
             testEntries.Add(entry);
         }
