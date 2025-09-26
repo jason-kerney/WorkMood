@@ -76,6 +76,16 @@
                         Padding="20"
                         CornerRadius="10" />
                 
+                <Button Text="📈 View Graph"
+                        x:Name="ViewGraphButton"
+                        Command="{Binding ViewGraphCommand}"
+                        BackgroundColor="{StaticResource Primary}"
+                        TextColor="White"
+                        FontSize="18"
+                        FontAttributes="Bold"
+                        Padding="20"
+                        CornerRadius="10" />
+                
                 <Button Text="⚙️ Settings"
                         x:Name="SettingsButton"
                         Command="{Binding SettingsCommand}"

@@ -20,6 +20,7 @@ public static class MauiProgram
 		// Register core services for dependency injection
 		builder.Services.AddSingleton<IDataArchiveService, DataArchiveService>();
 		builder.Services.AddSingleton<MoodDataService>();
+		builder.Services.AddSingleton<IMoodDataService>(provider => provider.GetRequiredService<MoodDataService>());
 		builder.Services.AddSingleton<ScheduleConfigService>();
 		builder.Services.AddSingleton<AutoSaveCommand>();
 		builder.Services.AddSingleton<MorningReminderCommand>();
@@ -30,6 +31,9 @@ public static class MauiProgram
 		builder.Services.AddSingleton<IWindowActivationService, WindowActivationService>();
 		builder.Services.AddSingleton<IBrowserService, BrowserService>();
 		
+		// Register graph-related services
+		builder.Services.AddSingleton<ILineGraphService, LineGraphService>();
+		
 		// Register version retriever service
 		builder.Services.AddSingleton<IVersionRetriever>((serviceProvider) => 
 			new VersionRetriever(AssemblyWrapper.From<App>())
@@ -37,9 +41,11 @@ public static class MauiProgram
 		
 		// Register ViewModels
 		builder.Services.AddTransient<AboutViewModel>();
+		builder.Services.AddTransient<GraphViewModel>();
 		
 		// Register Pages
 		builder.Services.AddTransient<About>();
+		builder.Services.AddTransient<Graph>();
 		
 		// Register dispatcher service with all commands
 		builder.Services.AddSingleton<MoodDispatcherService>(serviceProvider =>

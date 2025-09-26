@@ -56,6 +56,7 @@ public class MainPageViewModel : ViewModelBase, IDisposable
 
     public ICommand RecordMoodCommand { get; private set; } = null!;
     public ICommand ViewHistoryCommand { get; private set; } = null!;
+    public ICommand ViewGraphCommand { get; private set; } = null!;
     public ICommand SettingsCommand { get; private set; } = null!;
     public ICommand AboutCommand { get; private set; } = null!;
 
@@ -123,6 +124,7 @@ public class MainPageViewModel : ViewModelBase, IDisposable
 
     public event EventHandler<NavigateToMoodRecordingEventArgs>? NavigateToMoodRecording;
     public event EventHandler? NavigateToHistory;
+    public event EventHandler? NavigateToGraph;
     public event EventHandler? NavigateToSettings;
     public event EventHandler? NavigateToAbout;
     public event EventHandler<DisplayAlertEventArgs>? DisplayAlert;
@@ -135,6 +137,7 @@ public class MainPageViewModel : ViewModelBase, IDisposable
     {
         RecordMoodCommand = new RelayCommand(() => ExecuteRecordMood());
         ViewHistoryCommand = new RelayCommand(ExecuteViewHistory);
+        ViewGraphCommand = new RelayCommand(ExecuteViewGraph);
         SettingsCommand = new RelayCommand(ExecuteSettings);
         AboutCommand = new RelayCommand(ExecuteAbout);
     }
@@ -186,6 +189,19 @@ public class MainPageViewModel : ViewModelBase, IDisposable
         {
             _loggingService.LogException(ex, "MainPageViewModel: Error navigating to history");
             DisplayAlert?.Invoke(this, new DisplayAlertEventArgs("Error", $"Failed to open history: {ex.Message}", "OK"));
+        }
+    }
+
+    private void ExecuteViewGraph()
+    {
+        try
+        {
+            NavigateToGraph?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogException(ex, "MainPageViewModel: Error navigating to graph");
+            DisplayAlert?.Invoke(this, new DisplayAlertEventArgs("Error", $"Failed to open graph: {ex.Message}", "OK"));
         }
     }
 

@@ -22,6 +22,7 @@ public partial class Main : ContentPage
     {
         _viewModel.NavigateToMoodRecording += OnNavigateToMoodRecording;
         _viewModel.NavigateToHistory += OnNavigateToHistory;
+        _viewModel.NavigateToGraph += OnNavigateToGraph;
         _viewModel.NavigateToSettings += OnNavigateToSettings;
         _viewModel.NavigateToAbout += OnNavigateToAbout;
         _viewModel.DisplayAlert += OnDisplayAlert;
@@ -49,6 +50,19 @@ public partial class Main : ContentPage
     private async void OnNavigateToHistory(object? sender, EventArgs e)
     {
         await _navigationService.NavigateAsync(() => new History());
+    }
+
+    private async void OnNavigateToGraph(object? sender, EventArgs e)
+    {
+        var graphViewModel = Handler?.MauiContext?.Services.GetService<GraphViewModel>();
+        if (graphViewModel != null)
+        {
+            await _navigationService.NavigateAsync(() => new Graph(graphViewModel));
+        }
+        else
+        {
+            await _navigationService.ShowErrorAsync("Failed to get graph view model service");
+        }
     }
 
     private async void OnNavigateToSettings(object? sender, EventArgs e)
