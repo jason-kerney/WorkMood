@@ -30,6 +30,12 @@
             <Label Text="Show Data Points"
                    VerticalOptions="Center"
                    Margin="5,0,0,0" />
+            <CheckBox IsChecked="{Binding ShowAxesAndGrid}"
+                      VerticalOptions="Center"
+                      Margin="20,0,0,0" />
+            <Label Text="Show Axes &amp; Grid"
+                   VerticalOptions="Center"
+                   Margin="5,0,0,0" />
         </StackLayout>
         
         <!-- Graph Display -->
