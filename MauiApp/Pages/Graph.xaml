@@ -24,9 +24,6 @@
                     ItemDisplayBinding="{Binding DisplayName}"
                     VerticalOptions="Center"
                     MinimumWidthRequest="200" />
-            <Button Text="Update Graph"
-                    Command="{Binding UpdateGraphCommand}"
-                    VerticalOptions="Center" />
         </StackLayout>
         
         <!-- Graph Display -->

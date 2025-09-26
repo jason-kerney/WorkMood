@@ -52,7 +52,14 @@ public class GraphViewModel : ViewModelBase
     public DateRangeItem SelectedDateRange
     {
         get => _selectedDateRange;
-        set => SetProperty(ref _selectedDateRange, value);
+        set
+        {
+            if (SetProperty(ref _selectedDateRange, value))
+            {
+                // Auto-update graph when date range changes
+                _ = UpdateGraphAsync();
+            }
+        }
     }
     
     /// <summary>
