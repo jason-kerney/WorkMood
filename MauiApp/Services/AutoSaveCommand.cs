@@ -18,7 +18,7 @@ public class AutoSaveCommand : IDispatcherCommand
     /// <summary>
     /// Processes a timer tick to handle auto-save logic for date changes
     /// </summary>
-    public async Task<CommandResult> ProcessTickAsync(DateOnly oldDate, DateOnly newDate, MoodEntry? currentRecord = null)
+    public async Task<CommandResult> ProcessTickAsync(DateOnly oldDate, DateOnly newDate, MoodEntryOld? currentRecord = null)
     {
         try
         {
@@ -58,7 +58,7 @@ public class AutoSaveCommand : IDispatcherCommand
     /// <summary>
     /// Determines what action should be taken for auto-saving based on record state
     /// </summary>
-    private AutoSaveDecision DetermineAutoSaveAction(MoodEntry record)
+    private AutoSaveDecision DetermineAutoSaveAction(MoodEntryOld record)
     {
         // Record is already complete - no action needed
         if (record.MorningMood.HasValue && record.EveningMood.HasValue)

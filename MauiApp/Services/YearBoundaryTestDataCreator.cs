@@ -17,7 +17,7 @@ public static class YearBoundaryTestDataCreator
     {
         Console.WriteLine("Creating year boundary test data...");
 
-        var testEntries = new List<MoodEntry>();
+        var testEntries = new List<MoodEntryOld>();
 
         // Get current date info
         var today = DateTime.Today;
@@ -35,7 +35,7 @@ public static class YearBoundaryTestDataCreator
             var entryDate = oldStartDate.AddDays(i);
             if (entryDate.Month == 12) // Only December entries
             {
-                var entry = new MoodEntry(entryDate)
+                var entry = new MoodEntryOld(entryDate)
                 {
                     MorningMood = Random.Shared.Next(3, 8), // Reasonable mood range
                     EveningMood = Random.Shared.Next(3, 8)
@@ -53,7 +53,7 @@ public static class YearBoundaryTestDataCreator
             var entryDate = nextOldStartDate.AddDays(i);
             if (entryDate.Month == 1) // Only January entries
             {
-                var entry = new MoodEntry(entryDate)
+                var entry = new MoodEntryOld(entryDate)
                 {
                     MorningMood = Random.Shared.Next(4, 9), // Slightly different range
                     EveningMood = Random.Shared.Next(4, 9)
@@ -70,7 +70,7 @@ public static class YearBoundaryTestDataCreator
             var randomDay = Random.Shared.Next(1, 28); // Safe day range
             var entryDate = new DateOnly(middleYear, randomMonth, randomDay);
             
-            var entry = new MoodEntry(entryDate)
+            var entry = new MoodEntryOld(entryDate)
             {
                 MorningMood = Random.Shared.Next(5, 10),
                 EveningMood = Random.Shared.Next(5, 10)
@@ -94,7 +94,7 @@ public static class YearBoundaryTestDataCreator
                 var entryDate = recentStartDate.AddDays(i * 3); // Every 3 days
                 if (entryDate <= DateOnly.FromDateTime(today))
                 {
-                    var entry = new MoodEntry(entryDate)
+                    var entry = new MoodEntryOld(entryDate)
                     {
                         MorningMood = Random.Shared.Next(6, 10),
                         EveningMood = Random.Shared.Next(6, 10)
@@ -113,7 +113,7 @@ public static class YearBoundaryTestDataCreator
                 var entryDate = recentStartDate.AddDays(i * 4); // Every 4 days
                 if (entryDate <= DateOnly.FromDateTime(today))
                 {
-                    var entry = new MoodEntry(entryDate)
+                    var entry = new MoodEntryOld(entryDate)
                     {
                         MorningMood = Random.Shared.Next(6, 10),
                         EveningMood = Random.Shared.Next(6, 10)
@@ -129,7 +129,7 @@ public static class YearBoundaryTestDataCreator
                 var entryDate = prevYearEnd.AddDays(i);
                 if (entryDate.Year == currentYear - 1) // Only previous year
                 {
-                    var entry = new MoodEntry(entryDate)
+                    var entry = new MoodEntryOld(entryDate)
                     {
                         MorningMood = Random.Shared.Next(5, 9),
                         EveningMood = Random.Shared.Next(5, 9)
@@ -145,7 +145,7 @@ public static class YearBoundaryTestDataCreator
             for (int i = 0; i < 15; i++)
             {
                 var entryDate = DateOnly.FromDateTime(today.AddDays(-i));
-                var entry = new MoodEntry(entryDate)
+                var entry = new MoodEntryOld(entryDate)
                 {
                     MorningMood = Random.Shared.Next(5, 10),
                     EveningMood = Random.Shared.Next(5, 10)

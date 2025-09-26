@@ -13,7 +13,7 @@ public interface IMoodEntryViewFactory
     /// </summary>
     /// <param name="entry">The mood entry to display</param>
     /// <returns>A view representing the mood entry</returns>
-    View CreateEntryView(MoodEntry entry);
+    View CreateEntryView(MoodEntryOld entry);
 }
 
 /// <summary>
@@ -26,7 +26,7 @@ public class MoodEntryViewFactory : IMoodEntryViewFactory
     /// </summary>
     /// <param name="entry">The mood entry to display</param>
     /// <returns>A view representing the mood entry</returns>
-    public View CreateEntryView(MoodEntry entry)
+    public View CreateEntryView(MoodEntryOld entry)
     {
         var border = CreateEntryContainer();
         var grid = CreateEntryGrid();
@@ -77,7 +77,7 @@ public class MoodEntryViewFactory : IMoodEntryViewFactory
     /// <summary>
     /// Creates the date column for the entry
     /// </summary>
-    private StackLayout CreateDateColumn(MoodEntry entry)
+    private StackLayout CreateDateColumn(MoodEntryOld entry)
     {
         var dateStack = new StackLayout { VerticalOptions = LayoutOptions.Center };
         
@@ -112,7 +112,7 @@ public class MoodEntryViewFactory : IMoodEntryViewFactory
     /// <summary>
     /// Creates the mood values column for the entry
     /// </summary>
-    private StackLayout CreateMoodColumn(MoodEntry entry)
+    private StackLayout CreateMoodColumn(MoodEntryOld entry)
     {
         var moodStack = new StackLayout { VerticalOptions = LayoutOptions.Center, Spacing = 5 };
         
@@ -147,7 +147,7 @@ public class MoodEntryViewFactory : IMoodEntryViewFactory
     /// <summary>
     /// Creates the average column for the entry
     /// </summary>
-    private StackLayout CreateAverageColumn(MoodEntry entry)
+    private StackLayout CreateAverageColumn(MoodEntryOld entry)
     {
         var avgStack = new StackLayout { VerticalOptions = LayoutOptions.Center };
         
@@ -178,7 +178,7 @@ public class MoodEntryViewFactory : IMoodEntryViewFactory
     /// <summary>
     /// Creates the emoji column for the entry
     /// </summary>
-    private Label CreateEmojiColumn(MoodEntry entry)
+    private Label CreateEmojiColumn(MoodEntryOld entry)
     {
         var emoji = GetMoodEmoji(entry);
         var emojiLabel = new Label
@@ -195,7 +195,7 @@ public class MoodEntryViewFactory : IMoodEntryViewFactory
     /// <summary>
     /// Gets the appropriate emoji for a mood entry
     /// </summary>
-    private string GetMoodEmoji(MoodEntry entry)
+    private string GetMoodEmoji(MoodEntryOld entry)
     {
         var average = entry.GetAverageMood();
         double moodValue;

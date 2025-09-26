@@ -100,8 +100,8 @@ public class MoodDataService : IMoodDataService
                 return _cachedCollection;
             }
 
-            var entries = JsonSerializer.Deserialize<List<MoodEntry>>(json, _jsonOptions);
-            _cachedCollection = new MoodCollection(entries ?? new List<MoodEntry>());
+            var entries = JsonSerializer.Deserialize<List<MoodEntryOld>>(json, _jsonOptions);
+            _cachedCollection = new MoodCollection(entries ?? new List<MoodEntryOld>());
             
             return _cachedCollection;
         }
@@ -151,7 +151,7 @@ public class MoodDataService : IMoodDataService
     /// Adds or updates a single mood entry
     /// </summary>
     /// <param name="entry">The mood entry to save</param>
-    public async Task SaveMoodEntryAsync(MoodEntry entry)
+    public async Task SaveMoodEntryAsync(MoodEntryOld entry)
     {
         var collection = await LoadMoodDataAsync();
         collection.AddOrUpdate(entry);
@@ -163,7 +163,7 @@ public class MoodDataService : IMoodDataService
     /// </summary>
     /// <param name="entry">The mood entry to save</param>
     /// <param name="useAutoSaveDefaults">If true, applies auto-save defaults like setting evening mood to morning mood</param>
-    public async Task SaveMoodEntryAsync(MoodEntry entry, bool useAutoSaveDefaults)
+    public async Task SaveMoodEntryAsync(MoodEntryOld entry, bool useAutoSaveDefaults)
     {
         var collection = await LoadMoodDataAsync();
         collection.AddOrUpdate(entry, useAutoSaveDefaults);
@@ -175,7 +175,7 @@ public class MoodDataService : IMoodDataService
     /// </summary>
     /// <param name="date">The date to search for</param>
     /// <returns>The mood entry or null if not found</returns>
-    public async Task<MoodEntry?> GetMoodEntryAsync(DateOnly date)
+    public async Task<MoodEntryOld?> GetMoodEntryAsync(DateOnly date)
     {
         var collection = await LoadMoodDataAsync();
         return collection.GetEntry(date);
@@ -186,7 +186,7 @@ public class MoodDataService : IMoodDataService
     /// </summary>
     /// <param name="count">Number of entries to return</param>
     /// <returns>Recent mood entries</returns>
-    public async Task<IEnumerable<MoodEntry>> GetRecentMoodEntriesAsync(int count = 7)
+    public async Task<IEnumerable<MoodEntryOld>> GetRecentMoodEntriesAsync(int count = 7)
     {
         var collection = await LoadMoodDataAsync();
         return collection.GetRecentEntries(count);
@@ -198,7 +198,7 @@ public class MoodDataService : IMoodDataService
     /// </summary>
     /// <param name="count">Number of entries to return</param>
     /// <returns>Recent mood entries from active and archived data as needed</returns>
-    public async Task<IEnumerable<MoodEntry>> GetRecentMoodEntriesWithArchiveAsync(int count = 7)
+    public async Task<IEnumerable<MoodEntryOld>> GetRecentMoodEntriesWithArchiveAsync(int count = 7)
     {
         Log($"GetRecentMoodEntriesWithArchiveAsync: Requesting {count} recent entries");
         
@@ -238,7 +238,7 @@ public class MoodDataService : IMoodDataService
             var archivedEntries = await _archiveService.GetArchivedEntriesInRangeAsync(searchStartDate, searchEndDate);
             
             // Combine active and archived entries, remove duplicates, and sort by date (newest first)
-            var allEntries = new List<MoodEntry>(activeEntries);
+            var allEntries = new List<MoodEntryOld>(activeEntries);
             
             foreach (var archived in archivedEntries)
             {

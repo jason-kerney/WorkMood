@@ -17,7 +17,7 @@ public static class TestDataCreator
     {
         Console.WriteLine("Creating test data spanning multiple years...");
 
-        var testEntries = new List<MoodEntry>();
+        var testEntries = new List<MoodEntryOld>();
 
         // Create data from 4 years ago (should trigger archiving)
         var startDate = DateOnly.FromDateTime(DateTime.Today.AddYears(-4));
@@ -26,7 +26,7 @@ public static class TestDataCreator
         for (int i = 0; i < 30; i++)
         {
             var entryDate = startDate.AddDays(i);
-            var entry = new MoodEntry(entryDate)
+            var entry = new MoodEntryOld(entryDate)
             {
                 MorningMood = Random.Shared.Next(1, 11),
                 EveningMood = Random.Shared.Next(1, 11)
@@ -39,7 +39,7 @@ public static class TestDataCreator
         for (int i = 0; i < 20; i++)
         {
             var entryDate = recentStartDate.AddDays(i);
-            var entry = new MoodEntry(entryDate)
+            var entry = new MoodEntryOld(entryDate)
             {
                 MorningMood = Random.Shared.Next(1, 11),
                 EveningMood = Random.Shared.Next(1, 11)
@@ -52,7 +52,7 @@ public static class TestDataCreator
         for (int i = 0; i < 15; i++)
         {
             var entryDate = veryRecentStartDate.AddDays(i);
-            var entry = new MoodEntry(entryDate)
+            var entry = new MoodEntryOld(entryDate)
             {
                 MorningMood = Random.Shared.Next(1, 11),
                 EveningMood = Random.Shared.Next(1, 11)

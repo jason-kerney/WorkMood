@@ -19,7 +19,7 @@ public class MoodRecordingViewModel : ViewModelBase
     private readonly MoodDispatcherService _dispatcherService;
     private readonly ILoggingService _loggingService;
     
-    private MoodEntry _currentMoodEntry = new();
+    private MoodEntryOld _currentMoodEntry = new();
     private int? _selectedMorningMood;
     private int? _selectedEveningMood;
     private bool _morningMoodSaved;
@@ -388,7 +388,7 @@ public class MoodRecordingViewModel : ViewModelBase
         else
         {
             // Create new entry for today
-            _currentMoodEntry = new MoodEntry { Date = today };
+            _currentMoodEntry = new MoodEntryOld { Date = today };
         }
     }
 
@@ -624,7 +624,7 @@ public class MoodRecordingViewModel : ViewModelBase
     private async Task CreateNewRecordForToday()
     {
         // Reset all state for new day
-        _currentMoodEntry = new MoodEntry { Date = DateOnly.FromDateTime(DateTime.Today) };
+        _currentMoodEntry = new MoodEntryOld { Date = DateOnly.FromDateTime(DateTime.Today) };
         SelectedMorningMood = null;
         SelectedEveningMood = null;
         MorningMoodSaved = false;

@@ -5,7 +5,7 @@ namespace WorkMood.MauiApp.Models;
 /// <summary>
 /// Represents a daily mood entry with morning and evening moods on a scale of 1-10
 /// </summary>
-public class MoodEntry
+public class MoodEntryOld
 {
     // Backing fields for synchronized properties
     private int? _morningStartOfWork;
@@ -105,7 +105,7 @@ public class MoodEntry
     /// <summary>
     /// Creates a new mood entry for today
     /// </summary>
-    public MoodEntry()
+    public MoodEntryOld()
     {
         Date = DateOnly.FromDateTime(DateTime.Today);
         CreatedAt = DateTime.Now;
@@ -116,7 +116,7 @@ public class MoodEntry
     /// Creates a new mood entry for the specified date
     /// </summary>
     /// <param name="date">The date for this mood entry</param>
-    public MoodEntry(DateOnly date)
+    public MoodEntryOld(DateOnly date)
     {
         Date = date;
         CreatedAt = DateTime.Now;

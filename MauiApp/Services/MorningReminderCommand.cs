@@ -22,7 +22,7 @@ public class MorningReminderCommand : IDispatcherCommand
     /// <summary>
     /// Processes a timer tick to check if a morning mood reminder should be sent
     /// </summary>
-    public async Task<CommandResult> ProcessTickAsync(DateOnly oldDate, DateOnly newDate, MoodEntry? currentRecord = null)
+    public async Task<CommandResult> ProcessTickAsync(DateOnly oldDate, DateOnly newDate, MoodEntryOld? currentRecord = null)
     {
         try
         {

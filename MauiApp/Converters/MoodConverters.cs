@@ -10,7 +10,7 @@ public class MoodAverageConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is MoodEntry entry)
+        if (value is MoodEntryOld entry)
         {
             var average = entry.GetAverageMood();
             if (average.HasValue)
@@ -42,7 +42,7 @@ public class MoodEmojiConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is MoodEntry entry)
+        if (value is MoodEntryOld entry)
         {
             var average = entry.GetAverageMood();
             double moodValue;

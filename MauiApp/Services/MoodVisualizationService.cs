@@ -67,7 +67,7 @@ public class MoodVisualizationService : IMoodVisualizationService
     /// <summary>
     /// Calculates the maximum absolute value for scaling purposes
     /// </summary>
-    private static double CalculateMaxAbsoluteValue(IEnumerable<MoodEntry> entries)
+    private static double CalculateMaxAbsoluteValue(IEnumerable<MoodEntryOld> entries)
     {
         return Math.Max(1.0, entries
             .Where(e => e.Value.HasValue)

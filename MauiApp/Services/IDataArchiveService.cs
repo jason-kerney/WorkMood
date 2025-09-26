@@ -54,7 +54,7 @@ public interface IDataArchiveService
     /// <param name="startDate">Start date for the desired data range</param>
     /// <param name="endDate">End date for the desired data range</param>
     /// <returns>Collection of archived mood entries within the date range</returns>
-    Task<IEnumerable<MoodEntry>> GetArchivedEntriesInRangeAsync(DateOnly startDate, DateOnly endDate);
+    Task<IEnumerable<MoodEntryOld>> GetArchivedEntriesInRangeAsync(DateOnly startDate, DateOnly endDate);
 
     /// <summary>
     /// Gets a list of all available archive files in the archive directory
@@ -67,5 +67,5 @@ public interface IDataArchiveService
     /// </summary>
     /// <param name="archiveFilePath">Path to the archive file</param>
     /// <returns>Collection of mood entries from the archive file</returns>
-    Task<IEnumerable<MoodEntry>> LoadFromArchiveFileAsync(string archiveFilePath);
+    Task<IEnumerable<MoodEntryOld>> LoadFromArchiveFileAsync(string archiveFilePath);
 }

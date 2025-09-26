@@ -22,7 +22,7 @@ public class EveningReminderCommand : IDispatcherCommand
     /// <summary>
     /// Processes a timer tick to check if an evening mood reminder should be sent
     /// </summary>
-    public async Task<CommandResult> ProcessTickAsync(DateOnly oldDate, DateOnly newDate, MoodEntry? currentRecord = null)
+    public async Task<CommandResult> ProcessTickAsync(DateOnly oldDate, DateOnly newDate, MoodEntryOld? currentRecord = null)
     {
         try
         {
@@ -109,7 +109,7 @@ public class EveningReminderCommand : IDispatcherCommand
     /// <summary>
     /// Determines what type of evening reminder is needed based on current mood record status
     /// </summary>
-    private EveningReminderType DetermineReminderType(MoodEntry? todayRecord)
+    private EveningReminderType DetermineReminderType(MoodEntryOld? todayRecord)
     {
         var hasMorning = todayRecord?.MorningMood.HasValue == true;
         var hasEvening = todayRecord?.EveningMood.HasValue == true;

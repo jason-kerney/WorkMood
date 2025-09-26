@@ -52,12 +52,12 @@ public class MoodDispatcherService : IDisposable
     }
 
     // Field to track current record state for better auto-save decisions
-    private MoodEntry? _currentRecordState;
+    private MoodEntryOld? _currentRecordState;
 
     /// <summary>
     /// Called by UI to provide current record state for more accurate auto-save decisions
     /// </summary>
-    public void UpdateCurrentRecordState(MoodEntry? currentRecord)
+    public void UpdateCurrentRecordState(MoodEntryOld? currentRecord)
     {
         _currentRecordState = currentRecord;
     }
@@ -176,7 +176,7 @@ public class MoodDispatcherService : IDisposable
             }
             
             // Process results and notify UI (for backward compatibility, use first successful auto-save result)
-            var autoSaveResult = results.FirstOrDefault(r => r.Success && r.Data is MoodEntry);
+            var autoSaveResult = results.FirstOrDefault(r => r.Success && r.Data is MoodEntryOld);
             var autoSaveDecision = autoSaveResult != null ? MapResultToDecision(autoSaveResult) : AutoSaveDecision.NoAction;
             
             // Notify UI about date change
@@ -188,7 +188,7 @@ public class MoodDispatcherService : IDisposable
             });
             
             // If a record was saved, notify UI
-            if (autoSaveResult?.Data is MoodEntry savedRecord)
+            if (autoSaveResult?.Data is MoodEntryOld savedRecord)
             {
                 AutoSaveOccurred?.Invoke(this, new AutoSaveEventArgs 
                 { 
@@ -226,7 +226,7 @@ public class MoodDispatcherService : IDisposable
             return AutoSaveDecision.NoAction;
         }
 
-        if (result.Data is MoodEntry)
+        if (result.Data is MoodEntryOld)
         {
             return AutoSaveDecision.SaveRecord;
         }
@@ -362,7 +362,7 @@ public class DateChangeEventArgs : EventArgs
 /// </summary>
 public class AutoSaveEventArgs : EventArgs
 {
-    public MoodEntry SavedRecord { get; set; } = null!;
+    public MoodEntryOld SavedRecord { get; set; } = null!;
     public DateOnly SavedDate { get; set; }
 }
 

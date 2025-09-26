@@ -32,7 +32,7 @@ public class HistoryViewModel : ViewModelBase
         _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         
-        RecentEntries = new ObservableCollection<MoodEntry>();
+        RecentEntries = new ObservableCollection<MoodEntryOld>();
         
         // Initialize commands
         LoadDataCommand = new RelayCommand(async () => await LoadDataAsync());
@@ -52,7 +52,7 @@ public class HistoryViewModel : ViewModelBase
     /// <summary>
     /// Collection of recent mood entries
     /// </summary>
-    public ObservableCollection<MoodEntry> RecentEntries { get; }
+    public ObservableCollection<MoodEntryOld> RecentEntries { get; }
 
     /// <summary>
     /// Total number of entries text
