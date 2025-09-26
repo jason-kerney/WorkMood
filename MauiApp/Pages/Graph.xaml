@@ -57,7 +57,7 @@
                        VerticalOptions="Center"
                        HorizontalOptions="Center"
                        HeightRequest="400"
-                       WidthRequest="600"
+                       WidthRequest="{Binding GraphWidth}"
                        IsVisible="{Binding HasGraphData}" />
             </ScrollView>
         </Border>

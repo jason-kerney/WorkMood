@@ -58,6 +58,10 @@ public class GraphViewModel : ViewModelBase
         {
             if (SetProperty(ref _selectedDateRange, value))
             {
+                // Notify that GraphWidth has changed
+                OnPropertyChanged(nameof(GraphWidth));
+                OnPropertyChanged(nameof(ExportGraphWidth));
+                
                 // Auto-update graph when date range changes
                 _ = UpdateGraphAsync();
             }
@@ -166,6 +170,16 @@ public class GraphViewModel : ViewModelBase
         }
     }
     
+    /// <summary>
+    /// Calculated width for the graph based on the selected date range
+    /// </summary>
+    public int GraphWidth => CalculateGraphWidth(_selectedDateRange?.DateRange ?? DateRange.Last7Days);
+    
+    /// <summary>
+    /// Calculated width for export based on the selected date range
+    /// </summary>
+    public int ExportGraphWidth => CalculateExportGraphWidth(_selectedDateRange?.DateRange ?? DateRange.Last7Days);
+    
     #endregion
     
     #region Commands
@@ -213,7 +227,7 @@ public class GraphViewModel : ViewModelBase
                 return;
             }
             
-            var imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, 800, 900);
+            var imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, GraphWidth, 900);
             GraphImageSource = ImageSource.FromStream(() => new MemoryStream(imageData));
             
             HasGraphData = true;
@@ -252,7 +266,7 @@ public class GraphViewModel : ViewModelBase
             var fileName = $"mood-graph-{_selectedDateRange.DateRange.ToString().ToLower()}-{DateTime.Now:yyyyMMdd-HHmmss}.png";
             var filePath = Path.Combine(documentsPath, fileName);
             
-            await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, 1200, 900);
+            await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, ExportGraphWidth, 900);
             
             ShowStatusMessage($"Graph exported to: {filePath}");
         }
@@ -282,7 +296,7 @@ public class GraphViewModel : ViewModelBase
             var fileName = $"mood-graph-{DateTime.Now:yyyyMMdd-HHmmss}.png";
             var filePath = Path.Combine(tempPath, fileName);
             
-            await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, 1200, 900);
+            await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, ExportGraphWidth, 900);
             
             await Share.RequestAsync(new ShareFileRequest
             {
@@ -343,6 +357,56 @@ public class GraphViewModel : ViewModelBase
     {
         StatusMessage = string.Empty;
         HasStatusMessage = false;
+    }
+    
+    /// <summary>
+    /// Calculates the graph width based on the date range with incremental increases
+    /// </summary>
+    /// <param name="dateRange">The selected date range</param>
+    /// <returns>Calculated width in pixels</returns>
+    private int CalculateGraphWidth(DateRange dateRange)
+    {
+        // Base width for the smallest time increment (Last7Days)
+        const int baseWidth = 800;
+        const int incrementWidth = 128; // Additional width per time increment step
+        
+        return dateRange switch
+        {
+            DateRange.Last7Days => baseWidth,
+            DateRange.Last14Days => baseWidth + incrementWidth,
+            DateRange.LastMonth => baseWidth + (incrementWidth * 2),
+            DateRange.Last3Months => baseWidth + (incrementWidth * 3),
+            DateRange.Last6Months => baseWidth + (incrementWidth * 4),
+            DateRange.LastYear => baseWidth + (incrementWidth * 5),
+            DateRange.Last2Years => baseWidth + (incrementWidth * 6),
+            DateRange.Last3Years => baseWidth + (incrementWidth * 7),
+            _ => baseWidth
+        };
+    }
+    
+    /// <summary>
+    /// Calculates the export graph width based on the date range with incremental increases
+    /// </summary>
+    /// <param name="dateRange">The selected date range</param>
+    /// <returns>Calculated width in pixels for export</returns>
+    private int CalculateExportGraphWidth(DateRange dateRange)
+    {
+        // Base width for export (higher resolution)
+        const int baseWidth = 1200;
+        const int incrementWidth = 192; // Additional width per time increment step for export (1.5x display increment)
+        
+        return dateRange switch
+        {
+            DateRange.Last7Days => baseWidth,
+            DateRange.Last14Days => baseWidth + incrementWidth,
+            DateRange.LastMonth => baseWidth + (incrementWidth * 2),
+            DateRange.Last3Months => baseWidth + (incrementWidth * 3),
+            DateRange.Last6Months => baseWidth + (incrementWidth * 4),
+            DateRange.LastYear => baseWidth + (incrementWidth * 5),
+            DateRange.Last2Years => baseWidth + (incrementWidth * 6),
+            DateRange.Last3Years => baseWidth + (incrementWidth * 7),
+            _ => baseWidth
+        };
     }
     
     #endregion
