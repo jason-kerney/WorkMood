@@ -145,12 +145,55 @@
                     </Border>
                 </FlexLayout>
                 
+                <!-- Custom RGB Color Picker Section -->
+                <Label Text="Custom Color:" FontAttributes="Bold" Margin="0,15,0,5" />
+                
+                <!-- Color Preview -->
+                <Border BackgroundColor="{Binding SelectedLineColor}" 
+                        Stroke="Gray" 
+                        StrokeThickness="2" 
+                        WidthRequest="50" 
+                        HeightRequest="30" 
+                        HorizontalOptions="Center" 
+                        Margin="0,0,0,10" />
+                
+                <!-- RGB Sliders -->
+                <Grid ColumnDefinitions="30,*,50" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                    <!-- Red Slider -->
+                    <Label Grid.Row="0" Grid.Column="0" Text="R:" VerticalOptions="Center" TextColor="Red" FontAttributes="Bold" />
+                    <Slider Grid.Row="0" Grid.Column="1" 
+                            Minimum="0" Maximum="255" 
+                            Value="{Binding RedValue, Mode=TwoWay}"
+                            ThumbColor="Red"
+                            MinimumTrackColor="Red" />
+                    <Label Grid.Row="0" Grid.Column="2" Text="{Binding RedValue, StringFormat='{0:F0}'}" VerticalOptions="Center" />
+                    
+                    <!-- Green Slider -->
+                    <Label Grid.Row="1" Grid.Column="0" Text="G:" VerticalOptions="Center" TextColor="Green" FontAttributes="Bold" />
+                    <Slider Grid.Row="1" Grid.Column="1" 
+                            Minimum="0" Maximum="255" 
+                            Value="{Binding GreenValue, Mode=TwoWay}"
+                            ThumbColor="Green"
+                            MinimumTrackColor="Green" />
+                    <Label Grid.Row="1" Grid.Column="2" Text="{Binding GreenValue, StringFormat='{0:F0}'}" VerticalOptions="Center" />
+                    
+                    <!-- Blue Slider -->
+                    <Label Grid.Row="2" Grid.Column="0" Text="B:" VerticalOptions="Center" TextColor="Blue" FontAttributes="Bold" />
+                    <Slider Grid.Row="2" Grid.Column="1" 
+                            Minimum="0" Maximum="255" 
+                            Value="{Binding BlueValue, Mode=TwoWay}"
+                            ThumbColor="Blue"
+                            MinimumTrackColor="Blue" />
+                    <Label Grid.Row="2" Grid.Column="2" Text="{Binding BlueValue, StringFormat='{0:F0}'}" VerticalOptions="Center" />
+                </Grid>
+                
                 <Button Text="Close" 
                         Command="{Binding ToggleColorPickerCommand}"
                         BackgroundColor="Gray"
                         TextColor="White"
                         WidthRequest="100"
-                        HorizontalOptions="Center" />
+                        HorizontalOptions="Center" 
+                        Margin="0,10,0,0" />
             </StackLayout>
         </StackLayout>
         

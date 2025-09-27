@@ -285,6 +285,49 @@ public class GraphViewModel : ViewModelBase
         set => SetProperty(ref _isColorPickerVisible, value);
     }
     
+    // RGB Color slider properties
+    /// <summary>
+    /// Red component of custom color (0-255)
+    /// </summary>
+    public double RedValue
+    {
+        get => _selectedLineColor.Red * 255;
+        set => UpdateCustomColor((float)(value / 255.0), _selectedLineColor.Green, _selectedLineColor.Blue);
+    }
+    
+    /// <summary>
+    /// Green component of custom color (0-255)
+    /// </summary>
+    public double GreenValue
+    {
+        get => _selectedLineColor.Green * 255;
+        set => UpdateCustomColor(_selectedLineColor.Red, (float)(value / 255.0), _selectedLineColor.Blue);
+    }
+    
+    /// <summary>
+    /// Blue component of custom color (0-255)
+    /// </summary>
+    public double BlueValue
+    {
+        get => _selectedLineColor.Blue * 255;
+        set => UpdateCustomColor(_selectedLineColor.Red, _selectedLineColor.Green, (float)(value / 255.0));
+    }
+    
+    /// <summary>
+    /// Updates the custom color based on RGB values
+    /// </summary>
+    private void UpdateCustomColor(float red, float green, float blue)
+    {
+        var newColor = Color.FromRgba(red, green, blue, 1.0f);
+        if (SelectedLineColor != newColor)
+        {
+            SelectedLineColor = newColor;
+            OnPropertyChanged(nameof(RedValue));
+            OnPropertyChanged(nameof(GreenValue));
+            OnPropertyChanged(nameof(BlueValue));
+        }
+    }
+    
     /// <summary>
     /// Gets the effective graph width - either custom background width or calculated width
     /// </summary>
