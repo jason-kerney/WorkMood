@@ -30,6 +30,8 @@ public class GraphViewModel : ViewModelBase
     private int _customBackgroundWidth = 0;
     private int _customBackgroundHeight = 0;
     private string _customBackgroundPath = string.Empty;
+    private Color _selectedLineColor = Colors.Blue;
+    private bool _isColorPickerVisible = false;
     
     public GraphViewModel(IMoodDataService moodDataService, ILineGraphService lineGraphService)
     {
@@ -46,6 +48,8 @@ public class GraphViewModel : ViewModelBase
         ShareGraphCommand = new RelayCommand(async () => await ShareGraphAsync());
         LoadCustomBackgroundCommand = new RelayCommand(async () => await LoadCustomBackgroundAsync());
         ClearCustomBackgroundCommand = new RelayCommand(ClearCustomBackground);
+        ToggleColorPickerCommand = new RelayCommand(ToggleColorPicker);
+        SelectColorCommand = new RelayCommand<string>(SelectColor);
     }
     
     #region Properties
@@ -257,6 +261,31 @@ public class GraphViewModel : ViewModelBase
     }
     
     /// <summary>
+    /// Selected color for the graph line
+    /// </summary>
+    public Color SelectedLineColor
+    {
+        get => _selectedLineColor;
+        set
+        {
+            if (SetProperty(ref _selectedLineColor, value))
+            {
+                // Auto-update graph when color changes
+                _ = UpdateGraphAsync();
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Whether the inline color picker is visible
+    /// </summary>
+    public bool IsColorPickerVisible
+    {
+        get => _isColorPickerVisible;
+        set => SetProperty(ref _isColorPickerVisible, value);
+    }
+    
+    /// <summary>
     /// Gets the effective graph width - either custom background width or calculated width
     /// </summary>
     public int EffectiveGraphWidth => HasCustomBackground ? CustomBackgroundWidth : GraphWidth;
@@ -315,6 +344,16 @@ public class GraphViewModel : ViewModelBase
     /// </summary>
     public ICommand ClearCustomBackgroundCommand { get; }
     
+    /// <summary>
+    /// Command to toggle the inline color picker visibility
+    /// </summary>
+    public ICommand ToggleColorPickerCommand { get; }
+    
+    /// <summary>
+    /// Command to select a color from the inline color picker
+    /// </summary>
+    public ICommand SelectColorCommand { get; }
+
     #endregion
     
     #region Methods
@@ -351,11 +390,11 @@ public class GraphViewModel : ViewModelBase
             byte[] imageData;
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
-                imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, CustomBackgroundPath, EffectiveGraphWidth, EffectiveGraphHeight);
+                imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
             }
             else
             {
-                imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, EffectiveGraphWidth, EffectiveGraphHeight);
+                imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
             }
             GraphImageSource = ImageSource.FromStream(() => new MemoryStream(imageData));
             
@@ -400,11 +439,11 @@ public class GraphViewModel : ViewModelBase
             
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
-                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, CustomBackgroundPath, exportWidth, exportHeight);
+                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
             }
             else
             {
-                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, exportWidth, exportHeight);
+                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedLineColor, exportWidth, exportHeight);
             }
             
             ShowStatusMessage($"Graph exported to: {filePath}");
@@ -440,11 +479,11 @@ public class GraphViewModel : ViewModelBase
             
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
-                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, CustomBackgroundPath, exportWidth, exportHeight);
+                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
             }
             else
             {
-                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, exportWidth, exportHeight);
+                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedLineColor, exportWidth, exportHeight);
             }
             
             await Share.RequestAsync(new ShareFileRequest
@@ -632,6 +671,54 @@ public class GraphViewModel : ViewModelBase
         
         // Trigger graph update to return to normal sizing
         _ = UpdateGraphAsync();
+    }
+    
+    /// <summary>
+    /// Toggles the visibility of the inline color picker
+    /// </summary>
+    private void ToggleColorPicker()
+    {
+        IsColorPickerVisible = !IsColorPickerVisible;
+    }
+    
+    /// <summary>
+    /// Selects a color from the inline color picker
+    /// </summary>
+    private void SelectColor(string? colorName)
+    {
+        if (string.IsNullOrEmpty(colorName)) return;
+        
+        try
+        {
+            // Show debugging message first
+            ShowStatusMessage($"Attempting to select color: {colorName}");
+            
+            // Use a more direct approach with predefined colors
+            Color selectedColor = colorName switch
+            {
+                "Blue" => Colors.Blue,
+                "Red" => Colors.Red,
+                "Green" => Colors.Green,
+                "Orange" => Colors.Orange,
+                "Purple" => Colors.Purple,
+                "Brown" => Colors.Brown,
+                "Pink" => Colors.Pink,
+                "Cyan" => Colors.Cyan,
+                "Magenta" => Colors.Magenta,
+                "Yellow" => Colors.Yellow,
+                "LimeGreen" => Colors.LimeGreen,
+                "DarkBlue" => Colors.DarkBlue,
+                _ => Colors.Blue // Default fallback
+            };
+            
+            SelectedLineColor = selectedColor;
+            IsColorPickerVisible = false; // Hide picker after selection
+            ShowStatusMessage($"Color changed to: {colorName}");
+        }
+        catch (Exception ex)
+        {
+            ShowStatusMessage($"Error selecting color: {ex.Message}");
+        }
     }
     
     #endregion

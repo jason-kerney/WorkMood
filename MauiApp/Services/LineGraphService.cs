@@ -15,6 +15,11 @@ public class LineGraphService : ILineGraphService
     
     public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width = 800, int height = 600)
     {
+        return await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, Colors.Blue, width, height);
+    }
+    
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, Color lineColor, int width = 800, int height = 600)
+    {
         var filteredEntries = moodEntries
             .Where(e => e.Value.HasValue)
             .OrderBy(e => e.Date)
@@ -26,7 +31,7 @@ public class LineGraphService : ILineGraphService
         // Clear canvas with white background
         canvas.Clear(SKColors.White);
         
-        await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, true)); // Draw white background for normal graphs
+        await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, true)); // Draw white background for normal graphs
         
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
@@ -40,7 +45,18 @@ public class LineGraphService : ILineGraphService
         await File.WriteAllBytesAsync(filePath, imageData);
     }
     
+    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, Color lineColor, int width = 800, int height = 600)
+    {
+        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, lineColor, width, height);
+        await File.WriteAllBytesAsync(filePath, imageData);
+    }
+    
     public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string backgroundImagePath, int width = 800, int height = 600)
+    {
+        return await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, backgroundImagePath, Colors.Blue, width, height);
+    }
+    
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         var filteredEntries = moodEntries
             .Where(e => e.Value.HasValue)
@@ -65,7 +81,7 @@ public class LineGraphService : ILineGraphService
             canvas.Clear(SKColors.White);
         }
         
-        await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, false)); // Don't draw white background when using custom background
+        await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, false)); // Don't draw white background when using custom background
         
         // Convert to PNG
         using var image = SKImage.FromBitmap(bitmap);
@@ -79,7 +95,13 @@ public class LineGraphService : ILineGraphService
         await File.WriteAllBytesAsync(filePath, imageData);
     }
     
-    private void DrawGraph(SKCanvas canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, bool drawWhiteBackground = true)
+    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    {
+        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, backgroundImagePath, lineColor, width, height);
+        await File.WriteAllBytesAsync(filePath, imageData);
+    }
+    
+    private void DrawGraph(SKCanvas canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color lineColor, bool drawWhiteBackground = true)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
         
@@ -107,17 +129,17 @@ public class LineGraphService : ILineGraphService
         }
         
         // Draw data line and optionally points with proportional positioning
-        DrawDataLine(canvas, graphArea, entries, requestedStartDate, requestedEndDate);
+        DrawDataLine(canvas, graphArea, entries, requestedStartDate, requestedEndDate, lineColor);
         if (showDataPoints)
         {
-            DrawDataPoints(canvas, graphArea, entries, requestedStartDate, requestedEndDate);
+            DrawDataPoints(canvas, graphArea, entries, requestedStartDate, requestedEndDate, lineColor);
         }
         
         // Conditionally draw labels
         if (showAxesAndGrid)
         {
             DrawYAxisLabels(canvas, graphArea);
-            DrawXAxisLabels(canvas, graphArea, entries, requestedStartDate, requestedEndDate, showDataPoints);
+            DrawXAxisLabels(canvas, graphArea, entries, requestedStartDate, requestedEndDate, showDataPoints, lineColor);
         }
         
         // Conditionally draw title
@@ -195,13 +217,13 @@ public class LineGraphService : ILineGraphService
         canvas.DrawLine(area.Left, zeroY, area.Right, zeroY, zeroLinePaint);
     }
     
-    private void DrawDataLine(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate)
+    private void DrawDataLine(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor)
     {
         if (entries.Count < 2) return;
         
         using var linePaint = new SKPaint
         {
-            Color = SKColors.Blue,
+            Color = new SKColor((byte)(lineColor.Red * 255), (byte)(lineColor.Green * 255), (byte)(lineColor.Blue * 255)),
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 3,
             IsAntialias = true
@@ -231,11 +253,11 @@ public class LineGraphService : ILineGraphService
         canvas.DrawPath(path, linePaint);
     }
     
-    private void DrawDataPoints(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate)
+    private void DrawDataPoints(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor)
     {
         using var pointPaint = new SKPaint
         {
-            Color = SKColors.DarkBlue,
+            Color = new SKColor((byte)(lineColor.Red * 180), (byte)(lineColor.Green * 180), (byte)(lineColor.Blue * 180)), // Slightly darker than line color
             Style = SKPaintStyle.Fill,
             IsAntialias = true
         };
@@ -277,7 +299,7 @@ public class LineGraphService : ILineGraphService
         }
     }
     
-    private void DrawXAxisLabels(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints)
+    private void DrawXAxisLabels(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor)
     {
         using var labelPaint = new SKPaint
         {
@@ -311,7 +333,7 @@ public class LineGraphService : ILineGraphService
         {
             using var dataLabelPaint = new SKPaint
             {
-                Color = SKColors.DarkBlue,
+                Color = new SKColor((byte)(lineColor.Red * 180), (byte)(lineColor.Green * 180), (byte)(lineColor.Blue * 180)), // Match data point color
                 TextSize = 8,
                 IsAntialias = true,
                 TextAlign = SKTextAlign.Center
