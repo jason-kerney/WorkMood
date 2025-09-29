@@ -131,6 +131,22 @@ public class MoodEntry
     }
 
     /// <summary>
+    /// Gets the adjusted average mood for graphing purposes.
+    /// Uses EndOfWork if available, otherwise uses StartOfWork for both values.
+    /// Subtracts 5 from the average to shift the range from 1-10 to -4 to +5.
+    /// </summary>
+    /// <returns>Adjusted average mood or null if no start of work mood is recorded</returns>
+    public double? GetAdjustedAverageMood()
+    {
+        if (!StartOfWork.HasValue)
+            return null;
+            
+        var endOfWorkOrStartOfWork = EndOfWork ?? StartOfWork.Value;
+        var average = (StartOfWork.Value + endOfWorkOrStartOfWork) / 2.0;
+        return average - 5.0; // Shift from 1-10 range to -4 to +5 range
+    }
+
+    /// <summary>
     /// Gets a display string for the mood entry
     /// </summary>
     /// <returns>Formatted string representation</returns>

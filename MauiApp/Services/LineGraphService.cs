@@ -100,6 +100,67 @@ public class LineGraphService : ILineGraphService
         var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, backgroundImagePath, lineColor, width, height);
         await File.WriteAllBytesAsync(filePath, imageData);
     }
+
+    // New overloads with GraphMode support
+
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, int width = 800, int height = 600)
+    {
+        return await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, graphMode, Colors.Blue, width, height);
+    }
+
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
+    {
+        // Filter entries based on graph mode
+        var filteredEntries = FilterEntriesForGraphMode(moodEntries, graphMode)
+            .OrderBy(e => e.Date)
+            .ToList();
+
+        using var bitmap = new SKBitmap(width, height);
+        using var canvas = new SKCanvas(bitmap);
+        
+        // Clear canvas with white background
+        canvas.Clear(SKColors.White);
+        
+        await Task.Run(() => DrawGraphForMode(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, graphMode, true)); // Draw white background for normal graphs
+        
+        using var image = SKImage.FromBitmap(bitmap);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        
+        return data.ToArray();
+    }
+
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    {
+        // Filter entries based on graph mode
+        var filteredEntries = FilterEntriesForGraphMode(moodEntries, graphMode)
+            .OrderBy(e => e.Date)
+            .ToList();
+
+        using var bitmap = new SKBitmap(width, height);
+        using var canvas = new SKCanvas(bitmap);
+        
+        // Load and draw custom background
+        if (File.Exists(backgroundImagePath))
+        {
+            using var backgroundBitmap = SKBitmap.Decode(backgroundImagePath);
+            if (backgroundBitmap != null)
+            {
+                canvas.DrawBitmap(backgroundBitmap, new SKRect(0, 0, width, height));
+            }
+        }
+        else
+        {
+            // Fallback to white background if image doesn't exist
+            canvas.Clear(SKColors.White);
+        }
+        
+        await Task.Run(() => DrawGraphForMode(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, graphMode, false)); // Don't draw white background when using custom background
+        
+        // Convert to PNG
+        using var image = SKImage.FromBitmap(bitmap);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        return data.ToArray();
+    }
     
     private void DrawGraph(SKCanvas canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color lineColor, bool drawWhiteBackground = true)
     {
@@ -378,5 +439,279 @@ public class LineGraphService : ILineGraphService
         var centerY = area.Top + area.Height / 2;
         
         canvas.DrawText("No mood data available for the selected period", centerX, centerY, messagePaint);
+    }
+
+    // New helper methods for GraphMode support
+
+    /// <summary>
+    /// Filters mood entries based on the selected graph mode
+    /// </summary>
+    private IEnumerable<MoodEntry> FilterEntriesForGraphMode(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
+    {
+        return graphMode switch
+        {
+            GraphMode.Impact => moodEntries.Where(e => e.Value.HasValue),
+            GraphMode.Average => moodEntries.Where(e => e.GetAdjustedAverageMood().HasValue),
+            _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, null)
+        };
+    }
+
+    /// <summary>
+    /// Draws graph with mode-specific logic for data extraction
+    /// </summary>
+    private void DrawGraphForMode(SKCanvas canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color lineColor, GraphMode graphMode, bool drawWhiteBackground = true)
+    {
+        var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
+        
+        // Calculate the full date range for proportional positioning
+        var requestedStartDate = dateRange.GetStartDate();
+        var requestedEndDate = dateRange.GetEndDate();
+        
+        // Conditionally draw background
+        if (drawWhiteBackground)
+        {
+            DrawBackground(canvas, graphArea);
+        }
+        
+        // Conditionally draw grid and axes with mode-specific Y range
+        if (showAxesAndGrid)
+        {
+            DrawGridForMode(canvas, graphArea, graphMode);
+            DrawAxesForMode(canvas, graphArea, graphMode);
+        }
+        
+        if (entries.Count == 0)
+        {
+            DrawNoDataMessage(canvas, graphArea);
+            return;
+        }
+        
+        // Draw data line and optionally points with proportional positioning
+        DrawDataLineForMode(canvas, graphArea, entries, requestedStartDate, requestedEndDate, lineColor, graphMode);
+        if (showDataPoints)
+        {
+            DrawDataPointsForMode(canvas, graphArea, entries, requestedStartDate, requestedEndDate, lineColor, graphMode);
+        }
+        
+        // Conditionally draw labels
+        if (showAxesAndGrid)
+        {
+            DrawYAxisLabelsForMode(canvas, graphArea, graphMode);
+            DrawXAxisLabelsForMode(canvas, graphArea, entries, requestedStartDate, requestedEndDate, showDataPoints, lineColor, graphMode);
+        }
+        
+        // Conditionally draw title
+        if (showTitle)
+        {
+            DrawTitleForMode(canvas, width, graphMode);
+        }
+    }
+
+    private void DrawGridForMode(SKCanvas canvas, SKRect area, GraphMode graphMode)
+    {
+        // Use existing grid method - the Y range constants will be updated based on mode
+        var (minY, maxY) = GetYRangeForMode(graphMode);
+        
+        using var gridPaint = new SKPaint
+        {
+            Color = SKColors.LightGray,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 1,
+            PathEffect = SKPathEffect.CreateDash([5, 5], 0)
+        };
+        
+        // Horizontal grid lines
+        var yRange = maxY - minY;
+        var yStep = area.Height / yRange;
+        for (int i = minY + 1; i < maxY; i++)
+        {
+            var y = area.Bottom - ((i - minY) * yStep);
+            canvas.DrawLine(area.Left, y, area.Right, y, gridPaint);
+        }
+        
+        // Vertical grid lines - draw fewer lines for readability
+        if (area.Width > 200)
+        {
+            var verticalLines = Math.Min(10, (int)(area.Width / 80));
+            var xStep = area.Width / verticalLines;
+            for (int i = 1; i < verticalLines; i++)
+            {
+                var x = area.Left + (i * xStep);
+                canvas.DrawLine(x, area.Top, x, area.Bottom, gridPaint);
+            }
+        }
+    }
+
+    private void DrawAxesForMode(SKCanvas canvas, SKRect area, GraphMode graphMode)
+    {
+        using var axisPaint = new SKPaint
+        {
+            Color = SKColors.Black,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 2
+        };
+        
+        // Y-axis
+        canvas.DrawLine(area.Left, area.Top, area.Left, area.Bottom, axisPaint);
+        
+        // X-axis
+        canvas.DrawLine(area.Left, area.Bottom, area.Right, area.Bottom, axisPaint);
+        
+        // Zero line (horizontal line at y=0)
+        var (minY, maxY) = GetYRangeForMode(graphMode);
+        var zeroY = area.Bottom - ((0 - minY) * area.Height / (maxY - minY));
+        using var zeroLinePaint = new SKPaint
+        {
+            Color = SKColors.DarkGray,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 2
+        };
+        canvas.DrawLine(area.Left, zeroY, area.Right, zeroY, zeroLinePaint);
+    }
+
+    private void DrawDataLineForMode(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
+    {
+        if (entries.Count < 2) return;
+        
+        using var linePaint = new SKPaint
+        {
+            Color = new SKColor((byte)(lineColor.Red * 255), (byte)(lineColor.Green * 255), (byte)(lineColor.Blue * 255)),
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 3,
+            IsAntialias = true
+        };
+        
+        using var path = new SKPath();
+        
+        // Calculate total days in the requested range
+        var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
+        var (minY, maxY) = GetYRangeForMode(graphMode);
+        
+        for (int i = 0; i < entries.Count; i++)
+        {
+            var entry = entries[i];
+            var daysFromStart = entry.Date.DayNumber - requestedStartDate.DayNumber;
+            var proportionalPosition = (float)daysFromStart / totalDays;
+            var x = area.Left + (proportionalPosition * area.Width);
+            
+            var value = GetValueForMode(entry, graphMode);
+            var y = (float)(area.Bottom - ((value - minY) * area.Height / (maxY - minY)));
+            
+            if (i == 0)
+                path.MoveTo(x, y);
+            else
+                path.LineTo(x, y);
+        }
+        
+        canvas.DrawPath(path, linePaint);
+    }
+
+    private void DrawDataPointsForMode(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
+    {
+        using var pointPaint = new SKPaint
+        {
+            Color = new SKColor((byte)(lineColor.Red * 180), (byte)(lineColor.Green * 180), (byte)(lineColor.Blue * 180)),
+            Style = SKPaintStyle.Fill,
+            IsAntialias = true
+        };
+        
+        // Calculate total days in the requested range
+        var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
+        var (minY, maxY) = GetYRangeForMode(graphMode);
+        
+        for (int i = 0; i < entries.Count; i++)
+        {
+            var entry = entries[i];
+            var daysFromStart = entry.Date.DayNumber - requestedStartDate.DayNumber;
+            var proportionalPosition = (float)daysFromStart / totalDays;
+            var x = area.Left + (proportionalPosition * area.Width);
+            
+            var value = GetValueForMode(entry, graphMode);
+            var y = (float)(area.Bottom - ((value - minY) * area.Height / (maxY - minY)));
+            
+            canvas.DrawCircle(x, y, 4, pointPaint);
+        }
+    }
+
+    private void DrawYAxisLabelsForMode(SKCanvas canvas, SKRect area, GraphMode graphMode)
+    {
+        using var labelPaint = new SKPaint
+        {
+            Color = SKColors.Black,
+            TextSize = 12,
+            IsAntialias = true,
+            TextAlign = SKTextAlign.Right
+        };
+        
+        var (minY, maxY) = GetYRangeForMode(graphMode);
+        var yRange = maxY - minY;
+        var yStep = area.Height / yRange;
+        
+        for (int i = minY; i <= maxY; i += 3) // Show every 3rd value to avoid crowding
+        {
+            var y = area.Bottom - ((i - minY) * yStep);
+            canvas.DrawText(i.ToString(), area.Left - 10, y + 4, labelPaint);
+        }
+    }
+
+    private void DrawXAxisLabelsForMode(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor, GraphMode graphMode)
+    {
+        // Reuse existing X-axis label logic since it doesn't depend on graph mode
+        DrawXAxisLabels(canvas, area, entries, requestedStartDate, requestedEndDate, showDataPoints, lineColor);
+    }
+
+    private void DrawTitleForMode(SKCanvas canvas, int width, GraphMode graphMode)
+    {
+        using var titlePaint = new SKPaint
+        {
+            Color = SKColors.Black,
+            TextSize = 16,
+            IsAntialias = true,
+            TextAlign = SKTextAlign.Center,
+            Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
+        };
+        
+        var title = graphMode switch
+        {
+            GraphMode.Impact => "Mood Change Over Time",
+            GraphMode.Average => "Average Mood Over Time",
+            _ => "Mood Data Over Time"
+        };
+        
+        canvas.DrawText(title, width / 2, 30, titlePaint);
+    }
+
+    private (int minY, int maxY) GetYRangeForMode(GraphMode graphMode)
+    {
+        return graphMode switch
+        {
+            GraphMode.Impact => (MinYValue, MaxYValue), // -9 to +9
+            GraphMode.Average => (-5, 5), // -4 to +5 realistically, but -5 to +5 for nice round numbers
+            _ => (MinYValue, MaxYValue)
+        };
+    }
+
+    private double GetValueForMode(MoodEntry entry, GraphMode graphMode)
+    {
+        return graphMode switch
+        {
+            GraphMode.Impact => entry.Value ?? 0,
+            GraphMode.Average => entry.GetAdjustedAverageMood() ?? 0,
+            _ => entry.Value ?? 0
+        };
+    }
+
+    // New save methods with GraphMode support
+    
+    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
+    {
+        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, graphMode, lineColor, width, height);
+        await File.WriteAllBytesAsync(filePath, imageData);
+    }
+
+    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    {
+        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, graphMode, backgroundImagePath, lineColor, width, height);
+        await File.WriteAllBytesAsync(filePath, imageData);
     }
 }

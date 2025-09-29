@@ -32,6 +32,8 @@ public class GraphViewModel : ViewModelBase
     private string _customBackgroundPath = string.Empty;
     private Color _selectedLineColor = Colors.Blue;
     private bool _isColorPickerVisible = false;
+    private GraphMode _selectedGraphMode = GraphMode.Impact;
+    private GraphModeItem _selectedGraphModeItem = null!;
     
     public GraphViewModel(IMoodDataService moodDataService, ILineGraphService lineGraphService)
     {
@@ -41,7 +43,11 @@ public class GraphViewModel : ViewModelBase
         DateRanges = new ObservableCollection<DateRangeItem>();
         InitializeDateRanges();
         
+        GraphModes = new ObservableCollection<GraphModeItem>();
+        InitializeGraphModes();
+        
         _selectedDateRange = DateRanges.First();
+        _selectedGraphModeItem = GraphModes.First();
         
         // Initialize commands
         ExportGraphCommand = new RelayCommand(async () => await ExportGraphAsync());
@@ -284,6 +290,42 @@ public class GraphViewModel : ViewModelBase
         get => _isColorPickerVisible;
         set => SetProperty(ref _isColorPickerVisible, value);
     }
+
+    /// <summary>
+    /// Selected graph mode (Impact or Average)
+    /// </summary>
+    public GraphMode SelectedGraphMode
+    {
+        get => _selectedGraphMode;
+        set
+        {
+            if (SetProperty(ref _selectedGraphMode, value))
+            {
+                // Auto-update graph when graph mode changes
+                _ = UpdateGraphAsync();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Collection of available graph modes for the picker
+    /// </summary>
+    public ObservableCollection<GraphModeItem> GraphModes { get; }
+
+    /// <summary>
+    /// Selected graph mode item for the picker
+    /// </summary>
+    public GraphModeItem SelectedGraphModeItem
+    {
+        get => _selectedGraphModeItem;
+        set
+        {
+            if (SetProperty(ref _selectedGraphModeItem, value) && value != null)
+            {
+                SelectedGraphMode = value.GraphMode;
+            }
+        }
+    }
     
     // RGB Color slider properties
     /// <summary>
@@ -433,11 +475,11 @@ public class GraphViewModel : ViewModelBase
             byte[] imageData;
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
-                imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, SelectedGraphMode, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
             }
             else
             {
-                imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, SelectedGraphMode, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
             }
             GraphImageSource = ImageSource.FromStream(() => new MemoryStream(imageData));
             
@@ -482,11 +524,11 @@ public class GraphViewModel : ViewModelBase
             
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
-                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedGraphMode, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
             }
             else
             {
-                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedLineColor, exportWidth, exportHeight);
+                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedGraphMode, SelectedLineColor, exportWidth, exportHeight);
             }
             
             ShowStatusMessage($"Graph exported to: {filePath}");
@@ -522,11 +564,11 @@ public class GraphViewModel : ViewModelBase
             
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
-                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedGraphMode, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
             }
             else
             {
-                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedLineColor, exportWidth, exportHeight);
+                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedGraphMode, SelectedLineColor, exportWidth, exportHeight);
             }
             
             await Share.RequestAsync(new ShareFileRequest
@@ -567,6 +609,15 @@ public class GraphViewModel : ViewModelBase
         {
             DateRanges.Add(new DateRangeItem(range));
         }
+    }
+
+    /// <summary>
+    /// Initializes the graph mode collection
+    /// </summary>
+    private void InitializeGraphModes()
+    {
+        GraphModes.Add(new GraphModeItem(GraphMode.Impact, "Impact (Change Over Day)"));
+        GraphModes.Add(new GraphModeItem(GraphMode.Average, "Average (Daily Mood Level)"));
     }
     
     /// <summary>
@@ -779,5 +830,20 @@ public class DateRangeItem
     }
     
     public DateRange DateRange { get; }
+    public string DisplayName { get; }
+}
+
+/// <summary>
+/// Wrapper class for GraphMode enum to provide display name
+/// </summary>
+public class GraphModeItem
+{
+    public GraphModeItem(GraphMode graphMode, string displayName)
+    {
+        GraphMode = graphMode;
+        DisplayName = displayName;
+    }
+    
+    public GraphMode GraphMode { get; }
     public string DisplayName { get; }
 }
