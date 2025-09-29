@@ -473,14 +473,46 @@ public class GraphViewModel : ViewModelBase
             }
             
             byte[] imageData;
-            if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
+            
+            if (SelectedGraphMode == GraphMode.RawData)
             {
-                imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, SelectedGraphMode, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                // Extract raw data points from filtered entries
+                var rawDataPoints = filteredEntries
+                    .SelectMany(entry => entry.GetRawDataPoints())
+                    .Where(point => point.Timestamp >= _selectedDateRange.DateRange.GetStartDate().ToDateTime(TimeOnly.MinValue) && 
+                                   point.Timestamp <= _selectedDateRange.DateRange.GetEndDate().ToDateTime(TimeOnly.MaxValue))
+                    .ToList();
+                
+                if (!rawDataPoints.Any())
+                {
+                    HasGraphData = false;
+                    HasNoData = true;
+                    GraphImageSource = null;
+                    return;
+                }
+                
+                if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
+                {
+                    imageData = await _lineGraphService.GenerateRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                }
+                else
+                {
+                    imageData = await _lineGraphService.GenerateRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                }
             }
             else
             {
-                imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, SelectedGraphMode, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                // Use existing logic for Impact and Average modes
+                if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
+                {
+                    imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, SelectedGraphMode, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                }
+                else
+                {
+                    imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, SelectedGraphMode, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                }
             }
+            
             GraphImageSource = ImageSource.FromStream(() => new MemoryStream(imageData));
             
             HasGraphData = true;
@@ -522,13 +554,35 @@ public class GraphViewModel : ViewModelBase
             var exportWidth = HasCustomBackground ? CustomBackgroundWidth : ExportGraphWidth;
             var exportHeight = HasCustomBackground ? CustomBackgroundHeight : 900;
             
-            if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
+            if (SelectedGraphMode == GraphMode.RawData)
             {
-                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedGraphMode, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                // Extract raw data points for export
+                var rawDataPoints = filteredEntries
+                    .SelectMany(entry => entry.GetRawDataPoints())
+                    .Where(point => point.Timestamp >= _selectedDateRange.DateRange.GetStartDate().ToDateTime(TimeOnly.MinValue) && 
+                                   point.Timestamp <= _selectedDateRange.DateRange.GetEndDate().ToDateTime(TimeOnly.MaxValue))
+                    .ToList();
+                
+                if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
+                {
+                    await _lineGraphService.SaveRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                }
+                else
+                {
+                    await _lineGraphService.SaveRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedLineColor, exportWidth, exportHeight);
+                }
             }
             else
             {
-                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedGraphMode, SelectedLineColor, exportWidth, exportHeight);
+                // Use existing logic for Impact and Average modes
+                if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
+                {
+                    await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedGraphMode, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                }
+                else
+                {
+                    await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedGraphMode, SelectedLineColor, exportWidth, exportHeight);
+                }
             }
             
             ShowStatusMessage($"Graph exported to: {filePath}");
@@ -562,13 +616,35 @@ public class GraphViewModel : ViewModelBase
             var exportWidth = HasCustomBackground ? CustomBackgroundWidth : ExportGraphWidth;
             var exportHeight = HasCustomBackground ? CustomBackgroundHeight : 900;
             
-            if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
+            if (SelectedGraphMode == GraphMode.RawData)
             {
-                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedGraphMode, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                // Extract raw data points for sharing
+                var rawDataPoints = filteredEntries
+                    .SelectMany(entry => entry.GetRawDataPoints())
+                    .Where(point => point.Timestamp >= _selectedDateRange.DateRange.GetStartDate().ToDateTime(TimeOnly.MinValue) && 
+                                   point.Timestamp <= _selectedDateRange.DateRange.GetEndDate().ToDateTime(TimeOnly.MaxValue))
+                    .ToList();
+                
+                if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
+                {
+                    await _lineGraphService.SaveRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                }
+                else
+                {
+                    await _lineGraphService.SaveRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedLineColor, exportWidth, exportHeight);
+                }
             }
             else
             {
-                await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedGraphMode, SelectedLineColor, exportWidth, exportHeight);
+                // Use existing logic for Impact and Average modes
+                if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
+                {
+                    await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedGraphMode, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                }
+                else
+                {
+                    await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedGraphMode, SelectedLineColor, exportWidth, exportHeight);
+                }
             }
             
             await Share.RequestAsync(new ShareFileRequest
@@ -618,6 +694,7 @@ public class GraphViewModel : ViewModelBase
     {
         GraphModes.Add(new GraphModeItem(GraphMode.Impact, "Impact (Change Over Day)"));
         GraphModes.Add(new GraphModeItem(GraphMode.Average, "Average (Daily Mood Level)"));
+        GraphModes.Add(new GraphModeItem(GraphMode.RawData, "Raw Data (Individual Recordings)"));
     }
     
     /// <summary>
