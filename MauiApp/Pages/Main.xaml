@@ -76,7 +76,7 @@
                         Padding="20"
                         CornerRadius="10" />
                 
-                <Button Text="📈 View Graph"
+                <Button Text="📈 Generate Graph"
                         x:Name="ViewGraphButton"
                         Command="{Binding ViewGraphCommand}"
                         BackgroundColor="{StaticResource Primary}"

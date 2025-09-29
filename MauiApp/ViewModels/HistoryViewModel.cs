@@ -39,6 +39,19 @@ public class HistoryViewModel : ViewModelBase
         OpenVisualizationCommand = new RelayCommand(async () => await OpenVisualizationAsync());
     }
 
+    private void LogViewModel(string message)
+    {
+        try
+        {
+            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            var logEntry = $"[{timestamp}] HistoryViewModel: {message}";
+            var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            var logPath = Path.Combine(desktopPath, "WorkMood_ViewModel_Debug.log");
+            File.AppendAllText(logPath, logEntry + Environment.NewLine);
+        }
+        catch { } // Ignore logging errors
+    }
+
     /// <summary>
     /// Sets the visualization navigation handler (for backwards compatibility)
     /// </summary>
@@ -231,21 +244,39 @@ public class HistoryViewModel : ViewModelBase
     /// </summary>
     private async Task LoadRecentEntriesAsync()
     {
-        var recentEntries = await _moodDataService.GetRecentMoodEntriesWithArchiveAsync(10);
+        LogViewModel("LoadRecentEntriesAsync: Starting to load recent entries");
         
-        // Debug logging
-        System.Diagnostics.Debug.WriteLine($"LoadRecentEntriesAsync: Found {recentEntries.Count()} entries (including archived data if applicable)");
-        
-        RecentEntries.Clear();
-        HasNoData = !recentEntries.Any();
-
-        foreach (var entry in recentEntries)
+        try
         {
-            RecentEntries.Add(entry);
-            System.Diagnostics.Debug.WriteLine($"Added entry for {entry.Date}: StartOfWork={entry.StartOfWork}, EndOfWork={entry.EndOfWork}");
+            var recentEntries = await _moodDataService.GetRecentMoodEntriesWithArchiveAsync(10);
+            
+            LogViewModel($"LoadRecentEntriesAsync: MoodDataService returned {recentEntries.Count()} entries");
+            System.Diagnostics.Debug.WriteLine($"LoadRecentEntriesAsync: Found {recentEntries.Count()} entries (including archived data if applicable)");
+            
+            LogViewModel("LoadRecentEntriesAsync: Clearing existing RecentEntries collection");
+            RecentEntries.Clear();
+            
+            var entriesList = recentEntries.ToList();
+            HasNoData = !entriesList.Any();
+            LogViewModel($"LoadRecentEntriesAsync: HasNoData set to {HasNoData}");
+
+            LogViewModel($"LoadRecentEntriesAsync: Adding {entriesList.Count} entries to RecentEntries collection");
+            foreach (var entry in entriesList)
+            {
+                RecentEntries.Add(entry);
+                LogViewModel($"Added entry for {entry.Date}: StartOfWork={entry.StartOfWork}, EndOfWork={entry.EndOfWork}");
+                System.Diagnostics.Debug.WriteLine($"Added entry for {entry.Date}: StartOfWork={entry.StartOfWork}, EndOfWork={entry.EndOfWork}");
+            }
+            
+            LogViewModel($"LoadRecentEntriesAsync: RecentEntries collection now has {RecentEntries.Count} items");
+            System.Diagnostics.Debug.WriteLine($"RecentEntries collection now has {RecentEntries.Count} items");
         }
-        
-        System.Diagnostics.Debug.WriteLine($"RecentEntries collection now has {RecentEntries.Count} items");
+        catch (Exception ex)
+        {
+            LogViewModel($"LoadRecentEntriesAsync: Error loading recent entries - {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Error in LoadRecentEntriesAsync: {ex.Message}");
+            HasNoData = true;
+        }
         
         // Manually raise PropertyChanged to notify the view that the collection has been updated
         OnPropertyChanged(nameof(RecentEntries));

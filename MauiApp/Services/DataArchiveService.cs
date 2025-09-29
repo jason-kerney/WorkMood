@@ -279,18 +279,8 @@ public class DataArchiveService : IDataArchiveService
                 return new List<MoodEntry>();
             }
 
-            var entries = JsonSerializer.Deserialize<List<MoodEntryOld>>(json, _jsonOptions);
-            var result = new List<MoodEntry>();
-            
-            // Copy each MoodEntry to MoodEntry
-            if (entries != null)
-            {
-                foreach (var oldEntry in entries)
-                {
-                    var newEntry = MoodEntry.FromMoodEntryOld(oldEntry);
-                    result.Add(newEntry);
-                }
-            }
+            var entries = JsonSerializer.Deserialize<List<MoodEntry>>(json, _jsonOptions);
+            var result = entries ?? new List<MoodEntry>();
             
             Log($"LoadFromArchiveFileAsync: Loaded {result.Count} entries from {Path.GetFileName(archiveFilePath)}");
             

@@ -95,6 +95,19 @@ public partial class History : ContentPage
         await _navigationService.NavigateAsync(() => new Visualization(moodDataService));
     }
 
+    private void LogHistoryUI(string message)
+    {
+        try
+        {
+            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            var logEntry = $"[{timestamp}] HistoryUI: {message}";
+            var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            var logPath = System.IO.Path.Combine(desktopPath, "WorkMood_HistoryUI_Debug.log");
+            File.AppendAllText(logPath, logEntry + Environment.NewLine);
+        }
+        catch { } // Ignore logging errors
+    }
+
     /// <summary>
     /// Updates the recent entries UI programmatically
     /// This is needed because we're using a factory pattern for creating complex UI elements
@@ -103,24 +116,29 @@ public partial class History : ContentPage
     {
         try
         {
+            LogHistoryUI($"UpdateRecentEntriesUI: Starting update with {_viewModel.RecentEntries.Count} entries");
             System.Diagnostics.Debug.WriteLine($"UpdateRecentEntriesUI: Starting update with {_viewModel.RecentEntries.Count} entries");
             
             // Clear existing entries
             HistoryEntriesStack.Children.Clear();
+            LogHistoryUI("UpdateRecentEntriesUI: Cleared existing UI entries");
 
             // Add new entries using the factory
             foreach (var entry in _viewModel.RecentEntries)
             {
+                LogHistoryUI($"UpdateRecentEntriesUI: Creating UI for entry {entry.Date}");
                 var entryView = _viewFactory.CreateEntryView(entry);
                 HistoryEntriesStack.Children.Add(entryView);
+                LogHistoryUI($"UpdateRecentEntriesUI: Added UI for entry: {entry.Date}");
                 System.Diagnostics.Debug.WriteLine($"Added UI for entry: {entry.Date}");
             }
             
+            LogHistoryUI($"UpdateRecentEntriesUI: Completed. UI now has {HistoryEntriesStack.Children.Count} children");
             System.Diagnostics.Debug.WriteLine($"UpdateRecentEntriesUI: Completed. UI now has {HistoryEntriesStack.Children.Count} children");
         }
         catch (Exception ex)
         {
-            // Log error but don't break the UI
+            LogHistoryUI($"UpdateRecentEntriesUI: Error - {ex.Message}");
             System.Diagnostics.Debug.WriteLine($"Error updating recent entries UI: {ex.Message}");
         }
     }

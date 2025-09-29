@@ -37,7 +37,7 @@ public class MoodDataService : IMoodDataService
 
         _jsonOptions = new JsonSerializerOptions
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase, // Use camelCase to match JSON property names
             WriteIndented = true,
             Converters = { new DateOnlyJsonConverter() }
         };
@@ -92,6 +92,7 @@ public class MoodDataService : IMoodDataService
 
             Log("LoadMoodDataAsync: Reading file");
             var json = await File.ReadAllTextAsync(_dataFilePath);
+            Log($"LoadMoodDataAsync: File read, content length: {json.Length} characters");
             
             if (string.IsNullOrWhiteSpace(json))
             {
@@ -100,25 +101,38 @@ public class MoodDataService : IMoodDataService
                 return _cachedCollection;
             }
 
-            var entriesOld = JsonSerializer.Deserialize<List<MoodEntryOld>>(json, _jsonOptions);
-            var entries = new List<MoodEntry>();
+            Log("LoadMoodDataAsync: Starting JSON deserialization");
+            var entries = JsonSerializer.Deserialize<List<MoodEntry>>(json, _jsonOptions);
+            Log($"LoadMoodDataAsync: Deserialization successful, got {entries?.Count ?? 0} entries");
             
-            // Copy each MoodEntryOld to MoodEntry
-            if (entriesOld != null)
+            if (entries != null)
             {
-                foreach (var oldEntry in entriesOld)
+                foreach (var entry in entries)
                 {
-                    var newEntry = MoodEntry.FromMoodEntryOld(oldEntry);
-                    entries.Add(newEntry);
+                    Log($"LoadMoodDataAsync: Entry - Date: {entry.Date}, StartOfWork: {entry.StartOfWork}, EndOfWork: {entry.EndOfWork}");
                 }
             }
-            _cachedCollection = new MoodCollection(entries);
             
+            _cachedCollection = new MoodCollection(entries ?? new List<MoodEntry>());
+            Log($"LoadMoodDataAsync: Created MoodCollection with {_cachedCollection.Count} entries");
+            
+            return _cachedCollection;
+        }
+        catch (JsonException jsonEx)
+        {
+            Log($"LoadMoodDataAsync: JSON Error - {jsonEx.Message}");
+            Log($"LoadMoodDataAsync: JSON Path: {jsonEx.Path}");
+            Log($"LoadMoodDataAsync: JSON Line: {jsonEx.LineNumber}, Position: {jsonEx.BytePositionInLine}");
+            System.Diagnostics.Debug.WriteLine($"JSON Error loading mood data: {jsonEx.Message}");
+            
+            // Return empty collection if there's an error
+            _cachedCollection = new MoodCollection();
             return _cachedCollection;
         }
         catch (Exception ex)
         {
-            // Log error in production app
+            Log($"LoadMoodDataAsync: General Error - {ex.Message}");
+            Log($"LoadMoodDataAsync: Stack Trace - {ex.StackTrace}");
             System.Diagnostics.Debug.WriteLine($"Error loading mood data: {ex.Message}");
             
             // Return empty collection if there's an error

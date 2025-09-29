@@ -141,19 +141,5 @@ public class MoodEntry
         return $"{Date:yyyy-MM-dd}: Start of Work {startOfWork}, End of Work {endOfWork}";
     }
 
-    /// <summary>
-    /// Creates a new MoodEntry from a MoodEntryOld by copying the StartOfWork and EndOfWork fields
-    /// </summary>
-    /// <param name="oldEntry">The MoodEntryOld to convert</param>
-    /// <returns>A new MoodEntry with copied data</returns>
-    public static MoodEntry FromMoodEntryOld(MoodEntryOld oldEntry)
-    {
-        return new MoodEntry(oldEntry.Date)
-        {
-            StartOfWork = oldEntry.StartOfWork,
-            EndOfWork = oldEntry.EndOfWork,
-            CreatedAt = oldEntry.CreatedAt,
-            LastModified = oldEntry.LastModified
-        };
-    }
+
 }
