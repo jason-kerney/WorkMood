@@ -6,14 +6,9 @@ namespace WorkMood.MauiApp.Services;
 /// Command that handles auto-save logic when date changes occur
 /// Follows Command Pattern and Single Responsibility Principle
 /// </summary>
-public class AutoSaveCommand : IDispatcherCommand
+public class AutoSaveCommand(IMoodDataService moodDataService) : IDispatcherCommand
 {
-    private readonly MoodDataService _moodDataService;
-
-    public AutoSaveCommand(MoodDataService moodDataService)
-    {
-        _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
-    }
+    private readonly IMoodDataService _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
 
     /// <summary>
     /// Processes a timer tick to handle auto-save logic for date changes
