@@ -1,7 +1,6 @@
 using System.Windows.Input;
 using WorkMood.MauiApp.Infrastructure;
 using WorkMood.MauiApp.Services;
-using WorkMood.MauiApp.Tests;
 using WhatsYourVersion;
 
 namespace WorkMood.MauiApp.ViewModels;
@@ -42,9 +41,6 @@ public class AboutViewModel : ViewModelBase
 
         // Initialize commands
         OpenIconLinkCommand = new RelayCommand(ExecuteOpenIconLink, CanExecuteOpenIconLink);
-        TestArchivingCommand = new Command(ExecuteTestArchiving);
-        TestYearBoundaryCommand = new Command(ExecuteTestYearBoundary);
-        TestYearBoundaryCommand = new RelayCommand(ExecuteTestYearBoundary);
     }
 
     #region Properties
@@ -124,16 +120,6 @@ public class AboutViewModel : ViewModelBase
     /// </summary>
     public ICommand OpenIconLinkCommand { get; }
 
-    /// <summary>
-    /// Command to test the data archiving functionality (debug/testing purposes)
-    /// </summary>
-    public ICommand TestArchivingCommand { get; }
-
-    /// <summary>
-    /// Command to test the year boundary archive functionality (debug/testing purposes)
-    /// </summary>
-    public ICommand TestYearBoundaryCommand { get; }
-
     #endregion
 
     #region Command Implementations
@@ -161,40 +147,6 @@ public class AboutViewModel : ViewModelBase
     private bool CanExecuteOpenIconLink()
     {
         return !string.IsNullOrEmpty(IconUrl);
-    }
-
-    /// <summary>
-    /// Executes the test archiving command (for debugging/testing purposes)
-    /// </summary>
-    private async void ExecuteTestArchiving()
-    {
-        try
-        {
-            await _navigationService.ShowAlertAsync("Testing", "Running archiving test...", "OK");
-            await ArchivingTestRunner.RunTestAsync();
-            await _navigationService.ShowAlertAsync("Success", "Archiving test completed successfully!", "OK");
-        }
-        catch (Exception ex)
-        {
-            await _navigationService.ShowAlertAsync("Error", $"Test failed: {ex.Message}", "OK");
-        }
-    }
-
-    /// <summary>
-    /// Executes the test year boundary command (for debugging/testing purposes)
-    /// </summary>
-    private async void ExecuteTestYearBoundary()
-    {
-        try
-        {
-            await _navigationService.ShowAlertAsync("Testing", "Running year boundary test...", "OK");
-            await YearBoundaryTestDataCreator.CreateYearBoundaryTestDataAsync((MoodDataService)_moodDataService);
-            await _navigationService.ShowAlertAsync("Success", "Year boundary test data created successfully!", "OK");
-        }
-        catch (Exception ex)
-        {
-            await _navigationService.ShowAlertAsync("Error", $"Test failed: {ex.Message}", "OK");
-        }
     }
 
     #endregion
