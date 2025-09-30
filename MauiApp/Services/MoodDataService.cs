@@ -48,7 +48,7 @@ public class MoodDataService : IMoodDataService
     /// <summary>
     /// Creates a new mood data service with default archive service (for backwards compatibility)
     /// </summary>
-    public MoodDataService() : this(new DataArchiveService())
+    public MoodDataService() : this(new DataArchiveService(new Shims.FolderShim(), new Shims.DateShim(), new Shims.FileShim(), new Shims.JsonSerializerShim()))
     {
     }
 

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using WorkMood.MauiApp.Models;
+using WorkMood.MauiApp.Shims;
 
 namespace WorkMood.MauiApp.Services;
 
@@ -11,19 +12,21 @@ public class DataArchiveService : IDataArchiveService
 {
     private readonly string _archiveDirectory;
     private readonly JsonSerializerOptions _jsonOptions;
+    private readonly IFolderShim folderShim;
+    private readonly IDateShim dateShim;
+    private readonly IFileShim fileShim;
+    private readonly IJsonSerializerShim jsonSerializerShim;
 
     /// <summary>
     /// Creates a new data archive service
     /// </summary>
-    public DataArchiveService()
+    public DataArchiveService(IFolderShim folderShim, IDateShim dateShim, IFileShim fileShim, IJsonSerializerShim jsonSerializerShim)
     {
         // Store archives in the same directory as the main data file
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var appFolder = Path.Combine(appDataPath, "WorkMood");
-        _archiveDirectory = Path.Combine(appFolder, "archives");
-        
+        _archiveDirectory = folderShim.GetArchiveFolder();
+
         // Ensure archive directory exists
-        Directory.CreateDirectory(_archiveDirectory);
+        folderShim.CreateDirectory(_archiveDirectory);
 
         _jsonOptions = new JsonSerializerOptions
         {
@@ -31,6 +34,10 @@ public class DataArchiveService : IDataArchiveService
             WriteIndented = true,
             Converters = { new DateOnlyJsonConverter() }
         };
+        this.folderShim = folderShim;
+        this.dateShim = dateShim;
+        this.fileShim = fileShim;
+        this.jsonSerializerShim = jsonSerializerShim;
     }
 
     /// <summary>
@@ -43,7 +50,7 @@ public class DataArchiveService : IDataArchiveService
     public async Task<MoodCollection> ArchiveOldDataAsync(MoodCollection collection, int thresholdYears = 3)
     {
         Log($"ArchiveOldDataAsync: Starting archive check with threshold of {thresholdYears} years");
-        
+
         if (!ShouldArchive(collection, thresholdYears))
         {
             Log("ArchiveOldDataAsync: No archiving needed");
@@ -52,7 +59,7 @@ public class DataArchiveService : IDataArchiveService
 
         try
         {
-            var cutoffDate = DateOnly.FromDateTime(DateTime.Today.AddYears(-thresholdYears));
+            var cutoffDate = dateShim.GetDate(-thresholdYears);
             Log($"ArchiveOldDataAsync: Cutoff date is {cutoffDate}");
 
             // Separate entries into archive and current collections
@@ -67,13 +74,13 @@ public class DataArchiveService : IDataArchiveService
                 var oldestDate = entriesToArchive.Min(e => e.Date);
                 var newestDate = entriesToArchive.Max(e => e.Date);
                 var archiveFileName = CreateArchiveFileName(oldestDate, newestDate);
-                var archiveFilePath = Path.Combine(_archiveDirectory, archiveFileName);
+                var archiveFilePath = folderShim.CombinePaths(_archiveDirectory, archiveFileName);
 
                 Log($"ArchiveOldDataAsync: Creating archive file {archiveFilePath}");
 
                 // Save archived data
-                var archiveJson = JsonSerializer.Serialize(entriesToArchive, _jsonOptions);
-                await File.WriteAllTextAsync(archiveFilePath, archiveJson);
+                var archiveJson = jsonSerializerShim.Serialize(entriesToArchive, _jsonOptions);
+                await fileShim.WriteAllTextAsync(archiveFilePath, archiveJson);
 
                 Log($"ArchiveOldDataAsync: Successfully archived {entriesToArchive.Count} entries to {archiveFileName}");
 
@@ -102,9 +109,9 @@ public class DataArchiveService : IDataArchiveService
     {
         var oldestAge = GetOldestEntryAge(collection);
         var shouldArchive = oldestAge.HasValue && oldestAge.Value >= thresholdYears;
-        
+
         Log($"ShouldArchive: Oldest entry age: {oldestAge?.ToString("F2") ?? "N/A"} years, threshold: {thresholdYears} years, should archive: {shouldArchive}");
-        
+
         return shouldArchive;
     }
 
@@ -121,7 +128,7 @@ public class DataArchiveService : IDataArchiveService
         }
 
         var oldestDate = collection.Entries.Min(e => e.Date);
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = dateShim.GetTodayDate();
         var ageInDays = today.DayNumber - oldestDate.DayNumber;
         var ageInYears = ageInDays / 365.25; // Account for leap years
 
@@ -138,11 +145,11 @@ public class DataArchiveService : IDataArchiveService
     /// <returns>Archive file name</returns>
     public string CreateArchiveFileName(DateOnly oldestDate, DateOnly newestDate)
     {
-        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        var timestamp = dateShim.Now().ToString("yyyyMMdd_HHmmss");
         var fileName = $"mood_data_archive_{oldestDate:yyyy-MM-dd}_to_{newestDate:yyyy-MM-dd}_{timestamp}.json";
-        
+
         Log($"CreateArchiveFileName: Generated archive file name: {fileName}");
-        
+
         return fileName;
     }
 
@@ -150,11 +157,13 @@ public class DataArchiveService : IDataArchiveService
     {
         try
         {
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            var timestamp = dateShim.Now().ToString("yyyy-MM-dd HH:mm:ss.fff");
             var logEntry = $"[{timestamp}] [DataArchiveService] {message}";
-            var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            var logPath = Path.Combine(desktopPath, "WorkMood_Debug.log");
-            File.AppendAllText(logPath, logEntry + Environment.NewLine);
+
+            var desktopPath = folderShim.GetDesktopFolder();
+            var logPath = folderShim.CombinePaths(desktopPath, "WorkMood_Debug.log");
+
+            fileShim.AppendAllText(logPath, logEntry + Environment.NewLine);
         }
         catch { } // Ignore logging errors
     }
@@ -167,7 +176,7 @@ public class DataArchiveService : IDataArchiveService
     /// <returns>True if within the specified days of a year transition</returns>
     public bool IsNearYearTransition(int daysFromTransition = 14)
     {
-        var today = DateTime.Today;
+        var today = dateShim.GetToday();
         var startOfYear = new DateTime(today.Year, 1, 1);
         var endOfYear = new DateTime(today.Year, 12, 31);
 
@@ -181,7 +190,7 @@ public class DataArchiveService : IDataArchiveService
 
         var result = nearStartOfYear || nearEndOfYear;
         Log($"IsNearYearTransition: Today={today:yyyy-MM-dd}, Days since start={daysSinceStartOfYear}, Days until end={daysUntilEndOfYear}, Near transition={result}");
-        
+
         return result;
     }
 
@@ -195,30 +204,30 @@ public class DataArchiveService : IDataArchiveService
     public async Task<IEnumerable<MoodEntry>> GetArchivedEntriesInRangeAsync(DateOnly startDate, DateOnly endDate)
     {
         Log($"GetArchivedEntriesInRangeAsync: Searching for entries between {startDate} and {endDate}");
-        
+
         var allArchivedEntries = new List<MoodEntry>();
-        
+
         try
         {
             var archiveFiles = GetArchiveFiles();
-            
+
             foreach (var archiveFile in archiveFiles)
             {
-                Log($"GetArchivedEntriesInRangeAsync: Checking archive file {Path.GetFileName(archiveFile)}");
-                
+                Log($"GetArchivedEntriesInRangeAsync: Checking archive file {folderShim.GetFileName(archiveFile)}");
+
                 var entriesFromFile = await LoadFromArchiveFileAsync(archiveFile);
                 var entriesInRange = entriesFromFile.Where(e => e.Date >= startDate && e.Date <= endDate);
-                
+
                 allArchivedEntries.AddRange(entriesInRange);
-                
-                Log($"GetArchivedEntriesInRangeAsync: Added {entriesInRange.Count()} entries from {Path.GetFileName(archiveFile)}");
+
+                Log($"GetArchivedEntriesInRangeAsync: Added {entriesInRange.Count()} entries from {folderShim.GetFileName(archiveFile)}");
             }
-            
+
             // Sort by date for consistency
             allArchivedEntries.Sort((e1, e2) => e1.Date.CompareTo(e2.Date));
-            
+
             Log($"GetArchivedEntriesInRangeAsync: Found {allArchivedEntries.Count} total archived entries in date range");
-            
+
             return allArchivedEntries;
         }
         catch (Exception ex)
@@ -236,15 +245,15 @@ public class DataArchiveService : IDataArchiveService
     {
         try
         {
-            if (!Directory.Exists(_archiveDirectory))
+            if (!folderShim.DirectoryExists(_archiveDirectory))
             {
                 Log("GetArchiveFiles: Archive directory does not exist");
                 return new List<string>();
             }
 
-            var archiveFiles = Directory.GetFiles(_archiveDirectory, "mood_data_archive_*.json");
+            var archiveFiles = folderShim.GetFiles(_archiveDirectory, "mood_data_archive_*.json");
             Log($"GetArchiveFiles: Found {archiveFiles.Length} archive files");
-            
+
             return archiveFiles;
         }
         catch (Exception ex)
@@ -269,26 +278,26 @@ public class DataArchiveService : IDataArchiveService
                 return new List<MoodEntry>();
             }
 
-            Log($"LoadFromArchiveFileAsync: Loading from {Path.GetFileName(archiveFilePath)}");
-            
+            Log($"LoadFromArchiveFileAsync: Loading from {folderShim.GetFileName(archiveFilePath)}");
+
             var json = await File.ReadAllTextAsync(archiveFilePath);
-            
+
             if (string.IsNullOrWhiteSpace(json))
             {
-                Log($"LoadFromArchiveFileAsync: Archive file is empty: {Path.GetFileName(archiveFilePath)}");
+                Log($"LoadFromArchiveFileAsync: Archive file is empty: {folderShim.GetFileName(archiveFilePath)}");
                 return new List<MoodEntry>();
             }
 
-            var entries = JsonSerializer.Deserialize<List<MoodEntry>>(json, _jsonOptions);
+            var entries = jsonSerializerShim.Deserialize<List<MoodEntry>>(json, _jsonOptions);
             var result = entries ?? new List<MoodEntry>();
-            
-            Log($"LoadFromArchiveFileAsync: Loaded {result.Count} entries from {Path.GetFileName(archiveFilePath)}");
-            
+
+            Log($"LoadFromArchiveFileAsync: Loaded {result.Count} entries from {folderShim.GetFileName(archiveFilePath)}");
+
             return result;
         }
         catch (Exception ex)
         {
-            Log($"LoadFromArchiveFileAsync: Error loading from {Path.GetFileName(archiveFilePath)}: {ex.Message}");
+            Log($"LoadFromArchiveFileAsync: Error loading from {folderShim.GetFileName(archiveFilePath)}: {ex.Message}");
             return new List<MoodEntry>();
         }
     }

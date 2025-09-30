@@ -1,4 +1,5 @@
 using WorkMood.MauiApp.Models;
+using WorkMood.MauiApp.Shims;
 
 namespace WorkMood.MauiApp.Services;
 
@@ -8,15 +9,19 @@ namespace WorkMood.MauiApp.Services;
 /// </summary>
 public class EveningReminderCommand : IDispatcherCommand
 {
-    private readonly MoodDataService _moodDataService;
-    private readonly ScheduleConfigService _scheduleConfigService;
+    private readonly IMoodDataService _moodDataService;
+    private readonly IScheduleConfigService _scheduleConfigService;
+    private readonly IDateShim dateShim;
+    private readonly IFolderShim folder;
     private int _callCount = 0;
     private DateOnly _lastReminderDate = DateOnly.MinValue;
 
-    public EveningReminderCommand(MoodDataService moodDataService, ScheduleConfigService scheduleConfigService)
+    public EveningReminderCommand(IMoodDataService moodDataService, IScheduleConfigService scheduleConfigService, IDateShim dateShim, IFolderShim folder)
     {
         _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
         _scheduleConfigService = scheduleConfigService ?? throw new ArgumentNullException(nameof(scheduleConfigService));
+        this.dateShim = dateShim;
+        this.folder = folder;
     }
 
     /// <summary>
@@ -26,17 +31,17 @@ public class EveningReminderCommand : IDispatcherCommand
     {
         try
         {
-            var today = DateOnly.FromDateTime(DateTime.Today);
-            var now = DateTime.Now;
+            var today = dateShim.GetTodayDate();
+            var now = dateShim.Now();
             
             // Get the schedule configuration
             var config = await _scheduleConfigService.LoadScheduleConfigAsync();
             
             // Get the effective evening time (considering overrides)
             var effectiveEveningTime = config.GetEffectiveEveningTimeToday();
-            
+
             // Create today's evening time from the effective configuration
-            var eveningTime = DateTime.Today.Add(effectiveEveningTime);
+            var eveningTime = dateShim.GetToday().Add(effectiveEveningTime);
             
             Log($"EveningReminderCommand: Current time: {now:HH:mm:ss}, Evening time: {eveningTime:HH:mm:ss}");
             
@@ -154,9 +159,9 @@ public class EveningReminderCommand : IDispatcherCommand
     {
         try
         {
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            var timestamp = dateShim.Now().ToString("yyyy-MM-dd HH:mm:ss.fff");
             var logEntry = $"[{timestamp}] {message}";
-            var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            var desktopPath = folder.GetDesktopFolder();
             var logPath = Path.Combine(desktopPath, "WorkMood_Debug.log");
             File.AppendAllText(logPath, logEntry + Environment.NewLine);
         }

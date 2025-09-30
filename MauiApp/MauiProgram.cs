@@ -1,4 +1,5 @@
 ﻿using WorkMood.MauiApp.Services;
+using WorkMood.MauiApp.Shims;
 using WorkMood.MauiApp.ViewModels;
 using WorkMood.MauiApp.Pages;
 using WhatsYourVersion;
@@ -25,6 +26,10 @@ public static class MauiProgram
 		builder.Services.AddSingleton<AutoSaveCommand>();
 		builder.Services.AddSingleton<MorningReminderCommand>();
 		builder.Services.AddSingleton<EveningReminderCommand>();
+		
+		// Register shim services
+		builder.Services.AddSingleton<IFolderShim, FolderShim>();
+		builder.Services.AddSingleton<IBrowserShim, BrowserShim>();
 		
 		// Register new infrastructure services
 		builder.Services.AddSingleton<ILoggingService, LoggingService>();

@@ -39,7 +39,7 @@ public partial class About : ContentPage
         var navService = navigationService ?? new NavigationService(this);
         var browService = browserService ?? new BrowserService(new Shims.BrowserShim());
         var verService = versionRetriever ?? new VersionRetriever(AssemblyWrapper.From<App>());
-        var moodService = moodDataService ?? new MoodDataService(new DataArchiveService());
+        var moodService = moodDataService ?? new MoodDataService(new DataArchiveService(new Shims.FolderShim(), new Shims.DateShim(), new Shims.FileShim(), new Shims.JsonSerializerShim()));
         
         // Create and set the ViewModel
         _viewModel = new AboutViewModel(navService, browService, verService, moodService);
