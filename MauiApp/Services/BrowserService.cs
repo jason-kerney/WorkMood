@@ -1,3 +1,5 @@
+using WorkMood.MauiApp.Shims;
+
 namespace WorkMood.MauiApp.Services;
 
 /// <summary>
@@ -6,6 +8,13 @@ namespace WorkMood.MauiApp.Services;
 /// </summary>
 public class BrowserService : IBrowserService
 {
+    private readonly IBrowserShim _browserShim;
+
+    public BrowserService(IBrowserShim browserShim)
+    {
+        _browserShim = browserShim;
+    }
+
     /// <summary>
     /// Opens a URL in the system's default browser
     /// </summary>
@@ -21,36 +30,11 @@ public class BrowserService : IBrowserService
 
         try
         {
-            var uri = new Uri(url);
-            return await OpenAsync(uri, options);
+            var launchMode = options?.LaunchMode ?? BrowserLaunchMode.SystemPreferred;
+            return await _browserShim.OpenDefaultAsync(url, options);
         }
         catch (UriFormatException)
         {
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Opens a URI in the system's default browser
-    /// </summary>
-    /// <param name="uri">The URI to open</param>
-    /// <param name="options">Optional browser launch options</param>
-    /// <returns>A task that represents the asynchronous operation, returning true if successful</returns>
-    public async Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions? options = null)
-    {
-        if (uri == null)
-        {
-            return false;
-        }
-
-        try
-        {
-            var launchMode = options?.LaunchMode ?? BrowserLaunchMode.SystemPreferred;
-            return await Browser.Default.OpenAsync(uri, launchMode);
-        }
-        catch (Exception)
-        {
-            // Return false if the browser couldn't be opened
             return false;
         }
     }

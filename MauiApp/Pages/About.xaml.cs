@@ -37,7 +37,7 @@ public partial class About : ContentPage
         
         // Create dependencies following Dependency Inversion Principle
         var navService = navigationService ?? new NavigationService(this);
-        var browService = browserService ?? new BrowserService();
+        var browService = browserService ?? new BrowserService(new Shims.BrowserShim());
         var verService = versionRetriever ?? new VersionRetriever(AssemblyWrapper.From<App>());
         var moodService = moodDataService ?? new MoodDataService(new DataArchiveService());
         

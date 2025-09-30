@@ -13,12 +13,4 @@ public interface IBrowserService
     /// <param name="options">Optional browser launch options</param>
     /// <returns>A task that represents the asynchronous operation</returns>
     Task<bool> OpenAsync(string url, BrowserLaunchOptions? options = null);
-
-    /// <summary>
-    /// Opens a URI in the system's default browser
-    /// </summary>
-    /// <param name="uri">The URI to open</param>
-    /// <param name="options">Optional browser launch options</param>
-    /// <returns>A task that represents the asynchronous operation</returns>
-    Task<bool> OpenAsync(Uri uri, BrowserLaunchOptions? options = null);
 }
