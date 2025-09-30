@@ -13,15 +13,32 @@
     "aliases": [
         {
             "name": "push",
-            "command": "gittey check && gittey commit && git push"
+            "command": "echo 'Please use platform-specific push commands: gittey:push:windows or gittey:push:mac'"
         },
         {
-            "name": "check",
-            "command": "cls && dotnet test WorkMood.MauiApp.Tests --collect:\"XPlat Code Coverage\" && reportgenerator -reports:\"WorkMood.MauiApp.Tests\\TestResults\\**\\coverage.cobertura.xml\" -targetdir:\"CoverageReport\" -reporttypes:\"TextSummary\" -verbosity:Off && powershell -Command \"Get-Content 'CoverageReport\\Summary.txt'\""
+            "name": "push:windows",
+            "command": "gittey check:windows && gittey commit && git push",
+            "description": "Run tests, commit changes, and push to remote (Windows)"
+        },
+        {
+            "name": "push:mac",
+            "command": "gittey check:mac && gittey commit && git push",
+            "description": "Run tests, commit changes, and push to remote (Mac)"
+        },
+        {
+            "name": "check:windows",
+            "command": "cls && powershell Remove-Item -Recurse -Force \"WorkMood.MauiApp.Tests\\TestResults\" && powershell Remove-Item -Recurse -Force \"CoverageReport\" && dotnet test WorkMood.MauiApp.Tests --collect:\"XPlat Code Coverage\" && reportgenerator -reports:\"WorkMood.MauiApp.Tests\\TestResults\\**\\coverage.cobertura.xml\" -targetdir:\"CoverageReport\" -reporttypes:\"TextSummary\" -verbosity:Off && type \"CoverageReport\\Summary.txt\"",
+            "description": "Run tests and generate coverage report (Windows)"
+        },
+        {
+            "name": "check:mac",
+            "command": "clear && rm -rf WorkMood.MauiApp.Tests/TestResults CoverageReport && dotnet test WorkMood.MauiApp.Tests --collect:\"XPlat Code Coverage\" && reportgenerator -reports:\"WorkMood.MauiApp.Tests/TestResults/**/coverage.cobertura.xml\" -targetdir:\"CoverageReport\" -reporttypes:\"TextSummary\" -verbosity:Off && cat CoverageReport/Summary.txt",
+            "description": "Run tests and generate coverage report (Mac)"
         },
         {
             "name": "clean",
-            "command": "git restore . && git clean -xfd && dotnet restore && dotnet build"
+            "command": "git restore . && git clean -xfd && dotnet restore && dotnet build",
+            "description": "Restore, clean untracked files, and rebuild the project"
         }
     ],
     "collaborators": []
