@@ -8,6 +8,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MauiApp", "MauiApp", "{BC2C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkMood.MauiApp", "MauiApp\WorkMood.MauiApp.csproj", "{7E1B363F-C0AD-411D-AE89-E6385837A7A7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkMood.MauiApp.Tests", "WorkMood.MauiApp.Tests\WorkMood.MauiApp.Tests.csproj", "{8F2C464F-D0BE-422E-BF90-F7396948B8B8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,11 +32,24 @@ Global
 		{7E1B363F-C0AD-411D-AE89-E6385837A7A7}.Release|x64.Build.0 = Release|Any CPU
 		{7E1B363F-C0AD-411D-AE89-E6385837A7A7}.Release|x86.ActiveCfg = Release|Any CPU
 		{7E1B363F-C0AD-411D-AE89-E6385837A7A7}.Release|x86.Build.0 = Release|Any CPU
+		{8F2C464F-D0BE-422E-BF90-F7396948B8B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F2C464F-D0BE-422E-BF90-F7396948B8B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F2C464F-D0BE-422E-BF90-F7396948B8B8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8F2C464F-D0BE-422E-BF90-F7396948B8B8}.Debug|x64.Build.0 = Debug|Any CPU
+		{8F2C464F-D0BE-422E-BF90-F7396948B8B8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8F2C464F-D0BE-422E-BF90-F7396948B8B8}.Debug|x86.Build.0 = Debug|Any CPU
+		{8F2C464F-D0BE-422E-BF90-F7396948B8B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F2C464F-D0BE-422E-BF90-F7396948B8B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F2C464F-D0BE-422E-BF90-F7396948B8B8}.Release|x64.ActiveCfg = Release|Any CPU
+		{8F2C464F-D0BE-422E-BF90-F7396948B8B8}.Release|x64.Build.0 = Release|Any CPU
+		{8F2C464F-D0BE-422E-BF90-F7396948B8B8}.Release|x86.ActiveCfg = Release|Any CPU
+		{8F2C464F-D0BE-422E-BF90-F7396948B8B8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7E1B363F-C0AD-411D-AE89-E6385837A7A7} = {BC2CE3E8-DE32-A3D1-C3D4-1D3B25D265AB}
+		{8F2C464F-D0BE-422E-BF90-F7396948B8B8} = {BC2CE3E8-DE32-A3D1-C3D4-1D3B25D265AB}
 	EndGlobalSection
 EndGlobal
