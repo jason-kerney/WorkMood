@@ -18,6 +18,10 @@
         {
             "name": "check",
             "command": "cls && dotnet test WorkMood.MauiApp.Tests --collect:\"XPlat Code Coverage\" && reportgenerator -reports:\"WorkMood.MauiApp.Tests\\TestResults\\**\\coverage.cobertura.xml\" -targetdir:\"CoverageReport\" -reporttypes:\"TextSummary\" -verbosity:Off && powershell -Command \"Get-Content 'CoverageReport\\Summary.txt'\""
+        },
+        {
+            "name": "clean",
+            "command": "git restore . && git clean -xfd && dotnet restore && dotnet build"
         }
     ],
     "collaborators": []
