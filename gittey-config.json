@@ -13,7 +13,11 @@
     "aliases": [
         {
             "name": "push",
-            "command": "gittey commit && git push"
+            "command": "gittey check && gittey commit && git push"
+        },
+        {
+            "name": "check",
+            "command": "cls && dotnet test WorkMood.MauiApp.Tests --collect:\"XPlat Code Coverage\" && reportgenerator -reports:\"WorkMood.MauiApp.Tests\\TestResults\\**\\coverage.cobertura.xml\" -targetdir:\"CoverageReport\" -reporttypes:\"TextSummary\" -verbosity:Off && powershell -Command \"Get-Content 'CoverageReport\\Summary.txt'\""
         }
     ],
     "collaborators": []
