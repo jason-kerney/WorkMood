@@ -1,53 +1,62 @@
 <!-- (dl (section-meta macOS Deployment)) -->
 
-This guide covers deploying WorkMood on macOS systems using Mac Catalyst copy-paste deployment.
+This guide covers publishing WorkMood for macOS developer handoff and local testing.
+
+> **Developer Focus**: These instructions help developers create Mac Catalyst builds for testing, sharing with other Mac developers, or preparing for future distribution. Currently, no signed/notarized packages are published.
 
 <!-- (dl (# Publishing for macOS)) -->
 
-<!-- (dl (## Mac Catalyst Build)) -->
+<!-- (dl (## Universal Mac Catalyst Build)) -->
 
-Create a Mac Catalyst deployment package:
+Create a universal Mac Catalyst app bundle (Intel + Apple Silicon):
 
 ```bash
-dotnet publish WorkMood.MauiApp.csproj -c Release -f net9.0-maccatalyst --self-contained -p:CreatePackage=true
+dotnet publish WorkMood.MauiApp.csproj -c Release -f net9.0-maccatalyst --self-contained
 ```
 
 <!-- (dl (## Architecture-Specific Builds)) -->
 
-For specific architectures:
+For specific architectures (smaller builds):
 
 ```bash
-# For Intel Macs (x64)
+# Intel Macs only
 dotnet publish WorkMood.MauiApp.csproj -c Release -f net9.0-maccatalyst -r maccatalyst-x64 --self-contained
 
-# For Apple Silicon Macs (ARM64)
+# Apple Silicon only
 dotnet publish WorkMood.MauiApp.csproj -c Release -f net9.0-maccatalyst -r maccatalyst-arm64 --self-contained
 
-# Universal binary (both architectures)
-dotnet publish WorkMood.MauiApp.csproj -c Release -f net9.0-maccatalyst --self-contained
+# Framework-dependent (requires .NET runtime on target Mac)
+dotnet publish WorkMood.MauiApp.csproj -c Release -f net9.0-maccatalyst --no-self-contained
 ```
 
-<!-- (dl (# Deployment Locations)) -->
+<!-- (dl (# Published Output Location)) -->
 
-After publishing, the deployment files will be located at:
-
-```text
-MauiApp/bin/Release/net9.0-maccatalyst/publish/
-```
-
-The Mac app bundle will be:
+Find the published app bundle at:
 
 ```text
 MauiApp/bin/Release/net9.0-maccatalyst/publish/WorkMood.MauiApp.app
 ```
 
-<!-- (dl (# Copy-Paste Deployment)) -->
+<!-- (dl (# Developer Handoff)) -->
 
-<!-- (dl (## Step 1: Prepare the Package)) -->
+<!-- (dl (## Portable App Package)) -->
+
+For sharing with other Mac developers:
 
 1. Navigate to the publish directory
-2. Locate the `WorkMood.MauiApp.app` bundle
-3. Create a distribution folder (e.g., `WorkMood-v1.0-macOS`)
+2. Create a handoff folder (e.g., `WorkMood-mac-dev-YYYYMMDD`)
+3. Copy the entire `WorkMood.MauiApp.app` bundle
+4. Add developer documentation
+
+<!-- (dl (## Example Handoff Structure)) -->
+
+```text
+WorkMood-mac-dev-20250929/
+├── WorkMood.MauiApp.app/         # Complete Mac app bundle
+├── README-Developer.txt          # Usage and testing notes
+├── BUILD-INFO.txt               # Build details and commit
+└── KNOWN-ISSUES.txt             # Current limitations
+```
 
 <!-- (dl (## Step 2: Create Installation Package)) -->
 

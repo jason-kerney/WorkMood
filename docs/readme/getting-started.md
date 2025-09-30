@@ -1,16 +1,121 @@
 <!-- (dl (section-meta Getting-Started)) -->
 
-<!-- (dl (## Installation)) -->
+> **For Developers**: WorkMood is designed for developers who want to track how their job impacts their mood. Since developers are comfortable compiling applications, we're not providing pre-built installers. Simply build from source to get started using the app.
 
-1. Download the latest release from the releases section
-2. Run the installer for your platform (Windows .msi or macOS .pkg)
-3. Launch WorkMood from your applications folder or start menu
+<!-- (dl (## Prerequisites)) -->
+
+- .NET 9.0 SDK (confirm with `dotnet --version`)
+- MAUI workload: `dotnet workload install maui`
+- (Windows) Windows 10 1903+ / Windows 11; optional Visual Studio 2022 with MAUI workload
+- (macOS) Xcode + Mac Catalyst toolchain (only if building on macOS)
+
+<!-- (dl (## Clone the Repository)) -->
+
+```bash
+git clone https://github.com/jason-kerney/WorkMood.git
+cd WorkMood/MauiApp
+```
+
+<!-- (dl (## Build From Source)) -->
+
+Debug build (fast inner-loop):
+
+```bash
+dotnet build WorkMood.MauiApp.csproj -c Debug
+```
+
+Release build:
+
+```bash
+dotnet build WorkMood.MauiApp.csproj -c Release
+```
+
+Target a specific platform (examples):
+
+```bash
+# Windows
+dotnet build WorkMood.MauiApp.csproj -c Debug -f net9.0-windows10.0.19041.0
+
+# macOS (Mac Catalyst)
+dotnet build WorkMood.MauiApp.csproj -c Debug -f net9.0-maccatalyst
+```
+
+Run (Debug):
+
+```bash
+dotnet run --project WorkMood.MauiApp.csproj -c Debug
+```
+
+Run targeting a framework:
+
+```bash
+dotnet run --project WorkMood.MauiApp.csproj -c Debug -f net9.0-windows10.0.19041.0
+```
+
+Publish (framework-dependent) for local handoff/testing:
+
+```bash
+dotnet publish WorkMood.MauiApp.csproj -c Release -f net9.0-windows10.0.19041.0 --no-self-contained
+```
+
+Self-contained single-file publish:
+
+```bash
+dotnet publish WorkMood.MauiApp.csproj -c Release -f net9.0-windows10.0.19041.0 --self-contained -p:PublishSingleFile=true -p:PublishReadyToRun=true
+```
+
+Output path pattern:
+
+```text
+MauiApp/bin/<Configuration>/<TFM>/<optional RID>/publish/
+```
 
 <!-- (dl (## Quick Start)) -->
 
-1. **Record your first mood**: Go to the "Record Mood" tab and set your morning work mood
-2. **End-of-day tracking**: Record your evening mood to see daily work impact
-3. **View patterns**: Use the "Visualization" tab to see how work affects your mood over time
-4. **Configure reminders**: Set up work schedule-based reminders in Settings
+**Just compiled WorkMood? Here's how to start tracking your work mood:**
 
-For detailed instructions, see the [User Guide](<!-- (dl (get-path user-guide)) -->).
+<!-- (dl (### Running the Application)) -->
+
+After a successful build, run WorkMood:
+
+```bash
+# From project root, run the app
+dotnet run --project MauiApp/WorkMood.MauiApp.csproj -c Debug
+
+# Or navigate to build output and run executable
+cd MauiApp/bin/Debug/net9.0-windows10.0.19041.0
+./WorkMood.MauiApp.exe  # Windows
+```
+
+For published builds, navigate to the publish folder and run the executable directly.
+
+<!-- (dl (### Data Storage)) -->
+
+WorkMood stores your mood data locally:
+
+- **Windows**: `%APPDATA%\WorkMood` or `%USERPROFILE%\.workmood`
+- **macOS**: `~/Library/Application Support/WorkMood` or `~/.workmood`
+
+Your data persists across different builds and updates.
+
+<!-- (dl (### Getting Started with Mood Tracking)) -->
+
+1. **Record your first mood**: Open the "Record Mood" tab and log how you're feeling at work right now
+2. **Explore the interface**: Check out History, Visualization, and Settings tabs to understand the app
+3. **Set your schedule**: Configure your work start/end times in Settings for reminder notifications
+4. **Start tracking**: Record your mood at the beginning and end of work days to see patterns
+
+<!-- (dl (### Usage Tips for Developers)) -->
+
+- **Consistent tracking**: Regular mood entries provide better insights into how your coding work affects you
+- **Work context**: Note what projects or tasks correlate with mood changes
+- **Schedule flexibility**: Adjust work hours in settings to match your actual development schedule (early mornings, late nights, etc.)
+- **Long-term patterns**: Use visualizations to identify which types of development work impact your mood most
+
+<!-- (dl (## Troubleshooting)) -->
+
+- Missing MAUI workloads: `dotnet workload install maui`
+- Restore issues: `dotnet restore` or clear cache `dotnet nuget locals all --clear`
+- Platform errors: ensure the TFM (e.g. `net9.0-windows10.0.19041.0`) matches installed SDKs
+
+For deeper build details see the [Build Guide](<!-- (dl (get-path build-guide)) -->) and for feature usage see the [User Guide](<!-- (dl (get-path user-guide)) -->).

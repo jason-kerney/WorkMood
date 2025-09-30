@@ -1,6 +1,6 @@
 <!-- (dl (section-meta Building the Application)) -->
 
-Follow these steps to build WorkMood from source code:
+Follow these steps to compile WorkMood for personal use:
 
 <!-- (dl (# Clone the Repository)) -->
 

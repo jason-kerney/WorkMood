@@ -1,6 +1,6 @@
 <!-- (dl (section-meta Prerequisites)) -->
 
-Before building WorkMood, ensure you have the following installed on your development machine:
+Before compiling WorkMood for personal use, ensure you have the following installed on your machine:
 
 <!-- (dl (# .NET Requirements)) -->
 

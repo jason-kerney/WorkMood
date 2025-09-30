@@ -2,6 +2,8 @@
 
 WorkMood is a cross-platform desktop application designed to help you **track and analyze how your workday impacts your mood**. Unlike general mood tracking apps, WorkMood focuses specifically on understanding the relationship between your work environment, activities, and emotional well-being.
 
+> **For Developers**: This guide assumes you have successfully compiled WorkMood from source code following the build instructions in the README.md. WorkMood is specifically designed for developers who want to track how their programming work affects their mood.
+
 <!-- (dl (# What is WorkMood?)) -->
 
 WorkMood is a **work mood impact tracker** that allows you to:
@@ -15,17 +17,34 @@ WorkMood is a **work mood impact tracker** that allows you to:
 
 <!-- (dl (# System Requirements)) -->
 
-- **Windows 10** version 1903 or later, or **Windows 11**
-- **macOS Big Sur** (11.0) or later
+**For Running the Built Application:**
+
+- **Windows 10** version 1903+ or **Windows 11** (for Windows builds)
+- **macOS Big Sur** (11.0) or later (for Mac Catalyst builds)
 - At least **100 MB** of free disk space
-- **.NET 9.0 Runtime** (included in self-contained deployments)
+- **.NET 9.0 Runtime** (if using framework-dependent build) or no runtime needed (self-contained builds)
+
+**For Building from Source:**
+
+- See the main [README.md](../README.md) for complete build prerequisites and instructions
 
 <!-- (dl (# First Launch)) -->
+
+**After Compiling:** You can run WorkMood directly from the build output folder or use the commands shown in the README.md Quick Start section.
 
 When you first launch WorkMood, you'll see the main dashboard with a clean, intuitive interface designed for daily use.
 
 ![WorkMood Main Dashboard](./images/main-dashboard.png)
 *Figure 1: WorkMood main dashboard on first launch*
+
+<!-- (dl (## Data Storage)) -->
+
+**Data Location:** WorkMood stores your mood tracking data locally on your system:
+
+- **Windows**: `%APPDATA%\WorkMood` or `%USERPROFILE%\.workmood`  
+- **macOS**: `~/Library/Application Support/WorkMood` or `~/.workmood`
+
+Your mood data persists between app updates and different builds, so you can maintain a continuous tracking history as you use the application for your daily work mood monitoring.
 
 <!-- (dl (# Navigation)) -->
 
@@ -50,19 +69,25 @@ WorkMood uses a **tabbed interface** with the following main sections:
 ![Mood Recording Interface](./images/mood-recording-interface.png)
 *Figure 2: Recording your first work mood entry*
 
+**Tip:** Start tracking your actual work mood right away. Consistent data from your real development work will provide the most valuable insights.
+
 <!-- (dl (## Step 2: View Your Work Impact Data)) -->
 
 1. Navigate to the **"History"** tab to see all your past work mood entries
 2. Use the **"Visualization"** tab to see work impact trends and patterns
 3. Explore different chart types to understand how work affects your mood over time
 
+**For Developers:** Pay attention to patterns around different types of coding tasks, deadlines, debugging sessions, or collaborative work to identify what aspects of your job most impact your mood.
+
 <!-- (dl (## Step 3: Set Up Work Schedule Reminders \(Optional\))) -->
 
 1. Go to the **"Settings"** tab
-2. Configure your **work start time** for morning mood reminders
+2. Configure your **work start time** for morning mood reminders (match your actual schedule)
 3. Configure your **work end time** for evening mood reminders
 4. Set your preferred notification preferences
 5. Enable auto-save if desired
+
+**Flexible Schedules:** Many developers have non-standard hours. Set reminders that match when you actually start and finish your coding work, whether that's early morning, late night, or varying daily schedules.
 
 <!-- (dl (# Understanding Work Mood Levels)) -->
 
