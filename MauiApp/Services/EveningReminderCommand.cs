@@ -40,7 +40,7 @@ public class EveningReminderCommand : IDispatcherCommand
             var config = await _scheduleConfigService.LoadScheduleConfigAsync();
 
             // Get the effective evening time (considering overrides)
-            var effectiveEveningTime = config.GetEffectiveEveningTimeToday();
+            var effectiveEveningTime = config.GetEffectiveEveningTime(today);
 
             // Create today's evening time from the effective configuration
             var eveningTime = dateShim.GetToday().Add(effectiveEveningTime);
