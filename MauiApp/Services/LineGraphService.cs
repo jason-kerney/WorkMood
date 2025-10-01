@@ -23,6 +23,8 @@ public class BitmapShim(SKBitmap bitmap) : IBitmapShim
 public interface ICanvasShim : IDisposable
 {
     SKCanvas Raw { get; }
+
+    void Clear(SKColor color);
 }
 
 public class CanvasShim(SKCanvas canvas) : ICanvasShim
@@ -32,6 +34,11 @@ public class CanvasShim(SKCanvas canvas) : ICanvasShim
     public void Dispose()
     {
         canvas.Dispose();
+    }
+
+    public void Clear(SKColor color)
+    {
+        canvas.Clear(color);
     }
 }
 
@@ -1100,15 +1107,16 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
     {
         var sortedPoints = rawDataPoints.OrderBy(p => p.Timestamp).ToList();
 
-        using var bitmap = new SKBitmap(width, height);
-        using var canvas = new SKCanvas(bitmap);
+        using var bitmap = drawShimFactory.BitmapFromDimensions(width, height);
+        using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
 
         // Clear canvas with white background
         canvas.Clear(SKColors.White);
 
-        await Task.Run(() => DrawRawDataGraph(canvas, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, true));
+        await Task.Run(() => DrawRawDataGraph(canvas.Raw, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, true));
 
-        using var image = SKImage.FromBitmap(bitmap);
+        // using var image = SKImage.FromBitmap(bitmap);
+        using IImageShim image = drawShimFactory.ImageFromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
 
         return data.ToArray();
@@ -1133,7 +1141,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         else
         {
             // Fallback to white background if image doesn't exist
-            canvas.Raw.Clear(SKColors.White);
+            canvas.Clear(SKColors.White);
         }
 
         await Task.Run(() => DrawRawDataGraph(canvas.Raw, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, false));
