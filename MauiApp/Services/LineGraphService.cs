@@ -25,6 +25,7 @@ public interface ICanvasShim : IDisposable
     SKCanvas Raw { get; }
 
     void Clear(SKColor color);
+    void DrawBitmap(IBitmapShim backgroundBitmap, SKRect sKRect);
 }
 
 public class CanvasShim(SKCanvas canvas) : ICanvasShim
@@ -39,6 +40,11 @@ public class CanvasShim(SKCanvas canvas) : ICanvasShim
     public void Clear(SKColor color)
     {
         canvas.Clear(color);
+    }
+
+    public void DrawBitmap(IBitmapShim backgroundBitmap, SKRect sKRect)
+    {
+        canvas.DrawBitmap(backgroundBitmap.Raw, sKRect);
     }
 }
 
@@ -88,35 +94,51 @@ public class ImageShim(SKImage image) : IImageShim
 
 public interface IDrawShimFactory
 {
+    IImageShim FromRaw(SKImage image);
     IImageShim ImageFromBitmap(SKBitmap bitmap);
     IImageShim ImageFromBitmap(IBitmapShim bitmap);
+
+    ICanvasShim FromRaw(SKCanvas canvas);
     ICanvasShim CanvasFromBitmap(SKBitmap bitmap);
     ICanvasShim CanvasFromBitmap(IBitmapShim bitmap);
+
     IBitmapShim BitmapFromDimensions(int width, int height);
+    IBitmapShim DecodeBitmapFromFile(string filePath);
+    IBitmapShim FromRaw(SKBitmap bitmap);
 }
 
 public class DrawShimFactory : IDrawShimFactory
 {
+    public IImageShim FromRaw(SKImage image) => new ImageShim(image);
     public IImageShim ImageFromBitmap(SKBitmap bitmap)
     {
         var image = SKImage.FromBitmap(bitmap);
-        return new ImageShim(image);
+        return FromRaw(image);
     }
 
     public IImageShim ImageFromBitmap(IBitmapShim bitmap) => ImageFromBitmap(bitmap.Raw);
 
+    public ICanvasShim FromRaw(SKCanvas canvas) => new CanvasShim(canvas);
+
     public ICanvasShim CanvasFromBitmap(SKBitmap bitmap)
     {
         var canvas = new SKCanvas(bitmap);
-        return new CanvasShim(canvas);
+        return FromRaw(canvas);
     }
 
     public ICanvasShim CanvasFromBitmap(IBitmapShim bitmap) => CanvasFromBitmap(bitmap.Raw);
-    
+
+    public IBitmapShim FromRaw(SKBitmap bitmap) => new BitmapShim(bitmap);
+
     public IBitmapShim BitmapFromDimensions(int width, int height)
     {
         var bitmap = new SKBitmap(width, height);
-        return new BitmapShim(bitmap);
+        return FromRaw(bitmap);
+    }
+    public IBitmapShim DecodeBitmapFromFile(string filePath)
+    {
+        var bitmap = SKBitmap.Decode(filePath);
+        return FromRaw(bitmap);
     }
 }
 
@@ -1132,10 +1154,10 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         // Load and draw custom background
         if (File.Exists(backgroundImagePath))
         {
-            using var backgroundBitmap = SKBitmap.Decode(backgroundImagePath);
+            using var backgroundBitmap = drawShimFactory.DecodeBitmapFromFile(backgroundImagePath);
             if (backgroundBitmap != null)
             {
-                canvas.Raw.DrawBitmap(backgroundBitmap, new SKRect(0, 0, width, height));
+                canvas.DrawBitmap(backgroundBitmap, new SKRect(0, 0, width, height));
             }
         }
         else
