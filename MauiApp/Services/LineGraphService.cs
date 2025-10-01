@@ -5,14 +5,43 @@ namespace WorkMood.MauiApp.Services;
 
 #region Shims
 
+public interface IDrawDataShim : IDisposable
+{
+    SKData Raw { get; }
+    byte[] ToArray();
+}
+
+public class DrawDataShim(SKData data) : IDrawDataShim
+{
+    public SKData Raw { get; } = data;
+
+    public byte[] ToArray()
+    {
+        return data.ToArray();
+    }
+
+    public void Dispose()
+    {
+        data.Dispose();
+    }
+}
+
 public interface IImageShim : IDisposable
 {
     SKImage? Raw { get; }
+
+    IDrawDataShim Encode(SKEncodedImageFormat format, int quality);
 }
 
 public class ImageShim(SKImage image) : IImageShim
 {
     public SKImage? Raw { get; } = image;
+
+    public IDrawDataShim Encode(SKEncodedImageFormat format, int quality)
+    {
+        var data = image.Encode(format, quality);
+        return new DrawDataShim(data);
+    }
 
     public void Dispose()
     {
@@ -1060,7 +1089,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         await Task.Run(() => DrawRawDataGraph(canvas, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, false));
 
         using IImageShim image = drawShimFactory.ImageFromBitmap(bitmap);
-        using var data = image.Raw.Encode(SKEncodedImageFormat.Png, 100);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
         return data.ToArray();
     }
 
