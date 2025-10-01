@@ -5,6 +5,36 @@ namespace WorkMood.MauiApp.Services;
 
 #region Shims
 
+public interface IBitmapShim : IDisposable
+{
+    SKBitmap Raw { get; }
+}
+
+public class BitmapShim(SKBitmap bitmap) : IBitmapShim
+{
+    public SKBitmap Raw { get; } = bitmap;
+
+    public void Dispose()
+    {
+        bitmap.Dispose();
+    }
+}
+
+public interface ICanvasShim : IDisposable
+{
+    SKCanvas Raw { get; }
+}
+
+public class CanvasShim(SKCanvas canvas) : ICanvasShim
+{
+    public SKCanvas Raw { get; } = canvas;
+
+    public void Dispose()
+    {
+        canvas.Dispose();
+    }
+}
+
 public interface IDrawDataShim : IDisposable
 {
     SKData Raw { get; }
@@ -52,6 +82,10 @@ public class ImageShim(SKImage image) : IImageShim
 public interface IDrawShimFactory
 {
     IImageShim ImageFromBitmap(SKBitmap bitmap);
+    IImageShim ImageFromBitmap(IBitmapShim bitmap);
+    ICanvasShim CanvasFromBitmap(SKBitmap bitmap);
+    ICanvasShim CanvasFromBitmap(IBitmapShim bitmap);
+    IBitmapShim BitmapFromDimensions(int width, int height);
 }
 
 public class DrawShimFactory : IDrawShimFactory
@@ -60,6 +94,22 @@ public class DrawShimFactory : IDrawShimFactory
     {
         var image = SKImage.FromBitmap(bitmap);
         return new ImageShim(image);
+    }
+
+    public IImageShim ImageFromBitmap(IBitmapShim bitmap) => ImageFromBitmap(bitmap.Raw);
+
+    public ICanvasShim CanvasFromBitmap(SKBitmap bitmap)
+    {
+        var canvas = new SKCanvas(bitmap);
+        return new CanvasShim(canvas);
+    }
+
+    public ICanvasShim CanvasFromBitmap(IBitmapShim bitmap) => CanvasFromBitmap(bitmap.Raw);
+    
+    public IBitmapShim BitmapFromDimensions(int width, int height)
+    {
+        var bitmap = new SKBitmap(width, height);
+        return new BitmapShim(bitmap);
     }
 }
 
@@ -1068,8 +1118,8 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
     {
         var sortedPoints = rawDataPoints.OrderBy(p => p.Timestamp).ToList();
 
-        using var bitmap = new SKBitmap(width, height);
-        using var canvas = new SKCanvas(bitmap);
+        using var bitmap = drawShimFactory.BitmapFromDimensions(width, height);
+        using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
 
         // Load and draw custom background
         if (File.Exists(backgroundImagePath))
@@ -1077,16 +1127,16 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
             using var backgroundBitmap = SKBitmap.Decode(backgroundImagePath);
             if (backgroundBitmap != null)
             {
-                canvas.DrawBitmap(backgroundBitmap, new SKRect(0, 0, width, height));
+                canvas.Raw.DrawBitmap(backgroundBitmap, new SKRect(0, 0, width, height));
             }
         }
         else
         {
             // Fallback to white background if image doesn't exist
-            canvas.Clear(SKColors.White);
+            canvas.Raw.Clear(SKColors.White);
         }
 
-        await Task.Run(() => DrawRawDataGraph(canvas, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, false));
+        await Task.Run(() => DrawRawDataGraph(canvas.Raw, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, false));
 
         using IImageShim image = drawShimFactory.ImageFromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);

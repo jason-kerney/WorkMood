@@ -18,6 +18,17 @@
             "stopAtEntry": false
         },
         {
+            "name": "Launch MauiApp (Windows)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-mauiapp",
+            "program": "${workspaceFolder}/MauiApp/bin/Debug/net9.0-windows10.0.19041.0/win10-x64/WorkMood.MauiApp.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/MauiApp",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
             "name": ".NET Core Attach",
             "type": "coreclr",
             "request": "attach"

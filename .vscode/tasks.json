@@ -36,6 +36,21 @@
                 "${workspaceFolder}/WorkMood.sln"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build-mauiapp",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/MauiApp/WorkMood.MauiApp.csproj",
+                "-f",
+                "net9.0-windows10.0.19041.0",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "group": "build",
+            "problemMatcher": "$msCompile"
         }
     ]
 }
