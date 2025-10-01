@@ -27,7 +27,7 @@
         },
         {
             "name": "check:windows",
-            "command": "cls && powershell Remove-Item -Recurse -Force \"WorkMood.MauiApp.Tests\\TestResults\" && powershell Remove-Item -Recurse -Force \"CoverageReport\" && dotnet test WorkMood.MauiApp.Tests --collect:\"XPlat Code Coverage\" && reportgenerator -reports:\"WorkMood.MauiApp.Tests\\TestResults\\**\\coverage.cobertura.xml\" -targetdir:\"CoverageReport\" -reporttypes:\"TextSummary\" -verbosity:Off && type \"CoverageReport\\Summary.txt\"",
+            "command": "cls && powershell -ExecutionPolicy Bypass -File cleanup-test-folders.ps1 && dotnet test WorkMood.MauiApp.Tests --collect:\"XPlat Code Coverage\" && reportgenerator -reports:\"WorkMood.MauiApp.Tests\\TestResults\\**\\coverage.cobertura.xml\" -targetdir:\"CoverageReport\" -reporttypes:\"TextSummary\" -verbosity:Off && type \"CoverageReport\\Summary.txt\"",
             "description": "Run tests and generate coverage report (Windows)"
         },
         {

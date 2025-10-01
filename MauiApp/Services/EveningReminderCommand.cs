@@ -23,6 +23,8 @@ public class EveningReminderCommand : IDispatcherCommand
         this.dateShim = dateShim;
         this.folder = folder;
     }
+    
+    public EveningReminderCommand() : this(new MoodDataService(), new ScheduleConfigService(), new DateShim(), new FolderShim()) { }
 
     /// <summary>
     /// Processes a timer tick to check if an evening mood reminder should be sent
@@ -33,64 +35,64 @@ public class EveningReminderCommand : IDispatcherCommand
         {
             var today = dateShim.GetTodayDate();
             var now = dateShim.Now();
-            
+
             // Get the schedule configuration
             var config = await _scheduleConfigService.LoadScheduleConfigAsync();
-            
+
             // Get the effective evening time (considering overrides)
             var effectiveEveningTime = config.GetEffectiveEveningTimeToday();
 
             // Create today's evening time from the effective configuration
             var eveningTime = dateShim.GetToday().Add(effectiveEveningTime);
-            
+
             Log($"EveningReminderCommand: Current time: {now:HH:mm:ss}, Evening time: {eveningTime:HH:mm:ss}");
-            
+
             // Check if current time is after the evening time
             if (now <= eveningTime)
             {
                 return CommandResult.NoAction("Current time is before evening time");
             }
-            
+
             // Check if time is within 10 minutes of the evening time
             var timeSinceEvening = now - eveningTime;
             if (timeSinceEvening.TotalMinutes > 10)
             {
                 return CommandResult.NoAction("Current time is more than 10 minutes past evening time");
             }
-            
+
             // Get today's mood record to check mood status
             var todayRecord = currentRecord ?? await _moodDataService.GetMoodEntryAsync(today);
-            
+
             // Determine what reminders are needed
             var reminderType = DetermineReminderType(todayRecord);
-            
+
             if (reminderType == EveningReminderType.NoReminder)
             {
                 return CommandResult.NoAction("All moods have been recorded for today");
             }
-            
+
             // Reset call count if this is a new day
             if (_lastReminderDate != today)
             {
                 _callCount = 0;
                 _lastReminderDate = today;
             }
-            
+
             // Increment call count
             _callCount++;
-            
+
             // Only send reminder every other time (on even call counts)
             if (_callCount % 2 != 0)
             {
                 Log($"EveningReminderCommand: Skipping reminder - call count: {_callCount} (odd)");
                 return CommandResult.NoAction($"Skipping reminder - call count: {_callCount}");
             }
-            
+
             Log($"EveningReminderCommand: Sending evening mood reminder - call count: {_callCount}, type: {reminderType}");
-            
+
             // Create the reminder message based on what needs to be recorded
             var message = CreateReminderMessage(reminderType);
-            
+
             // Send the reminder
             var reminderData = new EveningReminderData
             {
@@ -101,7 +103,7 @@ public class EveningReminderCommand : IDispatcherCommand
                 MorningMissed = reminderType == EveningReminderType.EveningAndMissedMorning || reminderType == EveningReminderType.OnlyMissedMorning,
                 EveningNeeded = reminderType == EveningReminderType.EveningOnly || reminderType == EveningReminderType.EveningAndMissedMorning
             };
-            
+
             return CommandResult.Succeeded(message, reminderData);
         }
         catch (Exception ex)

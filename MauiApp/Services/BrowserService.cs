@@ -6,14 +6,11 @@ namespace WorkMood.MauiApp.Services;
 /// Implementation of IBrowserService for MAUI applications
 /// Handles opening URLs in the system's default browser
 /// </summary>
-public class BrowserService : IBrowserService
+public class BrowserService(IBrowserShim browserShim) : IBrowserService
 {
-    private readonly IBrowserShim _browserShim;
+    private readonly IBrowserShim _browserShim = browserShim;
 
-    public BrowserService(IBrowserShim browserShim)
-    {
-        _browserShim = browserShim;
-    }
+    public BrowserService() : this(new BrowserShim()) { }
 
     /// <summary>
     /// Opens a URL in the system's default browser

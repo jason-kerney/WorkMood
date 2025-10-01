@@ -40,6 +40,8 @@ public class DataArchiveService : IDataArchiveService
         this.jsonSerializerShim = jsonSerializerShim;
     }
 
+    public DataArchiveService() : this(new FolderShim(), new DateShim(), new FileShim(), new JsonSerializerShim()) { }
+
     /// <summary>
     /// Checks if archiving is needed and performs archiving if required.
     /// Archives data older than the specified threshold to a separate file.
