@@ -1,24 +1,60 @@
 using SkiaSharp;
-using System.Linq;
 using WorkMood.MauiApp.Models;
 
 namespace WorkMood.MauiApp.Services;
 
+#region Shims
+
+public interface IImageShim : IDisposable
+{
+    SKImage? Raw { get; }
+}
+
+public class ImageShim(SKImage image) : IImageShim
+{
+    public SKImage? Raw { get; } = image;
+
+    public void Dispose()
+    {
+        image.Dispose();
+    }
+}
+
+public interface IDrawShimFactory
+{
+    IImageShim ImageFromBitmap(SKBitmap bitmap);
+}
+
+public class DrawShimFactory : IDrawShimFactory
+{
+    public IImageShim ImageFromBitmap(SKBitmap bitmap)
+    {
+        var image = SKImage.FromBitmap(bitmap);
+        return new ImageShim(image);
+    }
+}
+
+#endregion
+#region Business Logic
+#endregion
+
 /// <summary>
 /// Implementation of line graph service using SkiaSharp for rendering
 /// </summary>
-public class LineGraphService : ILineGraphService
+public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphService
 {
     private const int MinYValue = -9;
     private const int MaxYValue = 9;
     private const int Padding = 60;
     private const int GridLineSpacing = 20;
-    
+
+    public LineGraphService() : this(new DrawShimFactory()) { }
+
     public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width = 800, int height = 600)
     {
         return await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, Colors.Blue, width, height);
     }
-    
+
     public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, Color lineColor, int width = 800, int height = 600)
     {
         var filteredEntries = moodEntries
@@ -28,35 +64,35 @@ public class LineGraphService : ILineGraphService
 
         using var bitmap = new SKBitmap(width, height);
         using var canvas = new SKCanvas(bitmap);
-        
+
         // Clear canvas with white background
         canvas.Clear(SKColors.White);
-        
+
         await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, true)); // Draw white background for normal graphs
-        
+
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-        
+
         return data.ToArray();
     }
-    
+
     public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, int width = 800, int height = 600)
     {
         var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height);
         await File.WriteAllBytesAsync(filePath, imageData);
     }
-    
+
     public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, Color lineColor, int width = 800, int height = 600)
     {
         var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, lineColor, width, height);
         await File.WriteAllBytesAsync(filePath, imageData);
     }
-    
+
     public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string backgroundImagePath, int width = 800, int height = 600)
     {
         return await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, backgroundImagePath, Colors.Blue, width, height);
     }
-    
+
     public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         var filteredEntries = moodEntries
@@ -66,7 +102,7 @@ public class LineGraphService : ILineGraphService
 
         using var bitmap = new SKBitmap(width, height);
         using var canvas = new SKCanvas(bitmap);
-        
+
         // Load and draw custom background
         if (File.Exists(backgroundImagePath))
         {
@@ -81,21 +117,21 @@ public class LineGraphService : ILineGraphService
             // Fallback to white background if image doesn't exist
             canvas.Clear(SKColors.White);
         }
-        
+
         await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, false)); // Don't draw white background when using custom background
-        
+
         // Convert to PNG
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
         return data.ToArray();
     }
-    
+
     public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, string backgroundImagePath, int width = 800, int height = 600)
     {
         var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, backgroundImagePath, width, height);
         await File.WriteAllBytesAsync(filePath, imageData);
     }
-    
+
     public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, backgroundImagePath, lineColor, width, height);
@@ -118,15 +154,15 @@ public class LineGraphService : ILineGraphService
 
         using var bitmap = new SKBitmap(width, height);
         using var canvas = new SKCanvas(bitmap);
-        
+
         // Clear canvas with white background
         canvas.Clear(SKColors.White);
-        
+
         await Task.Run(() => DrawGraphForMode(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, graphMode, true)); // Draw white background for normal graphs
-        
+
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-        
+
         return data.ToArray();
     }
 
@@ -139,7 +175,7 @@ public class LineGraphService : ILineGraphService
 
         using var bitmap = new SKBitmap(width, height);
         using var canvas = new SKCanvas(bitmap);
-        
+
         // Load and draw custom background
         if (File.Exists(backgroundImagePath))
         {
@@ -154,63 +190,63 @@ public class LineGraphService : ILineGraphService
             // Fallback to white background if image doesn't exist
             canvas.Clear(SKColors.White);
         }
-        
+
         await Task.Run(() => DrawGraphForMode(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, graphMode, false)); // Don't draw white background when using custom background
-        
+
         // Convert to PNG
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
         return data.ToArray();
     }
-    
+
     private void DrawGraph(SKCanvas canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color lineColor, bool drawWhiteBackground = true)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
-        
+
         // Calculate the full date range for proportional positioning
         var requestedStartDate = dateRange.GetStartDate();
         var requestedEndDate = dateRange.GetEndDate();
-        
+
         // Conditionally draw background
         if (drawWhiteBackground)
         {
             DrawBackground(canvas, graphArea);
         }
-        
+
         // Conditionally draw grid and axes
         if (showAxesAndGrid)
         {
             DrawGrid(canvas, graphArea);
             DrawAxes(canvas, graphArea);
         }
-        
+
         if (entries.Count == 0)
         {
             DrawNoDataMessage(canvas, graphArea);
             return;
         }
-        
+
         // Draw data line and optionally points with proportional positioning
         DrawDataLine(canvas, graphArea, entries, requestedStartDate, requestedEndDate, lineColor);
         if (showDataPoints)
         {
             DrawDataPoints(canvas, graphArea, entries, requestedStartDate, requestedEndDate, lineColor);
         }
-        
+
         // Conditionally draw labels
         if (showAxesAndGrid)
         {
             DrawYAxisLabels(canvas, graphArea);
             DrawXAxisLabels(canvas, graphArea, entries, requestedStartDate, requestedEndDate, showDataPoints, lineColor);
         }
-        
+
         // Conditionally draw title
         if (showTitle)
         {
             DrawTitle(canvas, width);
         }
     }
-    
+
     private void DrawBackground(SKCanvas canvas, SKRect area)
     {
         using var backgroundPaint = new SKPaint
@@ -220,7 +256,7 @@ public class LineGraphService : ILineGraphService
         };
         canvas.DrawRect(area, backgroundPaint);
     }
-    
+
     private void DrawGrid(SKCanvas canvas, SKRect area)
     {
         using var gridPaint = new SKPaint
@@ -230,7 +266,7 @@ public class LineGraphService : ILineGraphService
             StrokeWidth = 1,
             PathEffect = SKPathEffect.CreateDash([5, 5], 0)
         };
-        
+
         // Horizontal grid lines
         var yRange = MaxYValue - MinYValue;
         var yStep = area.Height / yRange;
@@ -239,7 +275,7 @@ public class LineGraphService : ILineGraphService
             var y = area.Bottom - ((i - MinYValue) * yStep);
             canvas.DrawLine(area.Left, y, area.Right, y, gridPaint);
         }
-        
+
         // Vertical grid lines - draw fewer lines for readability
         if (area.Width > 200)
         {
@@ -252,7 +288,7 @@ public class LineGraphService : ILineGraphService
             }
         }
     }
-    
+
     private void DrawAxes(SKCanvas canvas, SKRect area)
     {
         using var axisPaint = new SKPaint
@@ -261,13 +297,13 @@ public class LineGraphService : ILineGraphService
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
         };
-        
+
         // Y-axis
         canvas.DrawLine(area.Left, area.Top, area.Left, area.Bottom, axisPaint);
-        
+
         // X-axis
         canvas.DrawLine(area.Left, area.Bottom, area.Right, area.Bottom, axisPaint);
-        
+
         // Zero line (horizontal line at y=0)
         var zeroY = area.Bottom - ((0 - MinYValue) * area.Height / (MaxYValue - MinYValue));
         using var zeroLinePaint = new SKPaint
@@ -278,11 +314,11 @@ public class LineGraphService : ILineGraphService
         };
         canvas.DrawLine(area.Left, zeroY, area.Right, zeroY, zeroLinePaint);
     }
-    
+
     private void DrawDataLine(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor)
     {
         if (entries.Count < 2) return;
-        
+
         using var linePaint = new SKPaint
         {
             Color = new SKColor((byte)(lineColor.Red * 255), (byte)(lineColor.Green * 255), (byte)(lineColor.Blue * 255)),
@@ -290,31 +326,31 @@ public class LineGraphService : ILineGraphService
             StrokeWidth = 3,
             IsAntialias = true
         };
-        
+
         using var path = new SKPath();
-        
+
         // Calculate total days in the requested range
         var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
-        
+
         for (int i = 0; i < entries.Count; i++)
         {
             // Calculate proportional position based on actual date within the requested range
             var daysFromStart = entries[i].Date.DayNumber - requestedStartDate.DayNumber;
             var proportionalPosition = (float)daysFromStart / totalDays;
-            
+
             var x = area.Left + (proportionalPosition * area.Width);
             var normalizedY = (entries[i].Value!.Value - MinYValue) / (double)(MaxYValue - MinYValue);
             var y = area.Bottom - (float)(normalizedY * area.Height);
-            
+
             if (i == 0)
                 path.MoveTo(x, y);
             else
                 path.LineTo(x, y);
         }
-        
+
         canvas.DrawPath(path, linePaint);
     }
-    
+
     private void DrawDataPoints(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor)
     {
         using var pointPaint = new SKPaint
@@ -323,24 +359,24 @@ public class LineGraphService : ILineGraphService
             Style = SKPaintStyle.Fill,
             IsAntialias = true
         };
-        
+
         // Calculate total days in the requested range
         var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
-        
+
         for (int i = 0; i < entries.Count; i++)
         {
             // Calculate proportional position based on actual date within the requested range
             var daysFromStart = entries[i].Date.DayNumber - requestedStartDate.DayNumber;
             var proportionalPosition = (float)daysFromStart / totalDays;
-            
+
             var x = area.Left + (proportionalPosition * area.Width);
             var normalizedY = (entries[i].Value!.Value - MinYValue) / (double)(MaxYValue - MinYValue);
             var y = area.Bottom - (float)(normalizedY * area.Height);
-            
+
             canvas.DrawCircle(x, y, 4, pointPaint);
         }
     }
-    
+
     private void DrawYAxisLabels(SKCanvas canvas, SKRect area)
     {
         using var labelPaint = new SKPaint
@@ -350,17 +386,17 @@ public class LineGraphService : ILineGraphService
             IsAntialias = true,
             TextAlign = SKTextAlign.Right
         };
-        
+
         var yRange = MaxYValue - MinYValue;
         var yStep = area.Height / yRange;
-        
+
         for (int i = MinYValue; i <= MaxYValue; i += 3) // Show every 3rd value to avoid crowding
         {
             var y = area.Bottom - ((i - MinYValue) * yStep);
             canvas.DrawText(i.ToString(), area.Left - 10, y + 4, labelPaint);
         }
     }
-    
+
     private void DrawXAxisLabels(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor)
     {
         using var labelPaint = new SKPaint
@@ -370,26 +406,26 @@ public class LineGraphService : ILineGraphService
             IsAntialias = true,
             TextAlign = SKTextAlign.Center
         };
-        
+
         // Show labels for the requested date range, not just the data points
         var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
-        
+
         // Show at most 8 date labels distributed across the entire requested range
         var labelCount = Math.Min(8, Math.Max(2, totalDays / 30)); // At least 2 labels, roughly monthly intervals
-        
+
         for (int i = 0; i <= labelCount; i++)
         {
             var proportionalPosition = (float)i / labelCount;
             var x = area.Left + (proportionalPosition * area.Width);
-            
+
             // Calculate the date for this position
             var daysFromStart = (int)(proportionalPosition * totalDays);
             var labelDate = requestedStartDate.AddDays(daysFromStart);
             var dateText = labelDate.ToString("MM/dd");
-            
+
             canvas.DrawText(dateText, x, area.Bottom + 20, labelPaint);
         }
-        
+
         // Also show data point dates if they don't overlap too much and showDataPoints is true
         if (showDataPoints && entries.Count > 0 && entries.Count <= 10)
         {
@@ -400,18 +436,18 @@ public class LineGraphService : ILineGraphService
                 IsAntialias = true,
                 TextAlign = SKTextAlign.Center
             };
-            
+
             foreach (var entry in entries)
             {
                 var daysFromStart = entry.Date.DayNumber - requestedStartDate.DayNumber;
                 var proportionalPosition = (float)daysFromStart / totalDays;
                 var x = area.Left + (proportionalPosition * area.Width);
-                
+
                 canvas.DrawText("●", x, area.Bottom + 35, dataLabelPaint);
             }
         }
     }
-    
+
     private void DrawTitle(SKCanvas canvas, int width)
     {
         using var titlePaint = new SKPaint
@@ -422,10 +458,10 @@ public class LineGraphService : ILineGraphService
             TextAlign = SKTextAlign.Center,
             Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
         };
-        
+
         canvas.DrawText("Mood Change Over Time", width / 2, 30, titlePaint);
     }
-    
+
     private void DrawNoDataMessage(SKCanvas canvas, SKRect area)
     {
         using var messagePaint = new SKPaint
@@ -435,10 +471,10 @@ public class LineGraphService : ILineGraphService
             IsAntialias = true,
             TextAlign = SKTextAlign.Center
         };
-        
+
         var centerX = area.Left + area.Width / 2;
         var centerY = area.Top + area.Height / 2;
-        
+
         canvas.DrawText("No mood data available for the selected period", centerX, centerY, messagePaint);
     }
 
@@ -463,44 +499,44 @@ public class LineGraphService : ILineGraphService
     private void DrawGraphForMode(SKCanvas canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color lineColor, GraphMode graphMode, bool drawWhiteBackground = true)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
-        
+
         // Calculate the full date range for proportional positioning
         var requestedStartDate = dateRange.GetStartDate();
         var requestedEndDate = dateRange.GetEndDate();
-        
+
         // Conditionally draw background
         if (drawWhiteBackground)
         {
             DrawBackground(canvas, graphArea);
         }
-        
+
         // Conditionally draw grid and axes with mode-specific Y range
         if (showAxesAndGrid)
         {
             DrawGridForMode(canvas, graphArea, graphMode);
             DrawAxesForMode(canvas, graphArea, graphMode);
         }
-        
+
         if (entries.Count == 0)
         {
             DrawNoDataMessage(canvas, graphArea);
             return;
         }
-        
+
         // Draw data line and optionally points with proportional positioning
         DrawDataLineForMode(canvas, graphArea, entries, requestedStartDate, requestedEndDate, lineColor, graphMode);
         if (showDataPoints)
         {
             DrawDataPointsForMode(canvas, graphArea, entries, requestedStartDate, requestedEndDate, lineColor, graphMode);
         }
-        
+
         // Conditionally draw labels
         if (showAxesAndGrid)
         {
             DrawYAxisLabelsForMode(canvas, graphArea, graphMode);
             DrawXAxisLabelsForMode(canvas, graphArea, entries, requestedStartDate, requestedEndDate, showDataPoints, lineColor, graphMode);
         }
-        
+
         // Conditionally draw title
         if (showTitle)
         {
@@ -512,7 +548,7 @@ public class LineGraphService : ILineGraphService
     {
         // Use existing grid method - the Y range constants will be updated based on mode
         var (minY, maxY) = GetYRangeForMode(graphMode);
-        
+
         using var gridPaint = new SKPaint
         {
             Color = SKColors.LightGray,
@@ -520,7 +556,7 @@ public class LineGraphService : ILineGraphService
             StrokeWidth = 1,
             PathEffect = SKPathEffect.CreateDash([5, 5], 0)
         };
-        
+
         // Horizontal grid lines
         var yRange = maxY - minY;
         var yStep = area.Height / yRange;
@@ -529,7 +565,7 @@ public class LineGraphService : ILineGraphService
             var y = area.Bottom - ((i - minY) * yStep);
             canvas.DrawLine(area.Left, y, area.Right, y, gridPaint);
         }
-        
+
         // Vertical grid lines - draw fewer lines for readability
         if (area.Width > 200)
         {
@@ -551,13 +587,13 @@ public class LineGraphService : ILineGraphService
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
         };
-        
+
         // Y-axis
         canvas.DrawLine(area.Left, area.Top, area.Left, area.Bottom, axisPaint);
-        
+
         // X-axis
         canvas.DrawLine(area.Left, area.Bottom, area.Right, area.Bottom, axisPaint);
-        
+
         // Zero line (horizontal line at y=0)
         var (minY, maxY) = GetYRangeForMode(graphMode);
         var zeroY = area.Bottom - ((0 - minY) * area.Height / (maxY - minY));
@@ -573,7 +609,7 @@ public class LineGraphService : ILineGraphService
     private void DrawDataLineForMode(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
     {
         if (entries.Count < 2) return;
-        
+
         using var linePaint = new SKPaint
         {
             Color = new SKColor((byte)(lineColor.Red * 255), (byte)(lineColor.Green * 255), (byte)(lineColor.Blue * 255)),
@@ -581,29 +617,29 @@ public class LineGraphService : ILineGraphService
             StrokeWidth = 3,
             IsAntialias = true
         };
-        
+
         using var path = new SKPath();
-        
+
         // Calculate total days in the requested range
         var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
         var (minY, maxY) = GetYRangeForMode(graphMode);
-        
+
         for (int i = 0; i < entries.Count; i++)
         {
             var entry = entries[i];
             var daysFromStart = entry.Date.DayNumber - requestedStartDate.DayNumber;
             var proportionalPosition = (float)daysFromStart / totalDays;
             var x = area.Left + (proportionalPosition * area.Width);
-            
+
             var value = GetValueForMode(entry, graphMode);
             var y = (float)(area.Bottom - ((value - minY) * area.Height / (maxY - minY)));
-            
+
             if (i == 0)
                 path.MoveTo(x, y);
             else
                 path.LineTo(x, y);
         }
-        
+
         canvas.DrawPath(path, linePaint);
     }
 
@@ -615,21 +651,21 @@ public class LineGraphService : ILineGraphService
             Style = SKPaintStyle.Fill,
             IsAntialias = true
         };
-        
+
         // Calculate total days in the requested range
         var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
         var (minY, maxY) = GetYRangeForMode(graphMode);
-        
+
         for (int i = 0; i < entries.Count; i++)
         {
             var entry = entries[i];
             var daysFromStart = entry.Date.DayNumber - requestedStartDate.DayNumber;
             var proportionalPosition = (float)daysFromStart / totalDays;
             var x = area.Left + (proportionalPosition * area.Width);
-            
+
             var value = GetValueForMode(entry, graphMode);
             var y = (float)(area.Bottom - ((value - minY) * area.Height / (maxY - minY)));
-            
+
             canvas.DrawCircle(x, y, 4, pointPaint);
         }
     }
@@ -643,11 +679,11 @@ public class LineGraphService : ILineGraphService
             IsAntialias = true,
             TextAlign = SKTextAlign.Right
         };
-        
+
         var (minY, maxY) = GetYRangeForMode(graphMode);
         var yRange = maxY - minY;
         var yStep = area.Height / yRange;
-        
+
         for (int i = minY; i <= maxY; i += 3) // Show every 3rd value to avoid crowding
         {
             var y = area.Bottom - ((i - minY) * yStep);
@@ -671,14 +707,14 @@ public class LineGraphService : ILineGraphService
             TextAlign = SKTextAlign.Center,
             Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
         };
-        
+
         var title = graphMode switch
         {
             GraphMode.Impact => "Mood Change Over Time",
             GraphMode.Average => "Average Mood Over Time",
             _ => "Mood Data Over Time"
         };
-        
+
         canvas.DrawText(title, width / 2, 30, titlePaint);
     }
 
@@ -711,50 +747,50 @@ public class LineGraphService : ILineGraphService
     private void DrawRawDataGraph(SKCanvas canvas, List<RawMoodDataPoint> dataPoints, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color pointColor, bool drawWhiteBackground = true)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
-        
+
         // Calculate the full date range for proportional positioning
         var requestedStartDate = dateRange.GetStartDate();
         var requestedEndDate = dateRange.GetEndDate();
-        
+
         // Convert to DateTime for timestamp calculations
         var startDateTime = requestedStartDate.ToDateTime(TimeOnly.MinValue);
         var endDateTime = requestedEndDate.ToDateTime(TimeOnly.MaxValue);
-        
+
         // Conditionally draw background
         if (drawWhiteBackground)
         {
             DrawBackground(canvas, graphArea);
         }
-        
+
         // Conditionally draw grid and axes for raw data (1-10 range)
         if (showAxesAndGrid)
         {
             DrawRawDataGrid(canvas, graphArea);
             DrawRawDataAxes(canvas, graphArea);
         }
-        
+
         if (dataPoints.Count == 0)
         {
             DrawNoDataMessage(canvas, graphArea);
             return;
         }
-        
+
         // Draw connecting lines between points
         DrawRawDataLines(canvas, graphArea, dataPoints, startDateTime, endDateTime, pointColor);
-        
+
         // Draw data points on top of lines
         if (showDataPoints)
         {
             DrawRawDataPoints(canvas, graphArea, dataPoints, startDateTime, endDateTime, pointColor);
         }
-        
+
         // Conditionally draw labels
         if (showAxesAndGrid)
         {
             DrawRawDataYAxisLabels(canvas, graphArea);
             DrawRawDataXAxisLabels(canvas, graphArea, dataPoints, startDateTime, endDateTime, pointColor);
         }
-        
+
         // Conditionally draw title
         if (showTitle)
         {
@@ -771,7 +807,7 @@ public class LineGraphService : ILineGraphService
             StrokeWidth = 1,
             PathEffect = SKPathEffect.CreateDash([5, 5], 0)
         };
-        
+
         // Horizontal grid lines for mood scale 1-10
         var yRange = 10 - 1;
         var yStep = area.Height / yRange;
@@ -780,7 +816,7 @@ public class LineGraphService : ILineGraphService
             var y = area.Bottom - ((i - 1) * yStep);
             canvas.DrawLine(area.Left, y, area.Right, y, gridPaint);
         }
-        
+
         // Vertical grid lines - fewer lines for datetime readability
         if (area.Width > 200)
         {
@@ -802,10 +838,10 @@ public class LineGraphService : ILineGraphService
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
         };
-        
+
         // Y-axis
         canvas.DrawLine(area.Left, area.Top, area.Left, area.Bottom, axisPaint);
-        
+
         // X-axis
         canvas.DrawLine(area.Left, area.Bottom, area.Right, area.Bottom, axisPaint);
     }
@@ -866,7 +902,7 @@ public class LineGraphService : ILineGraphService
             Style = SKPaintStyle.Fill,
             IsAntialias = true
         };
-        
+
         using var endPaint = new SKPaint
         {
             Color = new SKColor((byte)(pointColor.Red * 180), (byte)(pointColor.Green * 180), (byte)(pointColor.Blue * 180)),
@@ -874,9 +910,9 @@ public class LineGraphService : ILineGraphService
             StrokeWidth = 2,
             IsAntialias = true
         };
-        
+
         var totalTimeSpan = endDateTime - startDateTime;
-        
+
         foreach (var point in dataPoints)
         {
             if (point.Timestamp >= startDateTime && point.Timestamp <= endDateTime)
@@ -885,10 +921,10 @@ public class LineGraphService : ILineGraphService
                 var timeFromStart = point.Timestamp - startDateTime;
                 var proportionalPosition = (float)(timeFromStart.TotalMilliseconds / totalTimeSpan.TotalMilliseconds);
                 var x = area.Left + (proportionalPosition * area.Width);
-                
+
                 // Calculate Y position based on mood value (1-10 range)
                 var y = (float)(area.Bottom - ((point.MoodValue - 1) * area.Height / 9)); // 9 = 10-1
-                
+
                 // Draw different shapes for start vs end of work
                 if (point.MoodType == MoodType.StartOfWork)
                 {
@@ -913,10 +949,10 @@ public class LineGraphService : ILineGraphService
             IsAntialias = true,
             TextAlign = SKTextAlign.Right
         };
-        
+
         var yRange = 9; // 10 - 1
         var yStep = area.Height / yRange;
-        
+
         for (int i = 1; i <= 10; i += 2) // Show every other value to avoid crowding
         {
             var y = area.Bottom - ((i - 1) * yStep);
@@ -933,20 +969,20 @@ public class LineGraphService : ILineGraphService
             IsAntialias = true,
             TextAlign = SKTextAlign.Center
         };
-        
+
         var totalTimeSpan = endDateTime - startDateTime;
-        
+
         // Show at most 4 time labels distributed across the range
         var labelCount = Math.Min(4, Math.Max(2, (int)(totalTimeSpan.TotalDays)));
-        
+
         for (int i = 0; i <= labelCount; i++)
         {
             var proportionalPosition = (float)i / labelCount;
             var x = area.Left + (proportionalPosition * area.Width);
-            
+
             var labelDateTime = startDateTime.AddTicks((long)(proportionalPosition * totalTimeSpan.Ticks));
             var timeText = labelDateTime.ToString("MM/dd HH:mm");
-            
+
             canvas.DrawText(timeText, x, area.Bottom + 20, labelPaint);
         }
     }
@@ -961,12 +997,12 @@ public class LineGraphService : ILineGraphService
             TextAlign = SKTextAlign.Center,
             Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
         };
-        
+
         canvas.DrawText("Raw Mood Data Over Time", width / 2, 30, titlePaint);
     }
 
     // New save methods with GraphMode support
-    
+
     public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
     {
         var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, graphMode, lineColor, width, height);
@@ -987,15 +1023,15 @@ public class LineGraphService : ILineGraphService
 
         using var bitmap = new SKBitmap(width, height);
         using var canvas = new SKCanvas(bitmap);
-        
+
         // Clear canvas with white background
         canvas.Clear(SKColors.White);
-        
+
         await Task.Run(() => DrawRawDataGraph(canvas, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, true));
-        
+
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-        
+
         return data.ToArray();
     }
 
@@ -1005,7 +1041,7 @@ public class LineGraphService : ILineGraphService
 
         using var bitmap = new SKBitmap(width, height);
         using var canvas = new SKCanvas(bitmap);
-        
+
         // Load and draw custom background
         if (File.Exists(backgroundImagePath))
         {
@@ -1020,11 +1056,11 @@ public class LineGraphService : ILineGraphService
             // Fallback to white background if image doesn't exist
             canvas.Clear(SKColors.White);
         }
-        
+
         await Task.Run(() => DrawRawDataGraph(canvas, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, false));
-        
-        using var image = SKImage.FromBitmap(bitmap);
-        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+
+        using IImageShim image = drawShimFactory.ImageFromBitmap(bitmap);
+        using var data = image.Raw.Encode(SKEncodedImageFormat.Png, 100);
         return data.ToArray();
     }
 
