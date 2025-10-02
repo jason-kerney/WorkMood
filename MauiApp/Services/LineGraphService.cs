@@ -372,13 +372,18 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawXAxisLabels(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor)
     {
-        using var labelPaint = new SKPaint
+        DrawXAxisLabels(drawShimFactory.FromRaw(canvas), area, entries, requestedStartDate, requestedEndDate, showDataPoints, lineColor);
+    }
+
+    private void DrawXAxisLabels(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor)
+    {
+        using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.Black,
             TextSize = 10,
             IsAntialias = true,
             TextAlign = SKTextAlign.Center
-        };
+        });
 
         // Show labels for the requested date range, not just the data points
         var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
@@ -402,13 +407,13 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         // Also show data point dates if they don't overlap too much and showDataPoints is true
         if (showDataPoints && entries.Count > 0 && entries.Count <= 10)
         {
-            using var dataLabelPaint = new SKPaint
+            using var dataLabelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
             {
                 Color = new SKColor((byte)(lineColor.Red * 180), (byte)(lineColor.Green * 180), (byte)(lineColor.Blue * 180)), // Match data point color
                 TextSize = 8,
                 IsAntialias = true,
                 TextAlign = SKTextAlign.Center
-            };
+            });
 
             foreach (var entry in entries)
             {
