@@ -50,6 +50,7 @@ public interface ICanvasShim : IDisposable
     void Clear(SKColor color);
     void DrawBitmap(IBitmapShim backgroundBitmap, SKRect sKRect);
     void DrawCircle(float x, float y, int radius, IPaintShim startPaint);
+    void DrawPath(SKPath path, IPaintShim paint);
     void DrawText(string text, int x, int y, IPaintShim titlePaint);
     void DrawText(string text, float x, float y, IPaintShim titlePaint);
 }
@@ -71,6 +72,11 @@ public class CanvasShim(SKCanvas canvas) : ICanvasShim
     public void DrawBitmap(IBitmapShim backgroundBitmap, SKRect sKRect)
     {
         canvas.DrawBitmap(backgroundBitmap.Raw, sKRect);
+    }
+
+    public void DrawPath(SKPath path, IPaintShim paint)
+    {
+        canvas.DrawPath(path, paint.Raw);
     }
 
     public void DrawText(string text, float x, float y, IPaintShim titlePaint)
@@ -192,7 +198,9 @@ public class DrawShimFactory : IDrawShimFactory
             TextSize = paintShimArgs.TextSize,
             IsAntialias = paintShimArgs.IsAntialias,
             TextAlign = paintShimArgs.TextAlign,
-            Typeface = paintShimArgs.Typeface
+            Typeface = paintShimArgs.Typeface,
+            Style = paintShimArgs.Style ?? SKPaintStyle.Fill,
+            StrokeWidth = paintShimArgs.StrokeWidth,
         };
         return new PaintShim(paint);
     }
