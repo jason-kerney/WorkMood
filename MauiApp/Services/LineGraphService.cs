@@ -524,16 +524,21 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawGridForMode(SKCanvas canvas, SKRect area, GraphMode graphMode)
     {
+        DrawGridForMode(drawShimFactory.FromRaw(canvas), area, graphMode);
+    }
+
+    private void DrawGridForMode(ICanvasShim canvas, SKRect area, GraphMode graphMode)
+    {
         // Use existing grid method - the Y range constants will be updated based on mode
         var (minY, maxY) = GetYRangeForMode(graphMode);
 
-        using var gridPaint = new SKPaint
+        using var gridPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.LightGray,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 1,
             PathEffect = SKPathEffect.CreateDash([5, 5], 0)
-        };
+        });
 
         // Horizontal grid lines
         var yRange = maxY - minY;
