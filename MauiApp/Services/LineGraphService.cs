@@ -623,12 +623,18 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawDataPointsForMode(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
     {
-        using var pointPaint = new SKPaint
+        DrawDataPointsForMode(drawShimFactory.FromRaw(canvas), area, entries, requestedStartDate, requestedEndDate, lineColor, graphMode);
+    }
+
+
+    private void DrawDataPointsForMode(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
+    {
+        using var pointPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = new SKColor((byte)(lineColor.Red * 180), (byte)(lineColor.Green * 180), (byte)(lineColor.Blue * 180)),
             Style = SKPaintStyle.Fill,
             IsAntialias = true
-        };
+        });
 
         // Calculate total days in the requested range
         var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
