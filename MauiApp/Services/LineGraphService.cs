@@ -702,6 +702,11 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawXAxisLabelsForMode(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor, GraphMode graphMode)
     {
+        DrawXAxisLabelsForMode(drawShimFactory.FromRaw(canvas), area, entries, requestedStartDate, requestedEndDate, showDataPoints, lineColor, graphMode);
+    }
+
+    private void DrawXAxisLabelsForMode(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor, GraphMode graphMode)
+    {
         // Reuse existing X-axis label logic since it doesn't depend on graph mode
         DrawXAxisLabels(canvas, area, entries, requestedStartDate, requestedEndDate, showDataPoints, lineColor);
     }
