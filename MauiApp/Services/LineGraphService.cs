@@ -4,12 +4,7 @@ using WorkMood.MauiApp.Models;
 
 namespace WorkMood.MauiApp.Services;
 
-#region Shims
-
-
-#endregion
-#region Business Logic
-#endregion
+// Sha: 6d7b2feb687d49cec0f8c2b736b310c7919e1c6d
 
 /// <summary>
 /// Implementation of line graph service using SkiaSharp for rendering
@@ -915,13 +910,18 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawRawDataYAxisLabels(SKCanvas canvas, SKRect area)
     {
-        using var labelPaint = new SKPaint
+        DrawRawDataYAxisLabels(drawShimFactory.FromRaw(canvas), area);
+    }
+
+    private void DrawRawDataYAxisLabels(ICanvasShim canvas, SKRect area)
+    {
+        using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.Black,
             TextSize = 12,
             IsAntialias = true,
             TextAlign = SKTextAlign.Right
-        };
+        });
 
         var yRange = 9; // 10 - 1
         var yStep = area.Height / yRange;
