@@ -677,14 +677,19 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawTitleForMode(SKCanvas canvas, int width, GraphMode graphMode)
     {
-        using var titlePaint = new SKPaint
+        DrawTitleForMode(drawShimFactory.FromRaw(canvas), width, graphMode);
+    }
+
+    private void DrawTitleForMode(ICanvasShim canvas, int width, GraphMode graphMode)
+    {
+        using var titlePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.Black,
             TextSize = 16,
             IsAntialias = true,
             TextAlign = SKTextAlign.Center,
             Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
-        };
+        });
 
         var title = graphMode switch
         {
@@ -718,6 +723,10 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
     }
 
     // Raw Data drawing methods
+    private void DrawRawDataGraph(SKCanvas canvas, List<RawMoodDataPoint> dataPoints, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color pointColor, bool drawWhiteBackground = true)
+    {
+        DrawRawDataGraph(drawShimFactory.FromRaw(canvas), dataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, pointColor, drawWhiteBackground);
+    }
 
     /// <summary>
     /// Draws a scatter plot graph for raw mood data points
