@@ -785,11 +785,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         }
     }
 
-    private void DrawRawDataGrid(SKCanvas canvas, SKRect area)
-    {
-        DrawRawDataGrid(drawShimFactory.FromRaw(canvas), area);
-    }
-
     private void DrawRawDataGrid(ICanvasShim canvas, SKRect area)
     {
         using var gridPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -822,11 +817,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         }
     }
 
-    private void DrawRawDataAxes(SKCanvas canvas, SKRect area)
-    {
-        DrawRawDataAxes(drawShimFactory.FromRaw(canvas), area);
-    }
-
     private void DrawRawDataAxes(ICanvasShim canvas, SKRect area)
     {
         using var axisPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -841,11 +831,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
         // X-axis
         canvas.DrawLine(area.Left, area.Bottom, area.Right, area.Bottom, axisPaint);
-    }
-
-    private void DrawRawDataLines(SKCanvas canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color lineColor)
-    {
-        DrawRawDataLines(drawShimFactory.FromRaw(canvas), area, dataPoints, startDateTime, endDateTime, lineColor);
     }
 
     private void DrawRawDataLines(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color lineColor)
@@ -895,11 +880,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         canvas.DrawPath(path, linePaint);
     }
 
-    private void DrawRawDataPoints(SKCanvas canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
-    {
-        DrawRawDataPoints(drawShimFactory.FromRaw(canvas), area, dataPoints, startDateTime, endDateTime, pointColor);
-    }
-
     private void DrawRawDataPoints(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
     {
         // Create different paints for start and end of work
@@ -947,11 +927,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         }
     }
 
-    private void DrawRawDataYAxisLabels(SKCanvas canvas, SKRect area)
-    {
-        DrawRawDataYAxisLabels(drawShimFactory.FromRaw(canvas), area);
-    }
-
     private void DrawRawDataYAxisLabels(ICanvasShim canvas, SKRect area)
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -970,11 +945,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
             var y = area.Bottom - ((i - 1) * yStep);
             canvas.DrawText(i.ToString(), area.Left - 10, y + 4, labelPaint);
         }
-    }
-
-    private void DrawRawDataXAxisLabels(SKCanvas canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
-    {
-        DrawRawDataXAxisLabels(drawShimFactory.FromRaw(canvas), area, dataPoints, startDateTime, endDateTime, pointColor);
     }
 
     private void DrawRawDataXAxisLabels(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
@@ -1002,11 +972,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
             canvas.DrawText(timeText, x, area.Bottom + 20, labelPaint);
         }
-    }
-
-    private void DrawRawDataTitle(SKCanvas canvas, int width)
-    {
-        DrawRawDataTitle(drawShimFactory.FromRaw(canvas), width);
     }
 
     private void DrawRawDataTitle(ICanvasShim canvas, int width)
