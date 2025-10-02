@@ -935,13 +935,18 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawRawDataXAxisLabels(SKCanvas canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
     {
-        using var labelPaint = new SKPaint
+        DrawRawDataXAxisLabels(drawShimFactory.FromRaw(canvas), area, dataPoints, startDateTime, endDateTime, pointColor);
+    }
+
+    private void DrawRawDataXAxisLabels(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
+    {
+        using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.Black,
             TextSize = 10,
             IsAntialias = true,
             TextAlign = SKTextAlign.Center
-        };
+        });
 
         var totalTimeSpan = endDateTime - startDateTime;
 

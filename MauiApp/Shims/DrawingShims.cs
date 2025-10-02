@@ -47,7 +47,8 @@ public interface ICanvasShim : IDisposable
 
     void Clear(SKColor color);
     void DrawBitmap(IBitmapShim backgroundBitmap, SKRect sKRect);
-    void DrawText(string v1, int v2, int v3, IPaintShim titlePaint);
+    void DrawText(string text, int x, int y, IPaintShim titlePaint);
+    void DrawText(string text, float x, float y, IPaintShim titlePaint);
 }
 
 public class CanvasShim(SKCanvas canvas) : ICanvasShim
@@ -69,9 +70,14 @@ public class CanvasShim(SKCanvas canvas) : ICanvasShim
         canvas.DrawBitmap(backgroundBitmap.Raw, sKRect);
     }
 
-    public void DrawText(string v1, int v2, int v3, IPaintShim titlePaint)
+    public void DrawText(string text, float x, float y, IPaintShim titlePaint)
     {
-        canvas.DrawText(v1, v2, v3, titlePaint.Raw);
+        canvas.DrawText(text, x, y, titlePaint.Raw);
+    }
+
+    public void DrawText(string text, int x, int y, IPaintShim titlePaint)
+    {
+        canvas.DrawText(text, x, y, titlePaint.Raw);
     }
 }
 
