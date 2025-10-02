@@ -532,11 +532,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         }
     }
 
-    private void DrawGridForMode(SKCanvas canvas, SKRect area, GraphMode graphMode)
-    {
-        DrawGridForMode(drawShimFactory.FromRaw(canvas), area, graphMode);
-    }
-
     private void DrawGridForMode(ICanvasShim canvas, SKRect area, GraphMode graphMode)
     {
         // Use existing grid method - the Y range constants will be updated based on mode
@@ -572,11 +567,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         }
     }
 
-    private void DrawAxesForMode(SKCanvas canvas, SKRect area, GraphMode graphMode)
-    {
-        DrawAxesForMode(drawShimFactory.FromRaw(canvas), area, graphMode);
-    }
-
     private void DrawAxesForMode(ICanvasShim canvas, SKRect area, GraphMode graphMode)
     {
         using var axisPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -602,11 +592,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
             StrokeWidth = 2
         });
         canvas.DrawLine(area.Left, zeroY, area.Right, zeroY, zeroLinePaint);
-    }
-
-    private void DrawDataLineForMode(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
-    {
-        DrawDataLineForMode(drawShimFactory.FromRaw(canvas), area, entries, requestedStartDate, requestedEndDate, lineColor, graphMode);
     }
 
     private void DrawDataLineForMode(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
@@ -646,11 +631,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         canvas.DrawPath(path, linePaint);
     }
 
-    private void DrawDataPointsForMode(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
-    {
-        DrawDataPointsForMode(drawShimFactory.FromRaw(canvas), area, entries, requestedStartDate, requestedEndDate, lineColor, graphMode);
-    }
-
 
     private void DrawDataPointsForMode(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
     {
@@ -679,11 +659,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         }
     }
 
-    private void DrawYAxisLabelsForMode(SKCanvas canvas, SKRect area, GraphMode graphMode)
-    {
-        DrawYAxisLabelsForMode(drawShimFactory.FromRaw(canvas), area, graphMode);
-    }
-
     private void DrawYAxisLabelsForMode(ICanvasShim canvas, SKRect area, GraphMode graphMode)
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -705,20 +680,10 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         }
     }
 
-    private void DrawXAxisLabelsForMode(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor, GraphMode graphMode)
-    {
-        DrawXAxisLabelsForMode(drawShimFactory.FromRaw(canvas), area, entries, requestedStartDate, requestedEndDate, showDataPoints, lineColor, graphMode);
-    }
-
     private void DrawXAxisLabelsForMode(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor, GraphMode graphMode)
     {
         // Reuse existing X-axis label logic since it doesn't depend on graph mode
         DrawXAxisLabels(canvas, area, entries, requestedStartDate, requestedEndDate, showDataPoints, lineColor);
-    }
-
-    private void DrawTitleForMode(SKCanvas canvas, int width, GraphMode graphMode)
-    {
-        DrawTitleForMode(drawShimFactory.FromRaw(canvas), width, graphMode);
     }
 
     private void DrawTitleForMode(ICanvasShim canvas, int width, GraphMode graphMode)
