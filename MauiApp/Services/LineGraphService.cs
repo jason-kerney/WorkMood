@@ -357,13 +357,18 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawYAxisLabels(SKCanvas canvas, SKRect area)
     {
-        using var labelPaint = new SKPaint
+        DrawYAxisLabels(drawShimFactory.FromRaw(canvas), area);
+    }
+
+    private void DrawYAxisLabels(ICanvasShim canvas, SKRect area)
+    {
+        using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.Black,
             TextSize = 12,
             IsAntialias = true,
             TextAlign = SKTextAlign.Right
-        };
+        });
 
         var yRange = MaxYValue - MinYValue;
         var yStep = area.Height / yRange;
