@@ -120,15 +120,16 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
             .OrderBy(e => e.Date)
             .ToList();
 
-        using var bitmap = new SKBitmap(width, height);
-        using var canvas = new SKCanvas(bitmap);
+        // using var bitmap = new SKBitmap(width, height);
+        using var bitmap = drawShimFactory.BitmapFromDimensions(width, height);
+        using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
 
         // Clear canvas with white background
         canvas.Clear(SKColors.White);
 
         await Task.Run(() => DrawGraphForMode(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, graphMode, true)); // Draw white background for normal graphs
 
-        using var image = SKImage.FromBitmap(bitmap);
+        using var image = drawShimFactory.ImageFromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
 
         return data.ToArray();
@@ -220,12 +221,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         }
     }
 
-    private void DrawBackground(SKCanvas canvas, SKRect area)
-    {
-        DrawBackground(drawShimFactory.FromRaw(canvas), area);
-    }
-
-
     private void DrawBackground(ICanvasShim canvas, SKRect area)
     {
         using var backgroundPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -234,11 +229,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
             Style = SKPaintStyle.Fill
         });
         canvas.DrawRect(area, backgroundPaint);
-    }
-
-    private void DrawGrid(SKCanvas canvas, SKRect area)
-    {
-        DrawGrid(drawShimFactory.FromRaw(canvas), area);
     }
 
     private void DrawGrid(ICanvasShim canvas, SKRect area)
@@ -273,11 +263,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         }
     }
 
-    private void DrawAxes(SKCanvas canvas, SKRect area)
-    {
-        DrawAxes(drawShimFactory.FromRaw(canvas), area);
-    }
-
     private void DrawAxes(ICanvasShim canvas, SKRect area)
     {
         using var axisPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -302,11 +287,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
             StrokeWidth = 2
         });
         canvas.DrawLine(area.Left, zeroY, area.Right, zeroY, zeroLinePaint);
-    }
-
-    private void DrawDataLine(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor)
-    {
-        DrawDataLine(drawShimFactory.FromRaw(canvas), area, entries, requestedStartDate, requestedEndDate, lineColor);
     }
 
     private void DrawDataLine(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor)
@@ -345,11 +325,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         canvas.DrawPath(path, linePaint);
     }
 
-    private void DrawDataPoints(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor)
-    {
-        DrawDataPoints(drawShimFactory.FromRaw(canvas), area, entries, requestedStartDate, requestedEndDate, lineColor);
-    }
-
     private void DrawDataPoints(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor)
     {
         using var pointPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -376,11 +351,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         }
     }
 
-    private void DrawYAxisLabels(SKCanvas canvas, SKRect area)
-    {
-        DrawYAxisLabels(drawShimFactory.FromRaw(canvas), area);
-    }
-
     private void DrawYAxisLabels(ICanvasShim canvas, SKRect area)
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -399,11 +369,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
             var y = area.Bottom - ((i - MinYValue) * yStep);
             canvas.DrawText(i.ToString(), area.Left - 10, y + 4, labelPaint);
         }
-    }
-
-    private void DrawXAxisLabels(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor)
-    {
-        DrawXAxisLabels(drawShimFactory.FromRaw(canvas), area, entries, requestedStartDate, requestedEndDate, showDataPoints, lineColor);
     }
 
     private void DrawXAxisLabels(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor)
@@ -457,11 +422,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         }
     }
 
-    private void DrawTitle(SKCanvas canvas, int width)
-    {
-        DrawTitle(drawShimFactory.FromRaw(canvas), width);
-    }
-
     private void DrawTitle(ICanvasShim canvas, int width)
     {
         using var titlePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -474,11 +434,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         });
 
         canvas.DrawText("Mood Change Over Time", width / 2, 30, titlePaint);
-    }
-
-    private void DrawNoDataMessage(SKCanvas canvas, SKRect area)
-    {
-        DrawNoDataMessage(drawShimFactory.FromRaw(canvas), area);
     }
 
     private void DrawNoDataMessage(ICanvasShim canvas, SKRect area)
