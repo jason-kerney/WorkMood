@@ -167,6 +167,8 @@ public interface IDrawShimFactory
     IBitmapShim FromRaw(SKBitmap bitmap);
 
     IPaintShim PaintFromArgs(PaintShimArgs paintShimArgs);
+    
+    SKColor WhiteColor();
 }
 
 public class DrawShimFactory : IDrawShimFactory
@@ -218,4 +220,6 @@ public class DrawShimFactory : IDrawShimFactory
         };
         return new PaintShim(paint);
     }
+    
+    public SKColor WhiteColor() => SKColors.White;
 }

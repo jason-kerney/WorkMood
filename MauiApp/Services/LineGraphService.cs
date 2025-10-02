@@ -30,15 +30,16 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
             .OrderBy(e => e.Date)
             .ToList();
 
-        using var bitmap = new SKBitmap(width, height);
-        using var canvas = new SKCanvas(bitmap);
+        // using var bitmap = new SKBitmap(width, height);
+        using var bitmap = drawShimFactory.BitmapFromDimensions(width, height);
+        using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
 
         // Clear canvas with white background
         canvas.Clear(SKColors.White);
 
         await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, true)); // Draw white background for normal graphs
 
-        using var image = SKImage.FromBitmap(bitmap);
+        using var image = drawShimFactory.ImageFromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
 
         return data.ToArray();
@@ -225,7 +226,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
     {
         using var backgroundPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = SKColors.White,
+            Color = drawShimFactory.WhiteColor(),
             Style = SKPaintStyle.Fill
         });
         canvas.DrawRect(area, backgroundPaint);
