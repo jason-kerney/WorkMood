@@ -768,13 +768,18 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawRawDataGrid(SKCanvas canvas, SKRect area)
     {
-        using var gridPaint = new SKPaint
+        DrawRawDataGrid(drawShimFactory.FromRaw(canvas), area);
+    }
+
+    private void DrawRawDataGrid(ICanvasShim canvas, SKRect area)
+    {
+        using var gridPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.LightGray,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 1,
             PathEffect = SKPathEffect.CreateDash([5, 5], 0)
-        };
+        });
 
         // Horizontal grid lines for mood scale 1-10
         var yRange = 10 - 1;

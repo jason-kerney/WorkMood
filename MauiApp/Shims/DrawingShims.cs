@@ -11,6 +11,7 @@ public class PaintShimArgs
     public SKTypeface? Typeface { get; set; }
     public SKPaintStyle? Style { get; set; }
     public int StrokeWidth { get; set; }
+    public SKPathEffect? PathEffect { get; set; }
 }
 
 public interface IPaintShim : IDisposable
@@ -207,6 +208,7 @@ public class DrawShimFactory : IDrawShimFactory
             Typeface = paintShimArgs.Typeface,
             Style = paintShimArgs.Style ?? SKPaintStyle.Fill,
             StrokeWidth = paintShimArgs.StrokeWidth,
+            PathEffect = paintShimArgs.PathEffect,
         };
         return new PaintShim(paint);
     }
