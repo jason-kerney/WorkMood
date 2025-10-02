@@ -1,146 +1,11 @@
 using SkiaSharp;
+using WorkMood.MauiApp.Shims;
 using WorkMood.MauiApp.Models;
 
 namespace WorkMood.MauiApp.Services;
 
 #region Shims
 
-public interface IBitmapShim : IDisposable
-{
-    SKBitmap Raw { get; }
-}
-
-public class BitmapShim(SKBitmap bitmap) : IBitmapShim
-{
-    public SKBitmap Raw { get; } = bitmap;
-
-    public void Dispose()
-    {
-        bitmap.Dispose();
-    }
-}
-
-public interface ICanvasShim : IDisposable
-{
-    SKCanvas Raw { get; }
-
-    void Clear(SKColor color);
-    void DrawBitmap(IBitmapShim backgroundBitmap, SKRect sKRect);
-}
-
-public class CanvasShim(SKCanvas canvas) : ICanvasShim
-{
-    public SKCanvas Raw { get; } = canvas;
-
-    public void Dispose()
-    {
-        canvas.Dispose();
-    }
-
-    public void Clear(SKColor color)
-    {
-        canvas.Clear(color);
-    }
-
-    public void DrawBitmap(IBitmapShim backgroundBitmap, SKRect sKRect)
-    {
-        canvas.DrawBitmap(backgroundBitmap.Raw, sKRect);
-    }
-}
-
-public interface IDrawDataShim : IDisposable
-{
-    SKData Raw { get; }
-    byte[] ToArray();
-}
-
-public class DrawDataShim(SKData data) : IDrawDataShim
-{
-    public SKData Raw { get; } = data;
-
-    public byte[] ToArray()
-    {
-        return data.ToArray();
-    }
-
-    public void Dispose()
-    {
-        data.Dispose();
-    }
-}
-
-public interface IImageShim : IDisposable
-{
-    SKImage? Raw { get; }
-
-    IDrawDataShim Encode(SKEncodedImageFormat format, int quality);
-}
-
-public class ImageShim(SKImage image) : IImageShim
-{
-    public SKImage? Raw { get; } = image;
-
-    public IDrawDataShim Encode(SKEncodedImageFormat format, int quality)
-    {
-        var data = image.Encode(format, quality);
-        return new DrawDataShim(data);
-    }
-
-    public void Dispose()
-    {
-        image.Dispose();
-    }
-}
-
-public interface IDrawShimFactory
-{
-    IImageShim FromRaw(SKImage image);
-    IImageShim ImageFromBitmap(SKBitmap bitmap);
-    IImageShim ImageFromBitmap(IBitmapShim bitmap);
-
-    ICanvasShim FromRaw(SKCanvas canvas);
-    ICanvasShim CanvasFromBitmap(SKBitmap bitmap);
-    ICanvasShim CanvasFromBitmap(IBitmapShim bitmap);
-
-    IBitmapShim BitmapFromDimensions(int width, int height);
-    IBitmapShim DecodeBitmapFromFile(string filePath);
-    IBitmapShim FromRaw(SKBitmap bitmap);
-}
-
-public class DrawShimFactory : IDrawShimFactory
-{
-    public IImageShim FromRaw(SKImage image) => new ImageShim(image);
-    public IImageShim ImageFromBitmap(SKBitmap bitmap)
-    {
-        var image = SKImage.FromBitmap(bitmap);
-        return FromRaw(image);
-    }
-
-    public IImageShim ImageFromBitmap(IBitmapShim bitmap) => ImageFromBitmap(bitmap.Raw);
-
-    public ICanvasShim FromRaw(SKCanvas canvas) => new CanvasShim(canvas);
-
-    public ICanvasShim CanvasFromBitmap(SKBitmap bitmap)
-    {
-        var canvas = new SKCanvas(bitmap);
-        return FromRaw(canvas);
-    }
-
-    public ICanvasShim CanvasFromBitmap(IBitmapShim bitmap) => CanvasFromBitmap(bitmap.Raw);
-
-    public IBitmapShim FromRaw(SKBitmap bitmap) => new BitmapShim(bitmap);
-
-    public IBitmapShim BitmapFromDimensions(int width, int height)
-    {
-        var bitmap = new SKBitmap(width, height);
-        return FromRaw(bitmap);
-    }
-    public IBitmapShim DecodeBitmapFromFile(string filePath)
-    {
-        var bitmap = SKBitmap.Decode(filePath);
-        return FromRaw(bitmap);
-    }
-}
 
 #endregion
 #region Business Logic
@@ -1097,14 +962,19 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawRawDataTitle(SKCanvas canvas, int width)
     {
-        using var titlePaint = new SKPaint
+        DrawRawDataTitle(drawShimFactory.FromRaw(canvas), width);
+    }
+
+    private void DrawRawDataTitle(ICanvasShim canvas, int width)
+    {
+        using IPaintShim titlePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.Black,
             TextSize = 16,
             IsAntialias = true,
             TextAlign = SKTextAlign.Center,
             Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
-        };
+        });
 
         canvas.DrawText("Raw Mood Data Over Time", width / 2, 30, titlePaint);
     }
