@@ -68,13 +68,13 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
             .OrderBy(e => e.Date)
             .ToList();
 
-        using var bitmap = new SKBitmap(width, height);
-        using var canvas = new SKCanvas(bitmap);
+        using var bitmap = drawShimFactory.BitmapFromDimensions(width, height);
+        using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
 
         // Load and draw custom background
         if (File.Exists(backgroundImagePath))
         {
-            using var backgroundBitmap = SKBitmap.Decode(backgroundImagePath);
+            using var backgroundBitmap = drawShimFactory.DecodeBitmapFromFile(backgroundImagePath);
             if (backgroundBitmap != null)
             {
                 canvas.DrawBitmap(backgroundBitmap, new SKRect(0, 0, width, height));
@@ -89,7 +89,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, false)); // Don't draw white background when using custom background
 
         // Convert to PNG
-        using var image = SKImage.FromBitmap(bitmap);
+        using var image = drawShimFactory.ImageFromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
         return data.ToArray();
     }
