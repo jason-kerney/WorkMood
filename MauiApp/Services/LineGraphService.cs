@@ -586,15 +586,20 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawDataLineForMode(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
     {
+        DrawDataLineForMode(drawShimFactory.FromRaw(canvas), area, entries, requestedStartDate, requestedEndDate, lineColor, graphMode);
+    }
+
+    private void DrawDataLineForMode(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
+    {
         if (entries.Count < 2) return;
 
-        using var linePaint = new SKPaint
+        using var linePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = new SKColor((byte)(lineColor.Red * 255), (byte)(lineColor.Green * 255), (byte)(lineColor.Blue * 255)),
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 3,
             IsAntialias = true
-        };
+        });
 
         using var path = new SKPath();
 
