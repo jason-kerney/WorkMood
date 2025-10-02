@@ -6,7 +6,7 @@
     },
     "commitPrefix": {
         "separator": " ",
-        "validator": "^.{1,50}$",
+        "validator": "^.{1,100}$",
         "prefixes": {}
     },
     "verboseMode": false,
