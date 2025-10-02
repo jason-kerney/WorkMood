@@ -559,12 +559,17 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawAxesForMode(SKCanvas canvas, SKRect area, GraphMode graphMode)
     {
-        using var axisPaint = new SKPaint
+        DrawAxesForMode(drawShimFactory.FromRaw(canvas), area, graphMode);
+    }
+
+    private void DrawAxesForMode(ICanvasShim canvas, SKRect area, GraphMode graphMode)
+    {
+        using var axisPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.Black,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
-        };
+        });
 
         // Y-axis
         canvas.DrawLine(area.Left, area.Top, area.Left, area.Bottom, axisPaint);
@@ -575,12 +580,12 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         // Zero line (horizontal line at y=0)
         var (minY, maxY) = GetYRangeForMode(graphMode);
         var zeroY = area.Bottom - ((0 - minY) * area.Height / (maxY - minY));
-        using var zeroLinePaint = new SKPaint
+        using var zeroLinePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.DarkGray,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
-        };
+        });
         canvas.DrawLine(area.Left, zeroY, area.Right, zeroY, zeroLinePaint);
     }
 
