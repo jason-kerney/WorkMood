@@ -172,6 +172,7 @@ public interface IDrawShimFactory
     SKColor LightGrayColor();
     SKColor BlackColor();
     SKColor DarkGrayColor();
+    SKColor GrayColor();
 }
 
 public class DrawShimFactory : IDrawShimFactory
@@ -228,4 +229,5 @@ public class DrawShimFactory : IDrawShimFactory
     public SKColor LightGrayColor() => SKColors.LightGray;
     public SKColor BlackColor() => SKColors.Black;
     public SKColor DarkGrayColor() => SKColors.DarkGray;
+    public SKColor GrayColor() => SKColors.Gray;
 }
