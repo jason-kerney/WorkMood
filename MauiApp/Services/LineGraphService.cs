@@ -169,6 +169,11 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawGraph(SKCanvas canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color lineColor, bool drawWhiteBackground = true)
     {
+        DrawGraph(drawShimFactory.FromRaw(canvas), entries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, drawWhiteBackground);
+    }
+
+    private void DrawGraph(ICanvasShim canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color lineColor, bool drawWhiteBackground = true)
+    {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
 
         // Calculate the full date range for proportional positioning
@@ -220,6 +225,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         DrawBackground(drawShimFactory.FromRaw(canvas), area);
     }
 
+
     private void DrawBackground(ICanvasShim canvas, SKRect area)
     {
         using var backgroundPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -232,13 +238,18 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawGrid(SKCanvas canvas, SKRect area)
     {
-        using var gridPaint = new SKPaint
+        DrawGrid(drawShimFactory.FromRaw(canvas), area);
+    }
+
+    private void DrawGrid(ICanvasShim canvas, SKRect area)
+    {
+        using var gridPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.LightGray,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 1,
             PathEffect = SKPathEffect.CreateDash([5, 5], 0)
-        };
+        });
 
         // Horizontal grid lines
         var yRange = MaxYValue - MinYValue;
