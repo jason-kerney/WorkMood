@@ -437,13 +437,18 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawNoDataMessage(SKCanvas canvas, SKRect area)
     {
-        using var messagePaint = new SKPaint
+        DrawNoDataMessage(drawShimFactory.FromRaw(canvas), area);
+    }
+
+    private void DrawNoDataMessage(ICanvasShim canvas, SKRect area)
+    {
+        using var messagePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.Gray,
             TextSize = 14,
             IsAntialias = true,
             TextAlign = SKTextAlign.Center
-        };
+        });
 
         var centerX = area.Left + area.Width / 2;
         var centerY = area.Top + area.Height / 2;
@@ -717,7 +722,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
     /// <summary>
     /// Draws a scatter plot graph for raw mood data points
     /// </summary>
-    private void DrawRawDataGraph(SKCanvas canvas, List<RawMoodDataPoint> dataPoints, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color pointColor, bool drawWhiteBackground = true)
+    private void DrawRawDataGraph(ICanvasShim canvas, List<RawMoodDataPoint> dataPoints, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color pointColor, bool drawWhiteBackground = true)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
 
