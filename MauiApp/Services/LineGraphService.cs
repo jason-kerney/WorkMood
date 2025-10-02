@@ -428,14 +428,19 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawTitle(SKCanvas canvas, int width)
     {
-        using var titlePaint = new SKPaint
+        DrawTitle(drawShimFactory.FromRaw(canvas), width);
+    }
+
+    private void DrawTitle(ICanvasShim canvas, int width)
+    {
+        using var titlePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.Black,
             TextSize = 16,
             IsAntialias = true,
             TextAlign = SKTextAlign.Center,
             Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
-        };
+        });
 
         canvas.DrawText("Mood Change Over Time", width / 2, 30, titlePaint);
     }
