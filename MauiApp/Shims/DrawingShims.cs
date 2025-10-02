@@ -9,6 +9,8 @@ public class PaintShimArgs
     public bool IsAntialias { get; set; }
     public SKTextAlign TextAlign { get; set; }
     public SKTypeface? Typeface { get; set; }
+    public SKPaintStyle? Style { get; set; }
+    public int StrokeWidth { get; set; }
 }
 
 public interface IPaintShim : IDisposable
@@ -47,6 +49,7 @@ public interface ICanvasShim : IDisposable
 
     void Clear(SKColor color);
     void DrawBitmap(IBitmapShim backgroundBitmap, SKRect sKRect);
+    void DrawCircle(float x, float y, int radius, IPaintShim startPaint);
     void DrawText(string text, int x, int y, IPaintShim titlePaint);
     void DrawText(string text, float x, float y, IPaintShim titlePaint);
 }
@@ -78,6 +81,11 @@ public class CanvasShim(SKCanvas canvas) : ICanvasShim
     public void DrawText(string text, int x, int y, IPaintShim titlePaint)
     {
         canvas.DrawText(text, x, y, titlePaint.Raw);
+    }
+
+    public void DrawCircle(float x, float y, int radius, IPaintShim startPaint)
+    {
+        canvas.DrawCircle(x, y, radius, startPaint.Raw);
     }
 }
 

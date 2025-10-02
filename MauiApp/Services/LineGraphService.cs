@@ -863,21 +863,26 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawRawDataPoints(SKCanvas canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
     {
+        DrawRawDataPoints(drawShimFactory.FromRaw(canvas), area, dataPoints, startDateTime, endDateTime, pointColor);
+    }
+
+    private void DrawRawDataPoints(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
+    {
         // Create different paints for start and end of work
-        using var startPaint = new SKPaint
+        using var startPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = new SKColor((byte)(pointColor.Red * 255), (byte)(pointColor.Green * 255), (byte)(pointColor.Blue * 255)),
             Style = SKPaintStyle.Fill,
             IsAntialias = true
-        };
+        });
 
-        using var endPaint = new SKPaint
+        using var endPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = new SKColor((byte)(pointColor.Red * 180), (byte)(pointColor.Green * 180), (byte)(pointColor.Blue * 180)),
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2,
             IsAntialias = true
-        };
+        });
 
         var totalTimeSpan = endDateTime - startDateTime;
 
