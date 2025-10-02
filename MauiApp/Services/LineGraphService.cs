@@ -217,11 +217,16 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawBackground(SKCanvas canvas, SKRect area)
     {
-        using var backgroundPaint = new SKPaint
+        DrawBackground(drawShimFactory.FromRaw(canvas), area);
+    }
+
+    private void DrawBackground(ICanvasShim canvas, SKRect area)
+    {
+        using var backgroundPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.White,
             Style = SKPaintStyle.Fill
-        };
+        });
         canvas.DrawRect(area, backgroundPaint);
     }
 

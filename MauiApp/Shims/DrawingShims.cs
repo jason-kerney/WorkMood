@@ -53,6 +53,7 @@ public interface ICanvasShim : IDisposable
     void DrawCircle(float x, float y, int radius, IPaintShim startPaint);
     void DrawLine(float left1, float top, float left2, float bottom, IPaintShim axisPaint);
     void DrawPath(SKPath path, IPaintShim paint);
+    void DrawRect(SKRect area, IPaintShim backgroundPaint);
     void DrawText(string text, int x, int y, IPaintShim titlePaint);
     void DrawText(string text, float x, float y, IPaintShim titlePaint);
 }
@@ -79,6 +80,11 @@ public class CanvasShim(SKCanvas canvas) : ICanvasShim
     public void DrawPath(SKPath path, IPaintShim paint)
     {
         canvas.DrawPath(path, paint.Raw);
+    }
+
+    public void DrawRect(SKRect area, IPaintShim backgroundPaint)
+    {
+        canvas.DrawRect(area, backgroundPaint.Raw);
     }
 
     public void DrawText(string text, float x, float y, IPaintShim titlePaint)
