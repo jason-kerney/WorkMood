@@ -264,12 +264,17 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawAxes(SKCanvas canvas, SKRect area)
     {
-        using var axisPaint = new SKPaint
+        DrawAxes(drawShimFactory.FromRaw(canvas), area);
+    }
+
+    private void DrawAxes(ICanvasShim canvas, SKRect area)
+    {
+        using var axisPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.Black,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
-        };
+        });
 
         // Y-axis
         canvas.DrawLine(area.Left, area.Top, area.Left, area.Bottom, axisPaint);
@@ -279,26 +284,31 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
         // Zero line (horizontal line at y=0)
         var zeroY = area.Bottom - ((0 - MinYValue) * area.Height / (MaxYValue - MinYValue));
-        using var zeroLinePaint = new SKPaint
+        using var zeroLinePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.DarkGray,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
-        };
+        });
         canvas.DrawLine(area.Left, zeroY, area.Right, zeroY, zeroLinePaint);
     }
 
     private void DrawDataLine(SKCanvas canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor)
     {
+        DrawDataLine(drawShimFactory.FromRaw(canvas), area, entries, requestedStartDate, requestedEndDate, lineColor);
+    }
+
+    private void DrawDataLine(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor)
+    {
         if (entries.Count < 2) return;
 
-        using var linePaint = new SKPaint
+        using var linePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = new SKColor((byte)(lineColor.Red * 255), (byte)(lineColor.Green * 255), (byte)(lineColor.Blue * 255)),
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 3,
             IsAntialias = true
-        };
+        });
 
         using var path = new SKPath();
 
