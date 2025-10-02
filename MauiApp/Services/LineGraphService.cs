@@ -236,7 +236,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
     {
         using var gridPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = SKColors.LightGray,
+            Color = drawShimFactory.LightGrayColor(),
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 1,
             PathEffect = SKPathEffect.CreateDash([5, 5], 0)
