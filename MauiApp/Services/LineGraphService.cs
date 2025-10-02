@@ -356,7 +356,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = SKColors.Black,
+            Color = drawShimFactory.BlackColor(),
             TextSize = 12,
             IsAntialias = true,
             TextAlign = SKTextAlign.Right
