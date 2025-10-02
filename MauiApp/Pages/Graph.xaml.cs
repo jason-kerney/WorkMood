@@ -18,4 +18,15 @@ public partial class Graph : ContentPage
         base.OnAppearing();
         await _viewModel.LoadDataAsync();
     }
+    
+    /// <summary>
+    /// Handles size changes of the graph container to update viewport-based scaling
+    /// </summary>
+    private void GraphContainer_SizeChanged(object? sender, EventArgs e)
+    {
+        if (sender is Border border)
+        {
+            _viewModel.UpdateContainerSize(border.Width, border.Height);
+        }
+    }
 }

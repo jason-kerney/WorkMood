@@ -34,6 +34,8 @@ public class GraphViewModel : ViewModelBase
     private bool _isColorPickerVisible = false;
     private GraphMode _selectedGraphMode = GraphMode.Impact;
     private GraphModeItem _selectedGraphModeItem = null!;
+    private double _availableContainerWidth = 800; // Default fallback
+    private double _availableContainerHeight = 400; // Default fallback
     
     public GraphViewModel(IMoodDataService moodDataService, ILineGraphService lineGraphService)
     {
@@ -383,25 +385,68 @@ public class GraphViewModel : ViewModelBase
     /// <summary>
     /// Gets the display width for the image control - scaled appropriately for the view area
     /// </summary>
-    public int DisplayWidth 
+    public double DisplayWidth 
     {
         get
         {
             if (!HasCustomBackground)
-                return GraphWidth;
+            {
+                // Scale regular graphs to fit available width
+                return Math.Min(GraphWidth, _availableContainerWidth);
+            }
                 
-            // Scale the background to fit within reasonable display bounds while maintaining aspect ratio
-            const int maxDisplayWidth = 1000;
-            const int maxDisplayHeight = 400;
-            
-            if (CustomBackgroundWidth <= maxDisplayWidth && CustomBackgroundHeight <= maxDisplayHeight)
+            // Scale custom background to fit within actual available space while maintaining aspect ratio
+            if (CustomBackgroundWidth <= _availableContainerWidth && CustomBackgroundHeight <= _availableContainerHeight)
                 return CustomBackgroundWidth;
                 
-            double widthRatio = (double)maxDisplayWidth / CustomBackgroundWidth;
-            double heightRatio = (double)maxDisplayHeight / CustomBackgroundHeight;
+            double widthRatio = _availableContainerWidth / CustomBackgroundWidth;
+            double heightRatio = _availableContainerHeight / CustomBackgroundHeight;
             double scale = Math.Min(widthRatio, heightRatio);
             
-            return (int)(CustomBackgroundWidth * scale);
+            return CustomBackgroundWidth * scale;
+        }
+    }
+    
+    /// <summary>
+    /// Gets the display height for the image control - scaled appropriately for the view area
+    /// </summary>
+    public double DisplayHeight 
+    {
+        get
+        {
+            if (!HasCustomBackground)
+            {
+                // For regular graphs, scale to fit available height while maintaining reasonable proportions
+                const double defaultAspectRatio = 2.0; // width:height ratio
+                var calculatedHeight = _availableContainerHeight - 20; // Leave some margin
+                var maxHeightForWidth = GraphWidth / defaultAspectRatio;
+                return Math.Min(calculatedHeight, maxHeightForWidth);
+            }
+                
+            // Scale custom background to fit within actual available space while maintaining aspect ratio
+            if (CustomBackgroundWidth <= _availableContainerWidth && CustomBackgroundHeight <= _availableContainerHeight)
+                return CustomBackgroundHeight;
+                
+            double widthRatio = _availableContainerWidth / CustomBackgroundWidth;
+            double heightRatio = _availableContainerHeight / CustomBackgroundHeight;
+            double scale = Math.Min(widthRatio, heightRatio);
+            
+            return CustomBackgroundHeight * scale;
+        }
+    }
+    
+    /// <summary>
+    /// Updates the available container size and triggers display property updates
+    /// </summary>
+    public void UpdateContainerSize(double width, double height)
+    {
+        if (Math.Abs(_availableContainerWidth - width) > 1 || Math.Abs(_availableContainerHeight - height) > 1)
+        {
+            _availableContainerWidth = Math.Max(100, width - 40); // Account for padding/margins
+            _availableContainerHeight = Math.Max(100, height - 40); // Account for padding/margins
+            
+            OnPropertyChanged(nameof(DisplayWidth));
+            OnPropertyChanged(nameof(DisplayHeight));
         }
     }
     

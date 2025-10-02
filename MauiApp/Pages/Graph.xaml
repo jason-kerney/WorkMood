@@ -225,21 +225,22 @@
         </StackLayout>
         
         <!-- Graph Display -->
-        <Border Grid.Row="2"
+        <Border x:Name="GraphContainer"
+                Grid.Row="2"
                 Stroke="Gray"
                 StrokeThickness="1"
                 BackgroundColor="White"
                 Padding="10"
-                Margin="0,10">
-            <ScrollView>
-                <Image Source="{Binding GraphImageSource}"
-                       Aspect="AspectFit"
-                       VerticalOptions="Center"
-                       HorizontalOptions="Center"
-                       HeightRequest="400"
-                       WidthRequest="{Binding DisplayWidth}"
-                       IsVisible="{Binding HasGraphData}" />
-            </ScrollView>
+                Margin="0,10"
+                SizeChanged="GraphContainer_SizeChanged">
+            <Image x:Name="GraphImage"
+                   Source="{Binding GraphImageSource}"
+                   Aspect="AspectFit"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"
+                   HeightRequest="{Binding DisplayHeight}"
+                   WidthRequest="{Binding DisplayWidth}"
+                   IsVisible="{Binding HasGraphData}" />
         </Border>
         
         <!-- No Data Message -->
