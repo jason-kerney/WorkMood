@@ -650,13 +650,18 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawYAxisLabelsForMode(SKCanvas canvas, SKRect area, GraphMode graphMode)
     {
-        using var labelPaint = new SKPaint
+        DrawYAxisLabelsForMode(drawShimFactory.FromRaw(canvas), area, graphMode);
+    }
+
+    private void DrawYAxisLabelsForMode(ICanvasShim canvas, SKRect area, GraphMode graphMode)
+    {
+        using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.Black,
             TextSize = 12,
             IsAntialias = true,
             TextAlign = SKTextAlign.Right
-        };
+        });
 
         var (minY, maxY) = GetYRangeForMode(graphMode);
         var yRange = maxY - minY;
