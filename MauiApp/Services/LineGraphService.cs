@@ -481,6 +481,11 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
     /// </summary>
     private void DrawGraphForMode(SKCanvas canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color lineColor, GraphMode graphMode, bool drawWhiteBackground = true)
     {
+        DrawGraphForMode(drawShimFactory.FromRaw(canvas), entries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, graphMode, drawWhiteBackground);
+    }
+
+    private void DrawGraphForMode(ICanvasShim canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color lineColor, GraphMode graphMode, bool drawWhiteBackground = true)
+    {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
 
         // Calculate the full date range for proportional positioning
