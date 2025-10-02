@@ -800,12 +800,17 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     private void DrawRawDataAxes(SKCanvas canvas, SKRect area)
     {
-        using var axisPaint = new SKPaint
+        DrawRawDataAxes(drawShimFactory.FromRaw(canvas), area);
+    }
+
+    private void DrawRawDataAxes(ICanvasShim canvas, SKRect area)
+    {
+        using var axisPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
             Color = SKColors.Black,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
-        };
+        });
 
         // Y-axis
         canvas.DrawLine(area.Left, area.Top, area.Left, area.Bottom, axisPaint);
