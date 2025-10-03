@@ -84,7 +84,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         else
         {
             // Fallback to white background if image doesn't exist
-            canvas.Clear(SKColors.White);
+            canvas.Clear(drawShimFactory.WhiteColor());
         }
 
         await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, false)); // Don't draw white background when using custom background
