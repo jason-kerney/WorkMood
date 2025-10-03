@@ -18,28 +18,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     public LineGraphService() : this(new DrawShimFactory()) { }
 
-    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, Color lineColor, int width = 800, int height = 600)
-    {
-        var filteredEntries = moodEntries
-            .Where(e => e.Value.HasValue)
-            .OrderBy(e => e.Date)
-            .ToList();
-
-        // using var bitmap = new SKBitmap(width, height);
-        using var bitmap = drawShimFactory.BitmapFromDimensions(width, height);
-        using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
-
-        // Clear canvas with white background
-        canvas.Clear(drawShimFactory.WhiteColor());
-
-        await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, true)); // Draw white background for normal graphs
-
-        using var image = drawShimFactory.ImageFromBitmap(bitmap);
-        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-
-        return data.ToArray();
-    }
-
     public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         var filteredEntries = moodEntries
