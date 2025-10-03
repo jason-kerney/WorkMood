@@ -43,10 +43,12 @@
                        FontAttributes="Bold" />
                 
                 <!-- Hunter Industries -->
-                <Frame BackgroundColor="LightGreen" 
-                       Padding="15" 
-                       CornerRadius="8"
-                       HasShadow="True">
+                <Border BackgroundColor="LightGreen" 
+                        Padding="15" 
+                        StrokeShape="RoundRectangle 8">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.3" Radius="4" Offset="2,2" />
+                    </Border.Shadow>
                     <StackLayout Spacing="8">
                         <Label Text="Hunter Industries" 
                                FontSize="18" 
@@ -56,13 +58,15 @@
                                FontSize="14"
                                TextColor="DarkGreen" />
                     </StackLayout>
-                </Frame>
+                </Border>
 
                 <!-- GitHub Copilot -->
-                <Frame BackgroundColor="LightCyan" 
-                       Padding="15" 
-                       CornerRadius="8"
-                       HasShadow="True">
+                <Border BackgroundColor="LightCyan" 
+                        Padding="15" 
+                        StrokeShape="RoundRectangle 8">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.3" Radius="4" Offset="2,2" />
+                    </Border.Shadow>
                     <StackLayout Spacing="8">
                         <Label Text="GitHub Copilot" 
                                FontSize="18" 
@@ -72,7 +76,7 @@
                                FontSize="14"
                                TextColor="DarkCyan" />
                     </StackLayout>
-                </Frame>
+                </Border>
             </StackLayout>
 
             <!-- Icon Attribution -->
@@ -84,10 +88,12 @@
                        FontSize="16"
                        TextColor="Gray" />
                 
-                <Frame BackgroundColor="LightBlue" 
-                       Padding="15" 
-                       CornerRadius="8"
-                       HasShadow="True">
+                <Border BackgroundColor="LightBlue" 
+                        Padding="15" 
+                        StrokeShape="RoundRectangle 8">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.3" Radius="4" Offset="2,2" />
+                    </Border.Shadow>
                     <StackLayout Spacing="8">
                         <Label Text="riajulislam" 
                                FontSize="18" 
@@ -97,7 +103,7 @@
                                FontSize="14"
                                TextColor="DarkBlue" />
                     </StackLayout>
-                </Frame>
+                </Border>
             </StackLayout>
 
         </StackLayout>
