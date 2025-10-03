@@ -81,11 +81,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     // New overloads with GraphMode support
 
-    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, int width = 800, int height = 600)
-    {
-        return await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, graphMode, Colors.Blue, width, height);
-    }
-
     public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
     {
         // Filter entries based on graph mode
