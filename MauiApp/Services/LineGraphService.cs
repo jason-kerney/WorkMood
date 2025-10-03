@@ -81,12 +81,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         return data.ToArray();
     }
 
-    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, string backgroundImagePath, int width = 800, int height = 600)
-    {
-        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, backgroundImagePath, Colors.Blue, width, height);
-        await File.WriteAllBytesAsync(filePath, imageData);
-    }
-
     public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, backgroundImagePath, lineColor, width, height);
