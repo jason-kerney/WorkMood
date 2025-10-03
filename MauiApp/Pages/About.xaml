@@ -98,26 +98,6 @@
                                TextColor="DarkBlue" />
                     </StackLayout>
                 </Frame>
-
-                <Button Text="View Icon on Flaticon" 
-                        Command="{Binding OpenIconLinkCommand}"
-                        BackgroundColor="Orange"
-                        TextColor="White"
-                        CornerRadius="8"
-                        Margin="0,10,0,0" />
-            </StackLayout>
-
-
-
-            <!-- Developer Info -->
-            <StackLayout Spacing="10">
-                <Label Text="Developer" 
-                       FontSize="20" 
-                       FontAttributes="Bold" />
-                <Label Text="{Binding DeveloperInfo}"
-                       FontSize="16"
-                       TextColor="Gray"
-                       HorizontalOptions="Center" />
             </StackLayout>
 
         </StackLayout>
