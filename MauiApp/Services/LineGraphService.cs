@@ -126,7 +126,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
 
         // Clear canvas with white background
-        canvas.Clear(SKColors.White);
+        canvas.Clear(drawShimFactory.WhiteColor());
 
         await Task.Run(() => DrawGraphForMode(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, graphMode, true)); // Draw white background for normal graphs
 
