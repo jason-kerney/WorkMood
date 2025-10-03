@@ -14,6 +14,7 @@
 2. [Key-Features](#key-features)
 3. [Getting-Started](#getting-started)
 4. [Documentation](#documentation)
+5. [Contributors ✨](#contributors-)
 
 ## Overview ##
 
@@ -191,7 +192,7 @@ For deeper build details see the [Build Guide](./BUILD.md) and for feature usage
 - [Build and Deployment Guide](./BUILD.md) - Complete instructions for building and deploying WorkMood
 - [User Guide](./USER-GUIDE.md) - Comprehensive guide for using all WorkMood features
 
-### Contributors ✨ ###
+## Contributors ✨ ##
 
 <table>
   <tbody>
