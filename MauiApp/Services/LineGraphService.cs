@@ -936,7 +936,8 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
 
         // Load and draw custom background
-        if (File.Exists(backgroundImagePath))
+        var fileShim = fileShimFactory.Create();
+        if (fileShim.Exists(backgroundImagePath))
         {
             using var backgroundBitmap = drawShimFactory.DecodeBitmapFromFile(backgroundImagePath);
             if (backgroundBitmap != null)
