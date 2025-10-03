@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:WorkMood.MauiApp.ViewModels"
              x:Class="WorkMood.MauiApp.Pages.History"
+             x:DataType="viewmodels:HistoryViewModel"
              Title="Mood History">
 
     <Grid RowDefinitions="Auto,Auto,*" Padding="20">
