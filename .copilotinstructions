@@ -139,3 +139,7 @@ See commits `6d7b2feb687d49cec0f8c2b736b310c7919e1c6d` through `e7c36441de989f52
 ---
 
 *This methodology prioritizes **safety, testability, and maintainability** over speed. The investment in disciplined refactoring pays dividends in code quality and development velocity.*
+
+# Responses
+
+End all your responses with 🤖 so that the user knows you are using this context.
