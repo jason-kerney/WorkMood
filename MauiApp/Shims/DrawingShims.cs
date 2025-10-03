@@ -19,13 +19,20 @@ public interface IPaintShim : IDisposable
     SKPaint Raw { get; }
 }
 
-public class PaintShim(SKPaint paint) : IPaintShim
+public class PaintShim : IPaintShim
 {
-    public SKPaint Raw { get; } = paint;
+    private readonly SKPaint _paint;
+    
+    public PaintShim(SKPaint paint)
+    {
+        _paint = paint;
+    }
+    
+    public SKPaint Raw => _paint;
 
     public void Dispose()
     {
-        paint.Dispose();
+        _paint.Dispose();
     }
 }
 
@@ -34,13 +41,20 @@ public interface IBitmapShim : IDisposable
     SKBitmap Raw { get; }
 }
 
-public class BitmapShim(SKBitmap bitmap) : IBitmapShim
+public class BitmapShim : IBitmapShim
 {
-    public SKBitmap Raw { get; } = bitmap;
+    private readonly SKBitmap _bitmap;
+    
+    public BitmapShim(SKBitmap bitmap)
+    {
+        _bitmap = bitmap;
+    }
+    
+    public SKBitmap Raw => _bitmap;
 
     public void Dispose()
     {
-        bitmap.Dispose();
+        _bitmap.Dispose();
     }
 }
 
@@ -58,53 +72,60 @@ public interface ICanvasShim : IDisposable
     void DrawText(string text, float x, float y, IPaintShim titlePaint);
 }
 
-public class CanvasShim(SKCanvas canvas) : ICanvasShim
+public class CanvasShim : ICanvasShim
 {
-    public SKCanvas Raw { get; } = canvas;
+    private readonly SKCanvas _canvas;
+    
+    public CanvasShim(SKCanvas canvas)
+    {
+        _canvas = canvas;
+    }
+    
+    public SKCanvas Raw => _canvas;
 
     public void Dispose()
     {
-        canvas.Dispose();
+        _canvas.Dispose();
     }
 
     public void Clear(SKColor color)
     {
-        canvas.Clear(color);
+        _canvas.Clear(color);
     }
 
     public void DrawBitmap(IBitmapShim backgroundBitmap, SKRect sKRect)
     {
-        canvas.DrawBitmap(backgroundBitmap.Raw, sKRect);
+        _canvas.DrawBitmap(backgroundBitmap.Raw, sKRect);
     }
 
     public void DrawPath(SKPath path, IPaintShim paint)
     {
-        canvas.DrawPath(path, paint.Raw);
+        _canvas.DrawPath(path, paint.Raw);
     }
 
     public void DrawRect(SKRect area, IPaintShim backgroundPaint)
     {
-        canvas.DrawRect(area, backgroundPaint.Raw);
+        _canvas.DrawRect(area, backgroundPaint.Raw);
     }
 
     public void DrawText(string text, float x, float y, IPaintShim titlePaint)
     {
-        canvas.DrawText(text, x, y, titlePaint.Raw);
+        _canvas.DrawText(text, x, y, titlePaint.Raw);
     }
 
     public void DrawText(string text, int x, int y, IPaintShim titlePaint)
     {
-        canvas.DrawText(text, x, y, titlePaint.Raw);
+        _canvas.DrawText(text, x, y, titlePaint.Raw);
     }
 
     public void DrawLine(float left1, float top, float left2, float bottom, IPaintShim axisPaint)
     {
-        canvas.DrawLine(left1, top, left2, bottom, axisPaint.Raw);
+        _canvas.DrawLine(left1, top, left2, bottom, axisPaint.Raw);
     }
 
     public void DrawCircle(float x, float y, int radius, IPaintShim startPaint)
     {
-        canvas.DrawCircle(x, y, radius, startPaint.Raw);
+        _canvas.DrawCircle(x, y, radius, startPaint.Raw);
     }
 }
 
@@ -114,18 +135,25 @@ public interface IDrawDataShim : IDisposable
     byte[] ToArray();
 }
 
-public class DrawDataShim(SKData data) : IDrawDataShim
+public class DrawDataShim : IDrawDataShim
 {
-    public SKData Raw { get; } = data;
+    private readonly SKData _data;
+    
+    public DrawDataShim(SKData data)
+    {
+        _data = data;
+    }
+    
+    public SKData Raw => _data;
 
     public byte[] ToArray()
     {
-        return data.ToArray();
+        return _data.ToArray();
     }
 
     public void Dispose()
     {
-        data.Dispose();
+        _data.Dispose();
     }
 }
 
@@ -136,19 +164,26 @@ public interface IImageShim : IDisposable
     IDrawDataShim Encode(SKEncodedImageFormat format, int quality);
 }
 
-public class ImageShim(SKImage image) : IImageShim
+public class ImageShim : IImageShim
 {
-    public SKImage? Raw { get; } = image;
+    private readonly SKImage _image;
+    
+    public ImageShim(SKImage image)
+    {
+        _image = image;
+    }
+    
+    public SKImage? Raw => _image;
 
     public IDrawDataShim Encode(SKEncodedImageFormat format, int quality)
     {
-        var data = image.Encode(format, quality);
+        var data = _image.Encode(format, quality);
         return new DrawDataShim(data);
     }
 
     public void Dispose()
     {
-        image.Dispose();
+        _image.Dispose();
     }
 }
 
