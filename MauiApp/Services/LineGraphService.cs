@@ -18,39 +18,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     public LineGraphService() : this(new DrawShimFactory()) { }
 
-    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
-    {
-        var filteredEntries = moodEntries
-            .Where(e => e.Value.HasValue)
-            .OrderBy(e => e.Date)
-            .ToList();
-
-        using var bitmap = drawShimFactory.BitmapFromDimensions(width, height);
-        using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
-
-        // Load and draw custom background
-        if (File.Exists(backgroundImagePath))
-        {
-            using var backgroundBitmap = drawShimFactory.DecodeBitmapFromFile(backgroundImagePath);
-            if (backgroundBitmap != null)
-            {
-                canvas.DrawBitmap(backgroundBitmap, new SKRect(0, 0, width, height));
-            }
-        }
-        else
-        {
-            // Fallback to white background if image doesn't exist
-            canvas.Clear(drawShimFactory.WhiteColor());
-        }
-
-        await Task.Run(() => DrawGraph(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, false)); // Don't draw white background when using custom background
-
-        // Convert to PNG
-        using var image = drawShimFactory.ImageFromBitmap(bitmap);
-        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-        return data.ToArray();
-    }
-
     // New overloads with GraphMode support
 
     public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
