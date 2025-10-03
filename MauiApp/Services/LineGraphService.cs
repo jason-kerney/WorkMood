@@ -9,14 +9,14 @@ namespace WorkMood.MauiApp.Services;
 /// <summary>
 /// Implementation of line graph service using SkiaSharp for rendering
 /// </summary>
-public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphService
+public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory fileShimFactory) : ILineGraphService
 {
     private const int MinYValue = -9;
     private const int MaxYValue = 9;
     private const int Padding = 60;
     private const int GridLineSpacing = 20;
 
-    public LineGraphService() : this(new DrawShimFactory()) { }
+    public LineGraphService() : this(new DrawShimFactory(), new FileShimFactory()) { }
 
     // New overloads with GraphMode support
 
@@ -53,7 +53,8 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
 
         // Load and draw custom background
-        if (File.Exists(backgroundImagePath))
+        var fileShim = fileShimFactory.Create();
+        if (fileShim.Exists(backgroundImagePath))
         {
             using var backgroundBitmap = drawShimFactory.DecodeBitmapFromFile(backgroundImagePath);
             if (backgroundBitmap != null)

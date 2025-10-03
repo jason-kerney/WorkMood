@@ -11,4 +11,14 @@ public class FileShim : IFileShim
     {
         File.AppendAllText(path, contents);
     }
+
+    public Task WriteAllBytesAsync(string path, byte[] bytes)
+    {
+        return File.WriteAllBytesAsync(path, bytes);
+    }
+
+    public bool Exists(string path)
+    {
+        return File.Exists(path);
+    }
 }
