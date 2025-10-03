@@ -134,7 +134,7 @@
                     
                     <CollectionView ItemsSource="{Binding DailyDataItems}">
                         <CollectionView.ItemTemplate>
-                            <DataTemplate>
+                            <DataTemplate x:DataType="viewmodels:DailyDataItemViewModel">
                                 <Grid ColumnDefinitions="80,20,*,Auto" 
                                       RowDefinitions="Auto" 
                                       Padding="5">
