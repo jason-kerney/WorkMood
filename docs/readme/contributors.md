@@ -9,6 +9,7 @@
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Hunter-Industries"><img src="https://avatars.githubusercontent.com/u/30634197?v=4?s=100" width="100px;" alt="Hunter Industries Software Development"/><br /><sub><b>Hunter Industries Software Development</b></sub></a><br /><a href="#financial-Hunter-Industries" title="Financial">💵</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/jason-kerney"><img src="https://avatars.githubusercontent.com/u/5097968?v=4?s=100" width="100px;" alt="Jason Kerney"/><br /><sub><b>Jason Kerney</b></sub></a><br /><a href="#ideas-jason-kerney" title="Ideas, Planning, & Feedback">🤔</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/JKerney-HunterIndustries"><img src="https://avatars.githubusercontent.com/u/16826501?v=4?s=100" width="100px;" alt="Jason Kerney"/><br /><sub><b>Jason Kerney</b></sub></a><br /><a href="https://github.com/jason-kerney/WorkMood/commits?author=JKerney-HunterIndustries" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/willegetz"><img src="https://avatars.githubusercontent.com/u/3326805?v=4?s=100" width="100px;" alt="William Getz"/><br /><sub><b>William Getz</b></sub></a><br /><a href="#userTesting-willegetz" title="User Testing">📓</a></td>
     </tr>
   </tbody>
   <tfoot>

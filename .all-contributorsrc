@@ -4,7 +4,7 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "files": [
-    "./MauiApp/docs/readme/contributors.md"
+    "./docs/readme/contributors.md"
   ],
   "imageSize": 100,
   "commit": true,
@@ -35,6 +35,15 @@
       "profile": "https://github.com/JKerney-HunterIndustries",
       "contributions": [
         "code"
+      ]
+    },
+    {
+      "login": "willegetz",
+      "name": "William Getz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3326805?v=4",
+      "profile": "https://github.com/willegetz",
+      "contributions": [
+        "userTesting"
       ]
     }
   ],
