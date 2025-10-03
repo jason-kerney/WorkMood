@@ -50,6 +50,7 @@ The application allows you to record your mood at the beginning and end of your 
 #### Prerequisites ####
 
 - .NET 9.0 SDK (confirm with `dotnet --version`)
+- NuGet package source configured (verify with `dotnet nuget list source` - should include nuget.org)
 - MAUI workload: `dotnet workload install maui`
 - (Windows) Windows 10 1903+ / Windows 11; optional Visual Studio 2022 with MAUI workload
 - (macOS) Xcode + Mac Catalyst toolchain (only if building on macOS)
@@ -61,7 +62,26 @@ git clone https://github.com/jason-kerney/WorkMood.git
 cd WorkMood/MauiApp
 ```
 
+**First-Time Setup**: If this is your first .NET MAUI project, ensure NuGet sources are properly configured:
+
+```bash
+# Verify NuGet sources (should include nuget.org)
+dotnet nuget list source
+
+# If nuget.org is missing, add it:
+dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
+
+# Install MAUI workload (may show advertising manifest warnings - these are safe to ignore)
+dotnet workload install maui
+```
+
 #### Build From Source ####
+
+First, restore packages:
+
+```bash
+dotnet restore WorkMood.MauiApp.csproj
+```
 
 Debug build (fast inner-loop):
 
@@ -159,9 +179,10 @@ Your data persists across different builds and updates.
 
 #### Troubleshooting ####
 
-- Missing MAUI workloads: `dotnet workload install maui`
-- Restore issues: `dotnet restore` or clear cache `dotnet nuget locals all --clear`
-- Platform errors: ensure the TFM (e.g. `net9.0-windows10.0.19041.0`) matches installed SDKs
+- **Missing MAUI workloads**: `dotnet workload install maui` (ignore advertising manifest warnings)
+- **NuGet package not found**: Add official source `dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org`
+- **Restore issues**: `dotnet restore` or clear cache `dotnet nuget locals all --clear`
+- **Platform errors**: ensure the TFM (e.g. `net9.0-windows10.0.19041.0`) matches installed SDKs
 
 For deeper build details see the [Build Guide](./BUILD.md) and for feature usage see the [User Guide](./USER-GUIDE.md).
 

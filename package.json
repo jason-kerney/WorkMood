@@ -1,5 +1,29 @@
 {
+  "name": "workmood",
+  "version": "1.0.0",
+  "description": "<!-- GENERATED DOCUMENT DO NOT EDIT! --> <!-- prettier-ignore-start --> <!-- markdownlint-disable -->",
+  "homepage": "https://github.com/jason-kerney/WorkMood#readme",
+  "bugs": {
+    "url": "https://github.com/jason-kerney/WorkMood/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jason-kerney/WorkMood.git"
+  },
+  "license": "MIT",
+  "author": "jason-kerney",
+  "type": "commonjs",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "devDependencies": {
     "all-contributors-cli": "^6.26.1"
+  },
+  "dependencies": {
+    "doculisp": "^3.5.1"
   }
 }

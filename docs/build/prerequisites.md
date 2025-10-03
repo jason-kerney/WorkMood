@@ -5,6 +5,8 @@ Before compiling WorkMood for personal use, ensure you have the following instal
 <!-- (dl (# .NET Requirements)) -->
 
 - **.NET 9.0 SDK** or later
+- **NuGet package sources** properly configured (must include nuget.org)
+- **.NET MAUI workload** installed (`dotnet workload install maui`)
 - **Visual Studio 2022** (17.8 or later) with the following workloads:
   - **.NET Multi-platform App UI development**
   - **Mobile development with .NET** (includes Android SDK)
@@ -36,7 +38,18 @@ Run the following commands to verify your setup:
 
 ```bash
 dotnet --version
+dotnet nuget list source
 dotnet workload list
 ```
 
-You should see `.NET 9.0` or later and the `maui` workload listed.
+You should see:
+
+- `.NET 9.0` or later
+- `nuget.org` in the package sources list
+- `maui` workload listed
+
+If `nuget.org` is missing from sources, add it:
+
+```bash
+dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
+```

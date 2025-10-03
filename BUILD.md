@@ -23,6 +23,8 @@ Before compiling WorkMood for personal use, ensure you have the following instal
 ### .NET Requirements ###
 
 - **.NET 9.0 SDK** or later
+- **NuGet package sources** properly configured (must include nuget.org)
+- **.NET MAUI workload** installed (`dotnet workload install maui`)
 - **Visual Studio 2022** (17.8 or later) with the following workloads:
   - **.NET Multi-platform App UI development**
   - **Mobile development with .NET** (includes Android SDK)
@@ -54,10 +56,21 @@ Run the following commands to verify your setup:
 
 ```bash
 dotnet --version
+dotnet nuget list source
 dotnet workload list
 ```
 
-You should see `.NET 9.0` or later and the `maui` workload listed.
+You should see:
+
+- `.NET 9.0` or later
+- `nuget.org` in the package sources list
+- `maui` workload listed
+
+If `nuget.org` is missing from sources, add it:
+
+```bash
+dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
+```
 
 ## Building the Application ##
 
@@ -78,6 +91,8 @@ Navigate to the project directory and restore NuGet packages:
 cd MauiApp
 dotnet restore WorkMood.MauiApp.csproj
 ```
+
+> **Important**: If restore fails with "package not found" errors, you may need to configure the official NuGet source. See the troubleshooting section below.
 
 ### Build Configuration ###
 
@@ -141,11 +156,8 @@ dotnet run --project WorkMood.MauiApp.csproj -c Debug -f net9.0-maccatalyst
 
 #### Common Issues ####
 
-1. **Missing workloads**: Run `dotnet workload install maui`
-2. **NuGet restore failures**: Clear package cache with `dotnet nuget locals all --clear`
-3. **Platform targeting issues**: Ensure you have the correct SDK versions installed
-4. **Build errors on macOS**: Make sure Xcode is installed and up to date
-5. **NuGet package not found errors**: If you receive errors that NuGet packages (especially MAUI components) cannot be found during restore or build, this may indicate that the official NuGet package source is not configured:
+1. **Missing workloads**: Run `dotnet workload install maui` (ignore any "Advertising manifest not updated" warnings)
+2. **NuGet package not found errors**: If you receive errors that NuGet packages (especially MAUI components) cannot be found during restore or build, this usually indicates that the official NuGet package source is not configured:
 
    ```bash
    # Add the official NuGet package source
@@ -157,6 +169,10 @@ dotnet run --project WorkMood.MauiApp.csproj -c Debug -f net9.0-maccatalyst
    # Then retry the restore
    dotnet restore WorkMood.MauiApp.csproj
    ```
+
+3. **NuGet restore failures**: Clear package cache with `dotnet nuget locals all --clear`
+4. **Platform targeting issues**: Ensure you have the correct SDK versions installed
+5. **Build errors on macOS**: Make sure Xcode is installed and up to date
 
 #### Clean Build ####
 

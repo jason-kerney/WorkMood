@@ -17,12 +17,12 @@
         },
         {
             "name": "push:windows",
-            "command": "gittey check:windows && gittey commit && git push",
+            "command": "gittey docs && gittey check:windows && gittey commit && git push",
             "description": "Run tests, commit changes, and push to remote (Windows)"
         },
         {
             "name": "push:mac",
-            "command": "gittey check:mac && gittey commit && git push",
+            "command": "gittey docs && gittey check:mac && gittey commit && git push",
             "description": "Run tests, commit changes, and push to remote (Mac)"
         },
         {
@@ -39,6 +39,10 @@
             "name": "clean",
             "command": "git restore . && git clean -xfd && dotnet restore && dotnet build",
             "description": "Restore, clean untracked files, and rebuild the project"
+        },
+        {
+            "name": "docs",
+            "command": "node .\\node_modules\\doculisp\\dist\\index.js .\\docs\\_docs.dlproj"
         }
     ],
     "collaborators": []
