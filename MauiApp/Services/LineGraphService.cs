@@ -819,7 +819,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
     {
         using var axisPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = SKColors.Black,
+            Color = drawShimFactory.BlackColor(),
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
         });
