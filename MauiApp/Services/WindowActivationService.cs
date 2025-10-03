@@ -63,7 +63,7 @@ public class WindowActivationService : IWindowActivationService
     }
 
 #if WINDOWS
-    private async Task ActivateWindowsWindow(Window window)
+    private Task ActivateWindowsWindow(Window window)
     {
         try
         {
@@ -91,6 +91,8 @@ public class WindowActivationService : IWindowActivationService
         {
             _loggingService.LogException(ex, "WindowActivationService: Error in Windows-specific activation");
         }
+        
+        return Task.CompletedTask;
     }
 
     // Windows API declarations for window activation
