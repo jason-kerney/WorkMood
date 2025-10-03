@@ -898,7 +898,8 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
     {
         var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, graphMode, lineColor, width, height);
-        await File.WriteAllBytesAsync(filePath, imageData);
+        var fileShim = fileShimFactory.Create();
+        await fileShim.WriteAllBytesAsync(filePath, imageData);
     }
 
     public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
