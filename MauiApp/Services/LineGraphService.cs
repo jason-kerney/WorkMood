@@ -57,10 +57,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         await File.WriteAllBytesAsync(filePath, imageData);
     }
 
-    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string backgroundImagePath, int width = 800, int height = 600)
-    {
-        return await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, backgroundImagePath, Colors.Blue, width, height);
-    }
+
 
     public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
@@ -97,7 +94,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
 
     public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, string backgroundImagePath, int width = 800, int height = 600)
     {
-        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, backgroundImagePath, width, height);
+        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, backgroundImagePath, Colors.Blue, width, height);
         await File.WriteAllBytesAsync(filePath, imageData);
     }
 
