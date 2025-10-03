@@ -563,7 +563,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
     {
         using var axisPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = SKColors.Black,
+            Color = drawShimFactory.BlackColor(),
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
         });
@@ -579,7 +579,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         var zeroY = area.Bottom - ((0 - minY) * area.Height / (maxY - minY));
         using var zeroLinePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = SKColors.DarkGray,
+            Color = drawShimFactory.DarkGrayColor(),
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
         });
