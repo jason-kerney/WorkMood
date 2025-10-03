@@ -1010,7 +1010,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory) : ILineGraphServ
         using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
 
         // Clear canvas with white background
-        canvas.Clear(SKColors.White);
+        canvas.Clear(drawShimFactory.WhiteColor());
 
         await Task.Run(() => DrawRawDataGraph(canvas.Raw, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, true));
 
