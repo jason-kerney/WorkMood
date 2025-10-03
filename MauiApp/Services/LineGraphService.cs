@@ -970,6 +970,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     public async Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         var imageData = await GenerateRawDataGraphAsync(rawDataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, backgroundImagePath, lineColor, width, height);
-        await File.WriteAllBytesAsync(filePath, imageData);
+        var fileShim = fileShimFactory.Create();
+        await fileShim.WriteAllBytesAsync(filePath, imageData);
     }
 }
