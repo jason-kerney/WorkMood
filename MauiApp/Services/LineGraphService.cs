@@ -348,7 +348,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var messagePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.GrayColor(),
+            Color = drawShimFactory.GrayColor().Raw,
             TextSize = 14,
             IsAntialias = true,
             TextAlign = SKTextAlign.Center
