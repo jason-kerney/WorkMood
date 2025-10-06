@@ -175,8 +175,9 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
 
         // Calculate the full date range for proportional positioning
-        var requestedStartDate = dateRange.GetStartDate();
-        var requestedEndDate = dateRange.GetEndDate();
+        var dateRangeInfo = new DateRangeInfo(dateRange);
+        var requestedStartDate = dateRangeInfo.StartDate;
+        var requestedEndDate = dateRangeInfo.EndDate;
 
         // Conditionally draw background
         if (drawWhiteBackground)
