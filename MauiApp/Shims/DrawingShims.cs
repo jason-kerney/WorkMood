@@ -299,14 +299,38 @@ public class FontStyleShimFactory : IFontStyleShimFactory
     public IFontStyleShim Bold => new FontStyleShim(SKFontStyle.Bold);
 }
 
+public interface IFontFaceShim
+{
+    SKTypeface Raw { get; }
+}
+
+public class FontFaceShim : IFontFaceShim
+{
+    private readonly SKTypeface _typeface;
+
+    public FontFaceShim(SKTypeface typeface)
+    {
+        _typeface = typeface;
+    }
+
+    public SKTypeface Raw => _typeface;
+}
+
 public interface IFontShimFactory
 {
     public IFontStyleShimFactory Styles { get; }
+    public IFontFaceShim FromFamilyName(string familyName, IFontStyleShim style);
 }
 
 public class FontShimFactory : IFontShimFactory
 {
     public IFontStyleShimFactory Styles { get; } = new FontStyleShimFactory();
+
+    public IFontFaceShim FromFamilyName(string familyName, IFontStyleShim style)
+    {
+        var typeface = SKTypeface.FromFamilyName(familyName, style.Raw);
+        return new FontFaceShim(typeface);
+    }
 }
 
 public interface IDrawShimFactory
