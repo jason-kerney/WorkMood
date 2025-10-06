@@ -26,7 +26,7 @@ public class PathEffectShim : IPathEffectShim
 
 public class PaintShimArgs
 {
-    public IColorShim Color { get; set; }
+    public required IColorShim Color { get; set; }
     public float TextSize { get; set; }
     public bool IsAntialias { get; set; }
     public SKTextAlign TextAlign { get; set; }

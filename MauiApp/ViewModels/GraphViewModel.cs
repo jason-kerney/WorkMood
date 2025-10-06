@@ -711,8 +711,9 @@ public class GraphViewModel : ViewModelBase
     /// </summary>
     private List<MoodEntry> FilterEntriesByDateRange(IEnumerable<MoodEntry> entries, DateRange dateRange)
     {
-        var startDate = dateRange.GetStartDate();
-        var endDate = dateRange.GetEndDate();
+        var dateRangeInfo = new DateRangeInfo(dateRange);
+        var startDate = dateRangeInfo.StartDate;
+        var endDate = dateRangeInfo.EndDate;
         
         return entries
             .Where(e => e.Date >= startDate && e.Date <= endDate && e.Value.HasValue)

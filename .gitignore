@@ -492,3 +492,6 @@ WorkMood-v*/
 *.zip
 *.7z
 *.rar
+
+# Approvals
+*.received.*
