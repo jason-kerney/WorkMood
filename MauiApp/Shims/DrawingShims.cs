@@ -63,6 +63,7 @@ public interface ICanvasShim : IDisposable
     SKCanvas Raw { get; }
 
     void Clear(SKColor color);
+    void Clear(IColorShim color);
     void DrawBitmap(IBitmapShim backgroundBitmap, SKRect sKRect);
     void DrawCircle(float x, float y, int radius, IPaintShim startPaint);
     void DrawLine(float left1, float top, float left2, float bottom, IPaintShim axisPaint);
@@ -91,6 +92,11 @@ public class CanvasShim : ICanvasShim
     public void Clear(SKColor color)
     {
         _canvas.Clear(color);
+    }
+
+    public void Clear(IColorShim color)
+    {
+        _canvas.Clear(color.Raw);
     }
 
     public void DrawBitmap(IBitmapShim backgroundBitmap, SKRect sKRect)
@@ -167,12 +173,12 @@ public interface IImageShim : IDisposable
 public class ImageShim : IImageShim
 {
     private readonly SKImage _image;
-    
+
     public ImageShim(SKImage image)
     {
         _image = image;
     }
-    
+
     public SKImage? Raw => _image;
 
     public IDrawDataShim Encode(SKEncodedImageFormat format, int quality)
@@ -185,6 +191,23 @@ public class ImageShim : IImageShim
     {
         _image.Dispose();
     }
+}
+
+public interface IColorShim
+{
+    SKColor Raw { get; }
+}
+
+public class ColorShim : IColorShim
+{
+    private readonly SKColor _color;
+
+    public ColorShim(SKColor color)
+    {
+        _color = color;
+    }
+
+    public SKColor Raw => _color;
 }
 
 public interface IDrawShimFactory
@@ -202,8 +225,8 @@ public interface IDrawShimFactory
     IBitmapShim FromRaw(SKBitmap bitmap);
 
     IPaintShim PaintFromArgs(PaintShimArgs paintShimArgs);
-    
-    SKColor WhiteColor();
+
+    IColorShim WhiteColor();
     SKColor LightGrayColor();
     SKColor BlackColor();
     SKColor DarkGrayColor();
@@ -260,7 +283,7 @@ public class DrawShimFactory : IDrawShimFactory
         return new PaintShim(paint);
     }
     
-    public SKColor WhiteColor() => SKColors.White;
+    public IColorShim WhiteColor() => new ColorShim(SKColors.White);
     public SKColor LightGrayColor() => SKColors.LightGray;
     public SKColor BlackColor() => SKColors.Black;
     public SKColor DarkGrayColor() => SKColors.DarkGray;

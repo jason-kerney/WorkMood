@@ -133,7 +133,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var backgroundPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.WhiteColor(),
+            Color = drawShimFactory.WhiteColor().Raw,
             Style = SKPaintStyle.Fill
         });
         canvas.DrawRect(area, backgroundPaint);
