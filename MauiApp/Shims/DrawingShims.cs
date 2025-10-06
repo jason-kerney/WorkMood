@@ -30,7 +30,7 @@ public class PaintShimArgs
     public float TextSize { get; set; }
     public bool IsAntialias { get; set; }
     public SKTextAlign TextAlign { get; set; }
-    public SKTypeface? Typeface { get; set; }
+    public ITypeFaceShim? Typeface { get; set; }
     public SKPaintStyle? Style { get; set; }
     public int StrokeWidth { get; set; }
     public IPathEffectShim? PathEffect { get; set; }
@@ -299,12 +299,12 @@ public class FontStyleShimFactory : IFontStyleShimFactory
     public IFontStyleShim Bold => new FontStyleShim(SKFontStyle.Bold);
 }
 
-public interface IFontFaceShim
+public interface ITypeFaceShim
 {
     SKTypeface Raw { get; }
 }
 
-public class FontFaceShim : IFontFaceShim
+public class FontFaceShim : ITypeFaceShim
 {
     private readonly SKTypeface _typeface;
 
@@ -319,14 +319,14 @@ public class FontFaceShim : IFontFaceShim
 public interface IFontShimFactory
 {
     public IFontStyleShimFactory Styles { get; }
-    public IFontFaceShim FromFamilyName(string familyName, IFontStyleShim style);
+    public ITypeFaceShim FromFamilyName(string familyName, IFontStyleShim style);
 }
 
 public class FontShimFactory : IFontShimFactory
 {
     public IFontStyleShimFactory Styles { get; } = new FontStyleShimFactory();
 
-    public IFontFaceShim FromFamilyName(string familyName, IFontStyleShim style)
+    public ITypeFaceShim FromFamilyName(string familyName, IFontStyleShim style)
     {
         var typeface = SKTypeface.FromFamilyName(familyName, style.Raw);
         return new FontFaceShim(typeface);
@@ -398,7 +398,7 @@ public class DrawShimFactory : IDrawShimFactory
             TextSize = paintShimArgs.TextSize,
             IsAntialias = paintShimArgs.IsAntialias,
             TextAlign = paintShimArgs.TextAlign,
-            Typeface = paintShimArgs.Typeface,
+            Typeface = paintShimArgs.Typeface?.Raw,
             Style = paintShimArgs.Style ?? SKPaintStyle.Fill,
             StrokeWidth = paintShimArgs.StrokeWidth,
             PathEffect = paintShimArgs.PathEffect?.Raw,
