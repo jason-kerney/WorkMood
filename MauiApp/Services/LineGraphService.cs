@@ -14,7 +14,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     private const int MinYValue = -9;
     private const int MaxYValue = 9;
     private const int Padding = 60;
-    private const int GridLineSpacing = 20;
 
     public LineGraphService() : this(new DrawShimFactory(), new FileShimFactory()) { }
 
