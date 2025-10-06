@@ -228,7 +228,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
             Color = drawShimFactory.Colors.LightGray,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 1,
-            PathEffect = drawShimFactory.PathEffects.CreateDash([5, 5], 0).Raw
+            PathEffect = drawShimFactory.PathEffects.CreateDash([5, 5], 0)
         });
 
         // Horizontal grid lines
@@ -484,7 +484,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
             Color = drawShimFactory.Colors.LightGray,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 1,
-            PathEffect = drawShimFactory.PathEffects.CreateDash([5, 5], 0).Raw
+            PathEffect = drawShimFactory.PathEffects.CreateDash([5, 5], 0)
         });
 
         // Horizontal grid lines for mood scale 1-10
