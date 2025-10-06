@@ -32,7 +32,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
 
         // Clear canvas with white background
-        canvas.Clear(drawShimFactory.WhiteColor());
+        canvas.Clear(drawShimFactory.Colors.White.Raw);
 
         await Task.Run(() => DrawGraphForMode(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, graphMode, true)); // Draw white background for normal graphs
 
@@ -65,7 +65,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         else
         {
             // Fallback to white background if image doesn't exist
-            canvas.Clear(drawShimFactory.WhiteColor());
+            canvas.Clear(drawShimFactory.Colors.White.Raw);
         }
 
         await Task.Run(() => DrawGraphForMode(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, graphMode, false)); // Don't draw white background when using custom background
@@ -133,7 +133,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var backgroundPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.WhiteColor().Raw,
+            Color = drawShimFactory.Colors.White.Raw,
             Style = SKPaintStyle.Fill
         });
         canvas.DrawRect(area, backgroundPaint);
@@ -143,7 +143,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var gridPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.LightGrayColor().Raw,
+            Color = drawShimFactory.Colors.LightGray.Raw,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 1,
             PathEffect = SKPathEffect.CreateDash([5, 5], 0)
@@ -175,7 +175,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var axisPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.BlackColor().Raw,
+            Color = drawShimFactory.Colors.Black.Raw,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
         });
@@ -190,7 +190,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         var zeroY = area.Bottom - ((0 - MinYValue) * area.Height / (MaxYValue - MinYValue));
         using var zeroLinePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.DarkGrayColor().Raw,
+            Color = drawShimFactory.Colors.DarkGray.Raw,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
         });
@@ -263,7 +263,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.BlackColor().Raw,
+            Color = drawShimFactory.Colors.Black.Raw,
             TextSize = 12,
             IsAntialias = true,
             TextAlign = SKTextAlign.Right
@@ -283,7 +283,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.BlackColor().Raw,
+            Color = drawShimFactory.Colors.Black.Raw,
             TextSize = 10,
             IsAntialias = true,
             TextAlign = SKTextAlign.Center
@@ -334,7 +334,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var titlePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.BlackColor().Raw,
+            Color = drawShimFactory.Colors.Black.Raw,
             TextSize = 16,
             IsAntialias = true,
             TextAlign = SKTextAlign.Center,
@@ -348,7 +348,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var messagePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.GrayColor().Raw,
+            Color = drawShimFactory.Colors.Gray.Raw,
             TextSize = 14,
             IsAntialias = true,
             TextAlign = SKTextAlign.Center
@@ -438,7 +438,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
         using var gridPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.LightGrayColor().Raw,
+            Color = drawShimFactory.Colors.LightGray.Raw,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 1,
             PathEffect = SKPathEffect.CreateDash([5, 5], 0)
@@ -470,7 +470,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var axisPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.BlackColor().Raw,
+            Color = drawShimFactory.Colors.Black.Raw,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
         });
@@ -486,7 +486,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         var zeroY = area.Bottom - ((0 - minY) * area.Height / (maxY - minY));
         using var zeroLinePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.DarkGrayColor().Raw,
+            Color = drawShimFactory.Colors.DarkGray.Raw,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
         });
@@ -562,7 +562,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.BlackColor().Raw,
+            Color = drawShimFactory.Colors.Black.Raw,
             TextSize = 12,
             IsAntialias = true,
             TextAlign = SKTextAlign.Right
@@ -589,7 +589,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var titlePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.BlackColor().Raw,
+            Color = drawShimFactory.Colors.Black.Raw,
             TextSize = 16,
             IsAntialias = true,
             TextAlign = SKTextAlign.Center,
@@ -694,7 +694,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var gridPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.LightGrayColor().Raw,
+            Color = drawShimFactory.Colors.LightGray.Raw,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 1,
             PathEffect = SKPathEffect.CreateDash([5, 5], 0)
@@ -726,7 +726,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var axisPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.BlackColor().Raw,
+            Color = drawShimFactory.Colors.Black.Raw,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 2
         });
@@ -836,7 +836,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.BlackColor().Raw,
+            Color = drawShimFactory.Colors.Black.Raw,
             TextSize = 12,
             IsAntialias = true,
             TextAlign = SKTextAlign.Right
@@ -856,7 +856,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.BlackColor().Raw,
+            Color = drawShimFactory.Colors.Black.Raw,
             TextSize = 10,
             IsAntialias = true,
             TextAlign = SKTextAlign.Center
@@ -883,7 +883,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using IPaintShim titlePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.BlackColor().Raw,
+            Color = drawShimFactory.Colors.Black.Raw,
             TextSize = 16,
             IsAntialias = true,
             TextAlign = SKTextAlign.Center,
@@ -919,7 +919,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
 
         // Clear canvas with white background
-        canvas.Clear(drawShimFactory.WhiteColor());
+        canvas.Clear(drawShimFactory.Colors.White.Raw);
 
         await Task.Run(() => DrawRawDataGraph(canvas.Raw, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, true));
 
@@ -950,7 +950,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         else
         {
             // Fallback to white background if image doesn't exist
-            canvas.Clear(drawShimFactory.WhiteColor());
+            canvas.Clear(drawShimFactory.Colors.White.Raw);
         }
 
         await Task.Run(() => DrawRawDataGraph(canvas.Raw, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, false));

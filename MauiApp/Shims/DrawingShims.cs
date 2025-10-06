@@ -210,6 +210,24 @@ public class ColorShim : IColorShim
     public SKColor Raw => _color;
 }
 
+public interface IColorShims
+{
+    IColorShim White { get; }
+    IColorShim LightGray { get; }
+    IColorShim Black { get; }
+    IColorShim DarkGray { get; }
+    IColorShim Gray { get; }
+}
+
+public class ColorShims : IColorShims
+{
+    public IColorShim White => new ColorShim(SKColors.White);
+    public IColorShim LightGray => new ColorShim(SKColors.LightGray);
+    public IColorShim Black => new ColorShim(SKColors.Black);
+    public IColorShim DarkGray => new ColorShim(SKColors.DarkGray);
+    public IColorShim Gray => new ColorShim(SKColors.Gray);
+}
+
 public interface IDrawShimFactory
 {
     IImageShim FromRaw(SKImage image);
@@ -226,11 +244,7 @@ public interface IDrawShimFactory
 
     IPaintShim PaintFromArgs(PaintShimArgs paintShimArgs);
 
-    IColorShim WhiteColor();
-    IColorShim LightGrayColor();
-    IColorShim BlackColor();
-    IColorShim DarkGrayColor();
-    IColorShim GrayColor();
+    IColorShims Colors { get; }
 }
 
 public class DrawShimFactory : IDrawShimFactory
@@ -282,10 +296,6 @@ public class DrawShimFactory : IDrawShimFactory
         };
         return new PaintShim(paint);
     }
-    
-    public IColorShim WhiteColor() => new ColorShim(SKColors.White);
-    public IColorShim LightGrayColor() => new ColorShim(SKColors.LightGray);
-    public IColorShim BlackColor() => new ColorShim(SKColors.Black);
-    public IColorShim DarkGrayColor() => new ColorShim(SKColors.DarkGray);
-    public IColorShim GrayColor() => new ColorShim(SKColors.Gray);
+
+    public IColorShims Colors { get; } = new ColorShims();
 }
