@@ -4,7 +4,7 @@ namespace WorkMood.MauiApp.Shims;
 
 public class PaintShimArgs
 {
-    public SKColor Color { get; set; }
+    public IColorShim Color { get; set; }
     public float TextSize { get; set; }
     public bool IsAntialias { get; set; }
     public SKTextAlign TextAlign { get; set; }
@@ -217,6 +217,7 @@ public interface IColorShims
     IColorShim Black { get; }
     IColorShim DarkGray { get; }
     IColorShim Gray { get; }
+    IColorShim FromArgb(byte red, byte green, byte blue, byte alpha);
 }
 
 public class ColorShims : IColorShims
@@ -226,6 +227,7 @@ public class ColorShims : IColorShims
     public IColorShim Black => new ColorShim(SKColors.Black);
     public IColorShim DarkGray => new ColorShim(SKColors.DarkGray);
     public IColorShim Gray => new ColorShim(SKColors.Gray);
+    public IColorShim FromArgb(byte red, byte green, byte blue, byte alpha) => new ColorShim(new SKColor(red, green, blue, alpha));
 }
 
 public interface IDrawShimFactory
@@ -285,7 +287,7 @@ public class DrawShimFactory : IDrawShimFactory
     {
         var paint = new SKPaint
         {
-            Color = paintShimArgs.Color,
+            Color = paintShimArgs.Color.Raw,
             TextSize = paintShimArgs.TextSize,
             IsAntialias = paintShimArgs.IsAntialias,
             TextAlign = paintShimArgs.TextAlign,
