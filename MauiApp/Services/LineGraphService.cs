@@ -76,59 +76,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         return data.ToArray();
     }
 
-    private void DrawGraph(SKCanvas canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color lineColor, bool drawWhiteBackground = true)
-    {
-        DrawGraph(drawShimFactory.FromRaw(canvas), entries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, drawWhiteBackground);
-    }
-
-    private void DrawGraph(ICanvasShim canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color lineColor, bool drawWhiteBackground = true)
-    {
-        var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
-
-        // Calculate the full date range for proportional positioning
-        var requestedStartDate = dateRange.GetStartDate();
-        var requestedEndDate = dateRange.GetEndDate();
-
-        // Conditionally draw background
-        if (drawWhiteBackground)
-        {
-            DrawBackground(canvas, graphArea);
-        }
-
-        // Conditionally draw grid and axes
-        if (showAxesAndGrid)
-        {
-            DrawGrid(canvas, graphArea);
-            DrawAxes(canvas, graphArea);
-        }
-
-        if (entries.Count == 0)
-        {
-            DrawNoDataMessage(canvas, graphArea);
-            return;
-        }
-
-        // Draw data line and optionally points with proportional positioning
-        DrawDataLine(canvas, graphArea, entries, requestedStartDate, requestedEndDate, lineColor);
-        if (showDataPoints)
-        {
-            DrawDataPoints(canvas, graphArea, entries, requestedStartDate, requestedEndDate, lineColor);
-        }
-
-        // Conditionally draw labels
-        if (showAxesAndGrid)
-        {
-            DrawYAxisLabels(canvas, graphArea);
-            DrawXAxisLabels(canvas, graphArea, entries, requestedStartDate, requestedEndDate, showDataPoints, lineColor);
-        }
-
-        // Conditionally draw title
-        if (showTitle)
-        {
-            DrawTitle(canvas, width);
-        }
-    }
-
     private void DrawBackground(ICanvasShim canvas, SKRect area)
     {
         using var backgroundPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -137,146 +84,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
             Style = SKPaintStyle.Fill
         });
         canvas.DrawRect(area, backgroundPaint);
-    }
-
-    private void DrawGrid(ICanvasShim canvas, SKRect area)
-    {
-        using var gridPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
-        {
-            Color = drawShimFactory.Colors.LightGray.Raw,
-            Style = SKPaintStyle.Stroke,
-            StrokeWidth = 1,
-            PathEffect = SKPathEffect.CreateDash([5, 5], 0)
-        });
-
-        // Horizontal grid lines
-        var yRange = MaxYValue - MinYValue;
-        var yStep = area.Height / yRange;
-        for (int i = MinYValue + 1; i < MaxYValue; i++)
-        {
-            var y = area.Bottom - ((i - MinYValue) * yStep);
-            canvas.DrawLine(area.Left, y, area.Right, y, gridPaint);
-        }
-
-        // Vertical grid lines - draw fewer lines for readability
-        if (area.Width > 200)
-        {
-            var verticalLines = Math.Min(10, (int)(area.Width / 80));
-            var xStep = area.Width / verticalLines;
-            for (int i = 1; i < verticalLines; i++)
-            {
-                var x = area.Left + (i * xStep);
-                canvas.DrawLine(x, area.Top, x, area.Bottom, gridPaint);
-            }
-        }
-    }
-
-    private void DrawAxes(ICanvasShim canvas, SKRect area)
-    {
-        using var axisPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
-        {
-            Color = drawShimFactory.Colors.Black.Raw,
-            Style = SKPaintStyle.Stroke,
-            StrokeWidth = 2
-        });
-
-        // Y-axis
-        canvas.DrawLine(area.Left, area.Top, area.Left, area.Bottom, axisPaint);
-
-        // X-axis
-        canvas.DrawLine(area.Left, area.Bottom, area.Right, area.Bottom, axisPaint);
-
-        // Zero line (horizontal line at y=0)
-        var zeroY = area.Bottom - ((0 - MinYValue) * area.Height / (MaxYValue - MinYValue));
-        using var zeroLinePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
-        {
-            Color = drawShimFactory.Colors.DarkGray.Raw,
-            Style = SKPaintStyle.Stroke,
-            StrokeWidth = 2
-        });
-        canvas.DrawLine(area.Left, zeroY, area.Right, zeroY, zeroLinePaint);
-    }
-
-    private void DrawDataLine(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor)
-    {
-        if (entries.Count < 2) return;
-
-        using var linePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
-        {
-            Color = new SKColor((byte)(lineColor.Red * 255), (byte)(lineColor.Green * 255), (byte)(lineColor.Blue * 255)),
-            Style = SKPaintStyle.Stroke,
-            StrokeWidth = 3,
-            IsAntialias = true
-        });
-
-        using var path = new SKPath();
-
-        // Calculate total days in the requested range
-        var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
-
-        for (int i = 0; i < entries.Count; i++)
-        {
-            // Calculate proportional position based on actual date within the requested range
-            var daysFromStart = entries[i].Date.DayNumber - requestedStartDate.DayNumber;
-            var proportionalPosition = (float)daysFromStart / totalDays;
-
-            var x = area.Left + (proportionalPosition * area.Width);
-            var normalizedY = (entries[i].Value!.Value - MinYValue) / (double)(MaxYValue - MinYValue);
-            var y = area.Bottom - (float)(normalizedY * area.Height);
-
-            if (i == 0)
-                path.MoveTo(x, y);
-            else
-                path.LineTo(x, y);
-        }
-
-        canvas.DrawPath(path, linePaint);
-    }
-
-    private void DrawDataPoints(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor)
-    {
-        using var pointPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
-        {
-            Color = new SKColor((byte)(lineColor.Red * 180), (byte)(lineColor.Green * 180), (byte)(lineColor.Blue * 180)), // Slightly darker than line color
-            Style = SKPaintStyle.Fill,
-            IsAntialias = true
-        });
-
-        // Calculate total days in the requested range
-        var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
-
-        for (int i = 0; i < entries.Count; i++)
-        {
-            // Calculate proportional position based on actual date within the requested range
-            var daysFromStart = entries[i].Date.DayNumber - requestedStartDate.DayNumber;
-            var proportionalPosition = (float)daysFromStart / totalDays;
-
-            var x = area.Left + (proportionalPosition * area.Width);
-            var normalizedY = (entries[i].Value!.Value - MinYValue) / (double)(MaxYValue - MinYValue);
-            var y = area.Bottom - (float)(normalizedY * area.Height);
-
-            canvas.DrawCircle(x, y, 4, pointPaint);
-        }
-    }
-
-    private void DrawYAxisLabels(ICanvasShim canvas, SKRect area)
-    {
-        using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
-        {
-            Color = drawShimFactory.Colors.Black.Raw,
-            TextSize = 12,
-            IsAntialias = true,
-            TextAlign = SKTextAlign.Right
-        });
-
-        var yRange = MaxYValue - MinYValue;
-        var yStep = area.Height / yRange;
-
-        for (int i = MinYValue; i <= MaxYValue; i += 3) // Show every 3rd value to avoid crowding
-        {
-            var y = area.Bottom - ((i - MinYValue) * yStep);
-            canvas.DrawText(i.ToString(), area.Left - 10, y + 4, labelPaint);
-        }
     }
 
     private void DrawXAxisLabels(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor)
@@ -330,20 +137,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         }
     }
 
-    private void DrawTitle(ICanvasShim canvas, int width)
-    {
-        using var titlePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
-        {
-            Color = drawShimFactory.Colors.Black.Raw,
-            TextSize = 16,
-            IsAntialias = true,
-            TextAlign = SKTextAlign.Center,
-            Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
-        });
-
-        canvas.DrawText("Mood Change Over Time", width / 2, 30, titlePaint);
-    }
-
     private void DrawNoDataMessage(ICanvasShim canvas, SKRect area)
     {
         using var messagePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -378,11 +171,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <summary>
     /// Draws graph with mode-specific logic for data extraction
     /// </summary>
-    private void DrawGraphForMode(SKCanvas canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color lineColor, GraphMode graphMode, bool drawWhiteBackground = true)
-    {
-        DrawGraphForMode(drawShimFactory.FromRaw(canvas), entries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, graphMode, drawWhiteBackground);
-    }
-
     private void DrawGraphForMode(ICanvasShim canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color lineColor, GraphMode graphMode, bool drawWhiteBackground = true)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
