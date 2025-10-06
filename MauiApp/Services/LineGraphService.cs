@@ -143,7 +143,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var gridPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.LightGrayColor(),
+            Color = drawShimFactory.LightGrayColor().Raw,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 1,
             PathEffect = SKPathEffect.CreateDash([5, 5], 0)
@@ -438,7 +438,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
         using var gridPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.LightGrayColor(),
+            Color = drawShimFactory.LightGrayColor().Raw,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 1,
             PathEffect = SKPathEffect.CreateDash([5, 5], 0)
@@ -694,7 +694,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     {
         using var gridPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
-            Color = drawShimFactory.LightGrayColor(),
+            Color = drawShimFactory.LightGrayColor().Raw,
             Style = SKPaintStyle.Stroke,
             StrokeWidth = 1,
             PathEffect = SKPathEffect.CreateDash([5, 5], 0)

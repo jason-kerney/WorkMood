@@ -227,7 +227,7 @@ public interface IDrawShimFactory
     IPaintShim PaintFromArgs(PaintShimArgs paintShimArgs);
 
     IColorShim WhiteColor();
-    SKColor LightGrayColor();
+    IColorShim LightGrayColor();
     SKColor BlackColor();
     SKColor DarkGrayColor();
     SKColor GrayColor();
@@ -284,7 +284,7 @@ public class DrawShimFactory : IDrawShimFactory
     }
     
     public IColorShim WhiteColor() => new ColorShim(SKColors.White);
-    public SKColor LightGrayColor() => SKColors.LightGray;
+    public IColorShim LightGrayColor() => new ColorShim(SKColors.LightGray);
     public SKColor BlackColor() => SKColors.Black;
     public SKColor DarkGrayColor() => SKColors.DarkGray;
     public SKColor GrayColor() => SKColors.Gray;
