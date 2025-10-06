@@ -271,6 +271,44 @@ public class PathEffectShims : IPathEffectShims
     }
 }
 
+
+public interface IFontStyleShim
+{
+    SKFontStyle Raw { get; }
+}
+
+public class FontStyleShim : IFontStyleShim
+{
+    private readonly SKFontStyle _fontStyle;
+
+    public FontStyleShim(SKFontStyle fontStyle)
+    {
+        _fontStyle = fontStyle;
+    }
+
+    public SKFontStyle Raw => _fontStyle;
+}
+
+public interface IFontStyleShimFactory
+{
+    IFontStyleShim Bold { get; }
+}
+
+public class FontStyleShimFactory : IFontStyleShimFactory
+{
+    public IFontStyleShim Bold => new FontStyleShim(SKFontStyle.Bold);
+}
+
+public interface IFontShimFactory
+{
+    public IFontStyleShimFactory Styles { get; }
+}
+
+public class FontShimFactory : IFontShimFactory
+{
+    public IFontStyleShimFactory Styles { get; } = new FontStyleShimFactory();
+}
+
 public interface IDrawShimFactory
 {
     IImageShim FromRaw(SKImage image);
@@ -290,6 +328,8 @@ public interface IDrawShimFactory
     IColorShims Colors { get; }
 
     IPathEffectShims PathEffects { get; }
+
+    IFontShimFactory Fonts { get; }
 }
 
 public class DrawShimFactory : IDrawShimFactory
@@ -345,4 +385,6 @@ public class DrawShimFactory : IDrawShimFactory
     public IColorShims Colors { get; } = new ColorShims();
 
     public IPathEffectShims PathEffects { get; } = new PathEffectShims();
+
+    public IFontShimFactory Fonts { get; } = new FontShimFactory();
 }

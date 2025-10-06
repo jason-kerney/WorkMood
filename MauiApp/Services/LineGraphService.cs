@@ -380,7 +380,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
             TextSize = 16,
             IsAntialias = true,
             TextAlign = SKTextAlign.Center,
-            Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
+            Typeface = SKTypeface.FromFamilyName("Arial", drawShimFactory.Fonts.Styles.Bold.Raw)
         });
 
         var title = graphMode switch
@@ -674,7 +674,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
             TextSize = 16,
             IsAntialias = true,
             TextAlign = SKTextAlign.Center,
-            Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
+            Typeface = SKTypeface.FromFamilyName("Arial", drawShimFactory.Fonts.Styles.Bold.Raw)
         });
 
         canvas.DrawText("Raw Mood Data Over Time", width / 2, 30, titlePaint);
