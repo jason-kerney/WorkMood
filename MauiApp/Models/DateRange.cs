@@ -35,8 +35,6 @@ public enum DateRange
 
 public class DateRangeInfo
 {
-    public DateRangeInfo(DateRange dateRange) : this(dateRange, new DateShim()) { }
-    
     public DateRangeInfo(DateRange dateRange, IDateShim dateShim)
     {
         DateRange = dateRange;

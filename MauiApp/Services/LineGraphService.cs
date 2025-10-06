@@ -14,12 +14,11 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     private const int MinYValue = -9;
     private const int MaxYValue = 9;
     private const int Padding = 60;
-
     public LineGraphService() : this(new DrawShimFactory(), new FileShimFactory()) { }
 
     // New overloads with GraphMode support
 
-    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
     {
         // Filter entries based on graph mode
         var filteredEntries = FilterEntriesForGraphMode(moodEntries, graphMode)
@@ -41,7 +40,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         return data.ToArray();
     }
 
-    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         // Filter entries based on graph mode
         var filteredEntries = FilterEntriesForGraphMode(moodEntries, graphMode)
@@ -170,14 +169,13 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <summary>
     /// Draws graph with mode-specific logic for data extraction
     /// </summary>
-    private void DrawGraphForMode(ICanvasShim canvas, List<MoodEntry> entries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color lineColor, GraphMode graphMode, bool drawWhiteBackground = true)
+    private void DrawGraphForMode(ICanvasShim canvas, List<MoodEntry> entries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color lineColor, GraphMode graphMode, bool drawWhiteBackground = true)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
 
         // Calculate the full date range for proportional positioning
-        var dateRangeInfo = new DateRangeInfo(dateRange);
-        var requestedStartDate = dateRangeInfo.StartDate;
-        var requestedEndDate = dateRangeInfo.EndDate;
+        var requestedStartDate = dateRange.StartDate;
+        var requestedEndDate = dateRange.EndDate;
 
         // Conditionally draw background
         if (drawWhiteBackground)
@@ -416,7 +414,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     }
 
     // Raw Data drawing methods
-    private void DrawRawDataGraph(SKCanvas canvas, List<RawMoodDataPoint> dataPoints, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color pointColor, bool drawWhiteBackground = true)
+    private void DrawRawDataGraph(SKCanvas canvas, List<RawMoodDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color pointColor, bool drawWhiteBackground = true)
     {
         DrawRawDataGraph(drawShimFactory.FromRaw(canvas), dataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, pointColor, drawWhiteBackground);
     }
@@ -424,14 +422,13 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <summary>
     /// Draws a scatter plot graph for raw mood data points
     /// </summary>
-    private void DrawRawDataGraph(ICanvasShim canvas, List<RawMoodDataPoint> dataPoints, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color pointColor, bool drawWhiteBackground = true)
+    private void DrawRawDataGraph(ICanvasShim canvas, List<RawMoodDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color pointColor, bool drawWhiteBackground = true)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
 
         // Calculate the full date range for proportional positioning
-        var dateRangeInfo = new DateRangeInfo(dateRange);
-        var requestedStartDate = dateRangeInfo.StartDate;
-        var requestedEndDate = dateRangeInfo.EndDate;
+        var requestedStartDate = dateRange.StartDate;
+        var requestedEndDate = dateRange.EndDate;
 
         // Convert to DateTime for timestamp calculations
         var startDateTime = requestedStartDate.ToDateTime(TimeOnly.MinValue);
@@ -684,14 +681,14 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
     // New save methods with GraphMode support
 
-    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
+    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
     {
         var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, graphMode, lineColor, width, height);
         var fileShim = fileShimFactory.Create();
         await fileShim.WriteAllBytesAsync(filePath, imageData);
     }
 
-    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, graphMode, backgroundImagePath, lineColor, width, height);
         var fileShim = fileShimFactory.Create();
@@ -700,7 +697,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
     // Raw Data graph implementations
 
-    public async Task<byte[]> GenerateRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, Color lineColor, int width = 800, int height = 600)
+    public async Task<byte[]> GenerateRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, Color lineColor, int width = 800, int height = 600)
     {
         var sortedPoints = rawDataPoints.OrderBy(p => p.Timestamp).ToList();
 
@@ -719,7 +716,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         return data.ToArray();
     }
 
-    public async Task<byte[]> GenerateRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    public async Task<byte[]> GenerateRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         var sortedPoints = rawDataPoints.OrderBy(p => p.Timestamp).ToList();
 
@@ -749,14 +746,14 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         return data.ToArray();
     }
 
-    public async Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, Color lineColor, int width = 800, int height = 600)
+    public async Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, Color lineColor, int width = 800, int height = 600)
     {
         var imageData = await GenerateRawDataGraphAsync(rawDataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, lineColor, width, height);
         var fileShim = fileShimFactory.Create();
         await fileShim.WriteAllBytesAsync(filePath, imageData);
     }
 
-    public async Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRange dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    public async Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         var imageData = await GenerateRawDataGraphAsync(rawDataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, backgroundImagePath, lineColor, width, height);
         var fileShim = fileShimFactory.Create();

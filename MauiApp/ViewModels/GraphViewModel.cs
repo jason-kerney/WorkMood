@@ -3,6 +3,7 @@ using System.Windows.Input;
 using WorkMood.MauiApp.Infrastructure;
 using WorkMood.MauiApp.Models;
 using WorkMood.MauiApp.Services;
+using WorkMood.MauiApp.Shims;
 
 namespace WorkMood.MauiApp.ViewModels;
 
@@ -13,7 +14,8 @@ public class GraphViewModel : ViewModelBase
 {
     private readonly IMoodDataService _moodDataService;
     private readonly ILineGraphService _lineGraphService;
-    
+    private readonly IDateShim _dateShim;
+
     // Backing fields
     private DateRangeItem _selectedDateRange;
     private ImageSource? _graphImageSource;
@@ -37,20 +39,22 @@ public class GraphViewModel : ViewModelBase
     private double _availableContainerWidth = 800; // Default fallback
     private double _availableContainerHeight = 400; // Default fallback
     
-    public GraphViewModel(IMoodDataService moodDataService, ILineGraphService lineGraphService)
+    public GraphViewModel(IMoodDataService moodDataService, ILineGraphService lineGraphService) : this(moodDataService, lineGraphService, new DateShim()) { }
+    
+    public GraphViewModel(IMoodDataService moodDataService, ILineGraphService lineGraphService, IDateShim dateShim)
     {
         _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
         _lineGraphService = lineGraphService ?? throw new ArgumentNullException(nameof(lineGraphService));
-        
+        _dateShim = dateShim ?? throw new ArgumentNullException(nameof(dateShim));
         DateRanges = new ObservableCollection<DateRangeItem>();
         InitializeDateRanges();
-        
+
         GraphModes = new ObservableCollection<GraphModeItem>();
         InitializeGraphModes();
-        
+
         _selectedDateRange = DateRanges.First();
         _selectedGraphModeItem = GraphModes.First();
-        
+
         // Initialize commands
         ExportGraphCommand = new RelayCommand(async () => await ExportGraphAsync());
         ShareGraphCommand = new RelayCommand(async () => await ShareGraphAsync());
@@ -192,12 +196,12 @@ public class GraphViewModel : ViewModelBase
     /// <summary>
     /// Calculated width for the graph based on the selected date range
     /// </summary>
-    public int GraphWidth => CalculateGraphWidth(_selectedDateRange?.DateRange ?? DateRange.Last7Days);
+    public int GraphWidth => CalculateGraphWidth(_selectedDateRange?.DateRange ?? new DateRangeInfo(DateRange.Last7Days, _dateShim));
     
     /// <summary>
     /// Calculated width for export based on the selected date range
     /// </summary>
-    public int ExportGraphWidth => CalculateExportGraphWidth(_selectedDateRange?.DateRange ?? DateRange.Last7Days);
+    public int ExportGraphWidth => CalculateExportGraphWidth(_selectedDateRange?.DateRange ?? new DateRangeInfo(DateRange.Last7Days, _dateShim));
     
     /// <summary>
     /// Custom background image source
@@ -524,8 +528,8 @@ public class GraphViewModel : ViewModelBase
                 // Extract raw data points from filtered entries
                 var rawDataPoints = filteredEntries
                     .SelectMany(entry => entry.GetRawDataPoints())
-                    .Where(point => point.Timestamp >= _selectedDateRange.DateRange.GetStartDate().ToDateTime(TimeOnly.MinValue) && 
-                                   point.Timestamp <= _selectedDateRange.DateRange.GetEndDate().ToDateTime(TimeOnly.MaxValue))
+                    .Where(point => point.Timestamp >= _selectedDateRange.DateRange.StartDate.ToDateTime(TimeOnly.MinValue) && 
+                                   point.Timestamp <= _selectedDateRange.DateRange.EndDate.ToDateTime(TimeOnly.MaxValue))
                     .ToList();
                 
                 if (!rawDataPoints.Any())
@@ -604,8 +608,8 @@ public class GraphViewModel : ViewModelBase
                 // Extract raw data points for export
                 var rawDataPoints = filteredEntries
                     .SelectMany(entry => entry.GetRawDataPoints())
-                    .Where(point => point.Timestamp >= _selectedDateRange.DateRange.GetStartDate().ToDateTime(TimeOnly.MinValue) && 
-                                   point.Timestamp <= _selectedDateRange.DateRange.GetEndDate().ToDateTime(TimeOnly.MaxValue))
+                    .Where(point => point.Timestamp >= _selectedDateRange.DateRange.StartDate.ToDateTime(TimeOnly.MinValue) && 
+                                   point.Timestamp <= _selectedDateRange.DateRange.EndDate.ToDateTime(TimeOnly.MaxValue))
                     .ToList();
                 
                 if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
@@ -666,8 +670,8 @@ public class GraphViewModel : ViewModelBase
                 // Extract raw data points for sharing
                 var rawDataPoints = filteredEntries
                     .SelectMany(entry => entry.GetRawDataPoints())
-                    .Where(point => point.Timestamp >= _selectedDateRange.DateRange.GetStartDate().ToDateTime(TimeOnly.MinValue) && 
-                                   point.Timestamp <= _selectedDateRange.DateRange.GetEndDate().ToDateTime(TimeOnly.MaxValue))
+                    .Where(point => point.Timestamp >= _selectedDateRange.DateRange.StartDate.ToDateTime(TimeOnly.MinValue) && 
+                                   point.Timestamp <= _selectedDateRange.DateRange.EndDate.ToDateTime(TimeOnly.MaxValue))
                     .ToList();
                 
                 if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
@@ -709,12 +713,11 @@ public class GraphViewModel : ViewModelBase
     /// <summary>
     /// Filters mood entries by the specified date range
     /// </summary>
-    private List<MoodEntry> FilterEntriesByDateRange(IEnumerable<MoodEntry> entries, DateRange dateRange)
+    private List<MoodEntry> FilterEntriesByDateRange(IEnumerable<MoodEntry> entries, DateRangeInfo dateRange)
     {
-        var dateRangeInfo = new DateRangeInfo(dateRange);
-        var startDate = dateRangeInfo.StartDate;
-        var endDate = dateRangeInfo.EndDate;
-        
+        var startDate = dateRange.StartDate;
+        var endDate = dateRange.EndDate;
+
         return entries
             .Where(e => e.Date >= startDate && e.Date <= endDate && e.Value.HasValue)
             .OrderBy(e => e.Date)
@@ -729,7 +732,7 @@ public class GraphViewModel : ViewModelBase
         var ranges = Enum.GetValues<DateRange>();
         foreach (var range in ranges)
         {
-            DateRanges.Add(new DateRangeItem(range));
+            DateRanges.Add(new DateRangeItem(range, _dateShim));
         }
     }
 
@@ -769,13 +772,13 @@ public class GraphViewModel : ViewModelBase
     /// </summary>
     /// <param name="dateRange">The selected date range</param>
     /// <returns>Calculated width in pixels</returns>
-    private int CalculateGraphWidth(DateRange dateRange)
+    private int CalculateGraphWidth(DateRangeInfo dateRange)
     {
         // Base width for the smallest time increment (Last7Days)
         const int baseWidth = 800;
         const int incrementWidth = 128; // Additional width per time increment step
         
-        return dateRange switch
+        return dateRange.DateRange switch
         {
             DateRange.Last7Days => baseWidth,
             DateRange.Last14Days => baseWidth + incrementWidth,
@@ -794,13 +797,13 @@ public class GraphViewModel : ViewModelBase
     /// </summary>
     /// <param name="dateRange">The selected date range</param>
     /// <returns>Calculated width in pixels for export</returns>
-    private int CalculateExportGraphWidth(DateRange dateRange)
+    private int CalculateExportGraphWidth(DateRangeInfo dateRange)
     {
         // Base width for export (higher resolution)
         const int baseWidth = 1200;
         const int incrementWidth = 192; // Additional width per time increment step for export (1.5x display increment)
         
-        return dateRange switch
+        return dateRange.DateRange switch
         {
             DateRange.Last7Days => baseWidth,
             DateRange.Last14Days => baseWidth + incrementWidth,
@@ -946,13 +949,13 @@ public class GraphViewModel : ViewModelBase
 /// </summary>
 public class DateRangeItem
 {
-    public DateRangeItem(DateRange dateRange)
+    public DateRangeItem(DateRange dateRange, IDateShim dateShim)
     {
-        DateRange = dateRange;
-        DisplayName = dateRange.GetDisplayName();
+        DateRange = new DateRangeInfo(dateRange, dateShim);
+        DisplayName = DateRange.DisplayName;
     }
     
-    public DateRange DateRange { get; }
+    public DateRangeInfo DateRange { get; }
     public string DisplayName { get; }
 }
 
