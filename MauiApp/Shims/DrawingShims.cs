@@ -2,6 +2,28 @@ using SkiaSharp;
 
 namespace WorkMood.MauiApp.Shims;
 
+public interface IPathEffectShim : IDisposable
+{
+    SKPathEffect? Raw { get; }
+}
+
+public class PathEffectShim : IPathEffectShim
+{
+    private readonly SKPathEffect? _pathEffect;
+
+    public PathEffectShim(SKPathEffect? pathEffect)
+    {
+        _pathEffect = pathEffect;
+    }
+
+    public SKPathEffect? Raw => _pathEffect;
+
+    public void Dispose()
+    {
+        _pathEffect?.Dispose();
+    }
+}
+
 public class PaintShimArgs
 {
     public IColorShim Color { get; set; }
@@ -230,6 +252,25 @@ public class ColorShims : IColorShims
     public IColorShim FromArgb(byte red, byte green, byte blue, byte alpha) => new ColorShim(new SKColor(red, green, blue, alpha));
 }
 
+public interface IPathEffectShims : IDisposable
+{
+    IPathEffectShim CreateDash(float[] intervals, float phase);
+}
+
+public class PathEffectShims : IPathEffectShims
+{
+    public IPathEffectShim CreateDash(float[] intervals, float phase)
+    {
+        var pathEffect = SKPathEffect.CreateDash(intervals, phase);
+        return new PathEffectShim(pathEffect);
+    }
+
+    public void Dispose()
+    {
+        // No unmanaged resources to dispose
+    }
+}
+
 public interface IDrawShimFactory
 {
     IImageShim FromRaw(SKImage image);
@@ -247,6 +288,8 @@ public interface IDrawShimFactory
     IPaintShim PaintFromArgs(PaintShimArgs paintShimArgs);
 
     IColorShims Colors { get; }
+
+    IPathEffectShims PathEffects { get; }
 }
 
 public class DrawShimFactory : IDrawShimFactory
@@ -300,4 +343,6 @@ public class DrawShimFactory : IDrawShimFactory
     }
 
     public IColorShims Colors { get; } = new ColorShims();
+
+    public IPathEffectShims PathEffects { get; } = new PathEffectShims();
 }
