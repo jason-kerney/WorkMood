@@ -106,26 +106,26 @@ public class LineGraphServiceApprovalTests
 
     #region Average Mode Tests
 
-    // [Fact]
-    // public async Task GenerateLineGraph_AverageMode_WithDataPointsAndGrid_ShouldMatchApproval()
-    // {
-    //     // Arrange
-    //     var moodEntries = CreateStandardMoodEntries();
-    //     var dateRange = CreateStandardDateRange();
+    [Fact]
+    public async Task GenerateLineGraph_AverageMode_WithDataPointsAndGrid_ShouldMatchApproval()
+    {
+        // Arrange
+        var (today, moodEntries) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(4411, 6, 12), 8677, 20);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-    //         moodEntries, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         GraphMode.Average, 
-    //         StandardLineColor);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            moodEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Average, 
+            StandardLineColor);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
     // [Fact]
     // public async Task GenerateLineGraph_AverageMode_StartOnlyEntries_ShouldMatchApproval()
