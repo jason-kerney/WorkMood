@@ -114,4 +114,23 @@ public static class MoodDataTestHelper
 
         return GetFakeStartOnlyData(startDate, startMoods);
     }
+
+    /// <summary>
+    /// Converts a collection of MoodEntry objects to RawMoodDataPoint objects
+    /// Each MoodEntry creates two RawMoodDataPoints: one for StartOfWork and one for EndOfWork
+    /// </summary>
+    /// <param name="moodEntries">Collection of mood entries to convert</param>
+    /// <returns>Collection of raw mood data points</returns>
+    public static IEnumerable<RawMoodDataPoint> ConvertToRawMoodDataPoints(IEnumerable<MoodEntry> moodEntries)
+    {
+        return moodEntries.SelectMany(dp =>
+        {
+            int startOfWork = dp.StartOfWork.GetValueOrDefault();
+            return new[]
+            {
+                new RawMoodDataPoint(dp.CreatedAt, startOfWork, MoodType.StartOfWork, dp.Date),
+                new RawMoodDataPoint(dp.CreatedAt, dp.EndOfWork.GetValueOrDefault(startOfWork), MoodType.EndOfWork, dp.Date)
+            };
+        });
+    }
 }

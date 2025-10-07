@@ -127,164 +127,157 @@ public class LineGraphServiceApprovalTests
         Approvals.VerifyBinaryFile(imageBytes, "png");
     }
 
-    // [Fact]
-    // public async Task GenerateLineGraph_AverageMode_StartOnlyEntries_ShouldMatchApproval()
-    // {
-    //     // Arrange
-    //     var moodEntries = CreateStartOnlyMoodEntries();
-    //     var dateRange = CreateStandardDateRange();
+    [Fact]
+    public async Task GenerateLineGraph_AverageMode_StartOnlyEntries_ShouldMatchApproval()
+    {
+        // Arrange
+        var (today, moodEntries) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(2031, 7, 8), 7023, 20);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-    //         moodEntries, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         GraphMode.Average, 
-    //         StandardLineColor);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            moodEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Average, 
+            StandardLineColor);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
     // #endregion
 
     // #region Raw Data Mode Tests
 
-    // [Fact]
-    // public async Task GenerateRawDataGraph_WithDataPointsAndGrid_ShouldMatchApproval()
-    // {
-    //     // Arrange
-    //     var rawDataPoints = CreateStandardRawMoodData();
-    //     var dateRange = CreateStandardDateRange();
+    [Fact]
+    public async Task GenerateRawDataGraph_WithDataPointsAndGrid_ShouldMatchApproval()
+    {
+        // Arrange
+        var (today, data) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(1970, 2, 22), 5815, 20);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
-    //         rawDataPoints, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         StandardLineColor);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
+            MoodDataTestHelper.ConvertToRawMoodDataPoints(data),
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            StandardLineColor);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
-    // [Fact]
-    // public async Task GenerateRawDataGraph_LineOnly_ShouldMatchApproval()
-    // {
-    //     // Arrange
-    //     var rawDataPoints = CreateStandardRawMoodData();
-    //     var dateRange = CreateStandardDateRange();
+    [Fact]
+    public async Task GenerateRawDataGraph_LineOnly_ShouldMatchApproval()
+    {
+        // Arrange
+        var (today, data) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(2025, 1, 1), seed: 3767, count: 30);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
-    //         rawDataPoints, 
-    //         dateRange, 
-    //         showDataPoints: false, 
-    //         showAxesAndGrid: false, 
-    //         showTitle: false, 
-    //         StandardLineColor);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
+            MoodDataTestHelper.ConvertToRawMoodDataPoints(data),
+            dateRange, 
+            showDataPoints: false, 
+            showAxesAndGrid: false, 
+            showTitle: false, 
+            StandardLineColor);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
     #endregion
 
     #region Edge Case Tests
 
-    // [Fact]
-    // public async Task GenerateLineGraph_EmptyData_ImpactMode_ShouldMatchApproval()
-    // {
-    //     // Arrange
-    //     var emptyEntries = new List<MoodEntry>();
-    //     var dateRange = CreateStandardDateRange();
+    [Fact]
+    public async Task GenerateLineGraph_EmptyData_ImpactMode_ShouldMatchApproval()
+    {
+        // Arrange
+        var emptyEntries = new List<MoodEntry>();
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(new DateOnly(1925, 1, 15)));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-    //         emptyEntries, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         GraphMode.Impact, 
-    //         StandardLineColor);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            emptyEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Impact, 
+            StandardLineColor);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
-    // [Fact]
-    // public async Task GenerateLineGraph_SingleDataPoint_ImpactMode_ShouldMatchApproval()
-    // {
-    //     // Arrange
-    //     var singleEntry = new List<MoodEntry>
-    //     {
-    //         new() { Date = new DateOnly(2025, 1, 3), StartOfWork = 5, EndOfWork = 8, CreatedAt = new DateTime(2025, 1, 3, 9, 0, 0), LastModified = new DateTime(2025, 1, 3, 18, 0, 0) }
-    //     };
-    //     var dateRange = CreateStandardDateRange();
+    [Fact]
+    public async Task GenerateLineGraph_SingleDataPoint_ImpactMode_ShouldMatchApproval()
+    {
+        // Arrange
+        var (today, singleEntry) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(2025, 1, 3), 5106, 1);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-    //         singleEntry, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         GraphMode.Impact, 
-    //         StandardLineColor);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            singleEntry, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Impact, 
+            StandardLineColor);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
-    // [Fact]
-    // public async Task GenerateRawDataGraph_EmptyData_ShouldMatchApproval()
-    // {
-    //     // Arrange
-    //     var emptyData = new List<RawMoodDataPoint>();
-    //     var dateRange = CreateStandardDateRange();
+    [Fact]
+    public async Task GenerateRawDataGraph_EmptyData_ShouldMatchApproval()
+    {
+        // Arrange
+        var emptyData = new List<RawMoodDataPoint>();
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(new DateOnly(1999, 12, 9)));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
-    //         emptyData, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         StandardLineColor);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
+            emptyData, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            StandardLineColor);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
-    // [Fact]
-    // public async Task GenerateLineGraph_SmallDateRange_ShouldMatchApproval()
-    // {
-    //     // Arrange
-    //     var moodEntries = new List<MoodEntry>
-    //     {
-    //         new() { Date = new DateOnly(2025, 1, 1), StartOfWork = 5, EndOfWork = 7, CreatedAt = new DateTime(2025, 1, 1, 8, 0, 0), LastModified = new DateTime(2025, 1, 1, 17, 0, 0) },
-    //         new() { Date = new DateOnly(2025, 1, 2), StartOfWork = 6, EndOfWork = 4, CreatedAt = new DateTime(2025, 1, 2, 8, 30, 0), LastModified = new DateTime(2025, 1, 2, 16, 30, 0) }
-    //     };
-    //     var dateRange = CreateStandardDateRange(); // Using Last7Days range
+    [Fact]
+    public async Task GenerateLineGraph_SmallDateRange_ShouldMatchApproval()
+    {
+        // Arrange
+        var (today, moodEntries) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(2025, 9, 13), seed: 1299, count: 2);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-    //         moodEntries, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         GraphMode.Impact, 
-    //         StandardLineColor);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            moodEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Impact, 
+            StandardLineColor);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
     #endregion
 
