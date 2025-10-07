@@ -75,57 +75,47 @@ public class LineGraphServiceEdgeCaseTests
 
     #region Boundary Value Tests
 
-    // [Fact]
-    // public async Task GenerateLineGraph_AllMinimumValues_ShouldMatchApproval()
-    // {
-    //     // Arrange - All mood entries at minimum values (1)
-    //     var minMoodEntries = new List<MoodEntry>
-    //     {
-    //         new() { Date = new DateOnly(2025, 1, 1), StartOfWork = 1, EndOfWork = 1, CreatedAt = new DateTime(2025, 1, 1, 8, 0, 0), LastModified = new DateTime(2025, 1, 1, 17, 0, 0) },
-    //         new() { Date = new DateOnly(2025, 1, 2), StartOfWork = 1, EndOfWork = 1, CreatedAt = new DateTime(2025, 1, 2, 8, 30, 0), LastModified = new DateTime(2025, 1, 2, 16, 30, 0) },
-    //         new() { Date = new DateOnly(2025, 1, 3), StartOfWork = 1, EndOfWork = 1, CreatedAt = new DateTime(2025, 1, 3, 9, 0, 0), LastModified = new DateTime(2025, 1, 3, 18, 0, 0) }
-    //     };
-    //     var dateRange = DateRange.Last7Days;
+    [Fact]
+    public async Task GenerateLineGraph_AllMinimumValues_ShouldMatchApproval()
+    {
+        // Arrange - All mood entries at minimum values (1)
+        var (today, minMoodEntries) = MoodDataTestHelper.GetFakeData(new DateOnly(2025, 1, 3), (1, 1), (1, 2), (1, 3), (1, 1), (1, 1), (1, 2), (2, 1), (1, 1));
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-    //         minMoodEntries, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         GraphMode.Average, 
-    //         Microsoft.Maui.Graphics.Colors.Red);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            minMoodEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Average, 
+            Microsoft.Maui.Graphics.Colors.Red);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
-    // [Fact]
-    // public async Task GenerateLineGraph_AllMaximumValues_ShouldMatchApproval()
-    // {
-    //     // Arrange - All mood entries at maximum values (10)
-    //     var maxMoodEntries = new List<MoodEntry>
-    //     {
-    //         new() { Date = new DateOnly(2025, 1, 1), StartOfWork = 10, EndOfWork = 10, CreatedAt = new DateTime(2025, 1, 1, 8, 0, 0), LastModified = new DateTime(2025, 1, 1, 17, 0, 0) },
-    //         new() { Date = new DateOnly(2025, 1, 2), StartOfWork = 10, EndOfWork = 10, CreatedAt = new DateTime(2025, 1, 2, 8, 30, 0), LastModified = new DateTime(2025, 1, 2, 16, 30, 0) },
-    //         new() { Date = new DateOnly(2025, 1, 3), StartOfWork = 10, EndOfWork = 10, CreatedAt = new DateTime(2025, 1, 3, 9, 0, 0), LastModified = new DateTime(2025, 1, 3, 18, 0, 0) }
-    //     };
-    //     var dateRange = DateRange.Last7Days;
+    [Fact]
+    public async Task GenerateLineGraph_AllMaximumValues_ShouldMatchApproval()
+    {
+        // Arrange - All mood entries at maximum values (10)
+        var (today, maxMoodEntries) = MoodDataTestHelper.GetFakeData(new DateOnly(1869, 11, 3), (10, 10), (10, 10), (10, 10), (10, 10), (10, 10), (10, 10), (10, 10), (10, 10));
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-    //         maxMoodEntries, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         GraphMode.Average, 
-    //         Microsoft.Maui.Graphics.Colors.Green);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            maxMoodEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Average, 
+            Microsoft.Maui.Graphics.Colors.Green);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
     #endregion
 
