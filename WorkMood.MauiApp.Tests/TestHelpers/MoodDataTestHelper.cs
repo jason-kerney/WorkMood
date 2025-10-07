@@ -162,7 +162,7 @@ public static class MoodDataTestHelper
             return new[]
             {
                 new RawMoodDataPoint(dp.CreatedAt, startOfWork, MoodType.StartOfWork, dp.Date),
-                new RawMoodDataPoint(dp.CreatedAt, dp.EndOfWork.GetValueOrDefault(startOfWork), MoodType.EndOfWork, dp.Date)
+                new RawMoodDataPoint(dp.LastModified, dp.EndOfWork.GetValueOrDefault(startOfWork), MoodType.EndOfWork, dp.Date)
             };
         });
     }

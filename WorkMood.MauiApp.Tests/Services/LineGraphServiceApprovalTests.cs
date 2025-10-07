@@ -265,6 +265,26 @@ public class LineGraphServiceApprovalTests
     }
 
     [Fact]
+    public async Task GenerateRawDataGraph_WithDataPointsAndGrid_skip_weekends_at_both_sides_ShouldMatchApproval()
+    {
+        // Arrange
+        var (today, data) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(2025, 10, 6).AddDays(-8), true, 5815, 7);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
+
+        // Act
+        var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
+            MoodDataTestHelper.ConvertToRawMoodDataPoints(data),
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            StandardLineColor);
+
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
+
+    [Fact]
     public async Task GenerateRawDataGraph_LineOnly_ShouldMatchApproval()
     {
         // Arrange
