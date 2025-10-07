@@ -162,28 +162,28 @@ public class LineGraphServiceBackgroundTests
         Approvals.VerifyBinaryFile(imageBytes, "png");
     }
 
-    // [Fact]
-    // public async Task GenerateLineGraph_WithPatternBackground_NoGridNoTitle_ShouldMatchApproval()
-    // {
-    //     // Arrange
-    //     var moodEntries = CreateTestMoodEntries();
-    //     var dateRange = CreateTestDateRange();
-    //     var backgroundPath = Path.Combine(_testImagesPath, "pattern_background.png");
+    [Fact]
+    public async Task GenerateLineGraph_WithPatternBackground_NoGridNoTitle_ShouldMatchApproval()
+    {
+        // Arrange
+        var (today, moodEntries) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(1726, 7, 11), seed: 1220, count: 14);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
+        var backgroundPath = Path.Combine(_testImagesPath, "pattern_background.png");
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-    //         moodEntries, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: false, 
-    //         showTitle: false, 
-    //         GraphMode.Impact, 
-    //         backgroundPath,
-    //         Microsoft.Maui.Graphics.Colors.Purple);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            moodEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: false, 
+            showTitle: false, 
+            GraphMode.Impact, 
+            backgroundPath,
+            Microsoft.Maui.Graphics.Colors.Purple);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
     // [Fact]
     // public async Task GenerateLineGraph_WithNonExistentBackground_ShouldFallbackToWhite()
