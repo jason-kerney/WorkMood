@@ -121,31 +121,31 @@ public class LineGraphServiceEdgeCaseTests
 
     #region Timestamp Edge Cases
 
-    // [Fact]
-    // public async Task GenerateRawDataGraph_SameTimestampEntries_ShouldMatchApproval()
-    // {
-    //     // Arrange - Multiple entries with identical timestamps (edge case)
-    //     var sameTimeEntries = new List<RawMoodDataPoint>
-    //     {
-    //         new(new DateTime(2025, 1, 1, 8, 0, 0), 5, MoodType.StartOfWork, new DateOnly(2025, 1, 1)),
-    //         new(new DateTime(2025, 1, 1, 8, 0, 0), 7, MoodType.EndOfWork, new DateOnly(2025, 1, 1)), // Same timestamp
-    //         new(new DateTime(2025, 1, 1, 17, 0, 0), 6, MoodType.StartOfWork, new DateOnly(2025, 1, 1)),
-    //         new(new DateTime(2025, 1, 1, 17, 0, 0), 4, MoodType.EndOfWork, new DateOnly(2025, 1, 1)) // Same timestamp
-    //     };
-    //     var dateRange = DateRange.Last7Days;
+    [Fact]
+    public async Task GenerateRawDataGraph_SameTimestampEntries_ShouldMatchApproval()
+    {
+        // Arrange - Multiple entries with identical timestamps (edge case)
+        var sameTimeEntries = new List<RawMoodDataPoint>
+        {
+            new(new DateTime(2025, 1, 1, 8, 0, 0), 5, MoodType.StartOfWork, new DateOnly(2025, 1, 1)),
+            new(new DateTime(2025, 1, 1, 8, 0, 0), 7, MoodType.EndOfWork, new DateOnly(2025, 1, 1)), // Same timestamp
+            new(new DateTime(2025, 1, 1, 17, 0, 0), 6, MoodType.StartOfWork, new DateOnly(2025, 1, 1)),
+            new(new DateTime(2025, 1, 1, 17, 0, 0), 4, MoodType.EndOfWork, new DateOnly(2025, 1, 1)) // Same timestamp
+        };
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(new DateOnly(2025, 1, 2)));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
-    //         sameTimeEntries, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         Microsoft.Maui.Graphics.Colors.Orange);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
+            sameTimeEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            Microsoft.Maui.Graphics.Colors.Orange);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
     // [Fact]
     // public async Task GenerateRawDataGraph_MidnightTimestamps_ShouldMatchApproval()
