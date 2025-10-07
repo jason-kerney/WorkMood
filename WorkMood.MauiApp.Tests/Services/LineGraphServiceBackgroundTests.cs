@@ -212,27 +212,27 @@ public class LineGraphServiceBackgroundTests
 
     #region Background Image Tests - Raw Data Graphs
 
-    // [Fact]
-    // public async Task GenerateRawDataGraph_WithBlueBackground_ShouldMatchApproval()
-    // {
-    //     // Arrange
-    //     var rawDataPoints = CreateTestRawMoodData();
-    //     var dateRange = CreateTestDateRange();
-    //     var backgroundPath = Path.Combine(_testImagesPath, "blue_background.png");
+    [Fact]
+    public async Task GenerateRawDataGraph_WithBlueBackground_ShouldMatchApproval()
+    {
+        // Arrange
+        var (today, data) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(1948, 7, 13), seed: 3162, count: 14);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
+        var backgroundPath = Path.Combine(_testImagesPath, "blue_background.png");
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
-    //         rawDataPoints, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         backgroundPath,
-    //         Microsoft.Maui.Graphics.Colors.Orange);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
+            MoodDataTestHelper.ConvertToRawMoodDataPoints(data), 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            backgroundPath,
+            Microsoft.Maui.Graphics.Colors.Orange);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
     // [Fact]
     // public async Task GenerateRawDataGraph_WithGradientBackground_ShouldMatchApproval()
