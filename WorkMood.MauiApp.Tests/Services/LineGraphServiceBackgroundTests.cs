@@ -50,18 +50,26 @@ public class LineGraphServiceBackgroundTests
     private void CreateSolidColorBackground(string filename, SKColor color)
     {
         var filePath = Path.Combine(_testImagesPath, filename);
+        if (File.Exists(filePath))
+            return;
+
         using var bitmap = new SKBitmap(800, 600);
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(color);
         
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        
+            
         File.WriteAllBytes(filePath, data.ToArray());
     }
 
     private void CreateGradientBackground(string filename)
     {
         var filePath = Path.Combine(_testImagesPath, filename);
+        if (File.Exists(filePath))
+            return;
+
         using var bitmap = new SKBitmap(800, 600);
         using var canvas = new SKCanvas(bitmap);
         
@@ -86,6 +94,9 @@ public class LineGraphServiceBackgroundTests
     private void CreatePatternBackground(string filename)
     {
         var filePath = Path.Combine(_testImagesPath, filename);
+        if (File.Exists(filePath))
+            return;
+
         using var bitmap = new SKBitmap(800, 600);
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(SKColors.White);
