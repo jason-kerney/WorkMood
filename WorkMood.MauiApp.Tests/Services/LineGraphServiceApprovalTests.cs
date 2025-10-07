@@ -458,28 +458,28 @@ public class LineGraphServiceApprovalTests
         Approvals.VerifyBinaryFile(imageBytes, "png");
     }
 
-    // [Fact]
-    // public async Task GenerateLineGraph_SmallSize_ShouldMatchApproval()
-    // {
-    //     // Arrange
-    //     var moodEntries = CreateStandardMoodEntries();
-    //     var dateRange = CreateStandardDateRange();
+    [Fact]
+    public async Task GenerateLineGraph_SmallSize_ShouldMatchApproval()
+    {
+        // Arrange
+        var (today, moodEntries) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(2000, 12, 31), seed: 97, count: 30);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-    //         moodEntries, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         GraphMode.Impact, 
-    //         StandardLineColor,
-    //         width: 400, 
-    //         height: 300);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            moodEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Impact, 
+            StandardLineColor,
+            width: 400, 
+            height: 300);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
     #endregion
 
