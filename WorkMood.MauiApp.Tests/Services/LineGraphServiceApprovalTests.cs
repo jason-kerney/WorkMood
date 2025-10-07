@@ -435,28 +435,28 @@ public class LineGraphServiceApprovalTests
 
     #region Dimension Tests
 
-    // [Fact]
-    // public async Task GenerateLineGraph_LargeSize_ShouldMatchApproval()
-    // {
-    //     // Arrange
-    //     var moodEntries = CreateStandardMoodEntries();
-    //     var dateRange = CreateStandardDateRange();
+    [Fact]
+    public async Task GenerateLineGraph_LargeSize_ShouldMatchApproval()
+    {
+        // Arrange
+        var (today, moodEntries) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(1778, 1, 3), 95, 10);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-    //         moodEntries, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         GraphMode.Impact, 
-    //         StandardLineColor,
-    //         width: 1200, 
-    //         height: 800);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            moodEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Impact, 
+            StandardLineColor,
+            width: 1200, 
+            height: 800);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
     // [Fact]
     // public async Task GenerateLineGraph_SmallSize_ShouldMatchApproval()
