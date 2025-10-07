@@ -147,31 +147,31 @@ public class LineGraphServiceEdgeCaseTests
         Approvals.VerifyBinaryFile(imageBytes, "png");
     }
 
-    // [Fact]
-    // public async Task GenerateRawDataGraph_MidnightTimestamps_ShouldMatchApproval()
-    // {
-    //     // Arrange - Entries at edge times (midnight)
-    //     var midnightEntries = new List<RawMoodDataPoint>
-    //     {
-    //         new(new DateTime(2025, 1, 1, 0, 0, 0), 5, MoodType.StartOfWork, new DateOnly(2025, 1, 1)),
-    //         new(new DateTime(2025, 1, 1, 23, 59, 59), 7, MoodType.EndOfWork, new DateOnly(2025, 1, 1)),
-    //         new(new DateTime(2025, 1, 2, 0, 0, 1), 6, MoodType.StartOfWork, new DateOnly(2025, 1, 2)),
-    //         new(new DateTime(2025, 1, 2, 23, 58, 0), 4, MoodType.EndOfWork, new DateOnly(2025, 1, 2))
-    //     };
-    //     var dateRange = DateRange.Last7Days;
+    [Fact]
+    public async Task GenerateRawDataGraph_MidnightTimestamps_ShouldMatchApproval()
+    {
+        // Arrange - Entries at edge times (midnight)
+        var midnightEntries = new List<RawMoodDataPoint>
+        {
+            new(new DateTime(2025, 1, 1, 0, 0, 0), 5, MoodType.StartOfWork, new DateOnly(2025, 1, 1)),
+            new(new DateTime(2025, 1, 1, 23, 59, 59), 7, MoodType.EndOfWork, new DateOnly(2025, 1, 1)),
+            new(new DateTime(2025, 1, 2, 0, 0, 1), 6, MoodType.StartOfWork, new DateOnly(2025, 1, 2)),
+            new(new DateTime(2025, 1, 2, 23, 58, 0), 4, MoodType.EndOfWork, new DateOnly(2025, 1, 2))
+        };
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(new DateOnly(2025, 1, 4)));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
-    //         midnightEntries, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         Microsoft.Maui.Graphics.Colors.Magenta);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
+            midnightEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            Microsoft.Maui.Graphics.Colors.Magenta);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
     #endregion
 
