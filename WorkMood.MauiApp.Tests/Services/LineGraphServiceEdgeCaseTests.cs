@@ -281,32 +281,35 @@ public class LineGraphServiceEdgeCaseTests
 
     #region Zero Impact Tests
 
-    // [Fact]
-    // public async Task GenerateLineGraph_AllZeroImpact_ShouldMatchApproval()
-    // {
-    //     // Arrange - All entries have identical start and end values (zero impact)
-    //     var zeroImpactEntries = new List<MoodEntry>
-    //     {
-    //         new() { Date = new DateOnly(2025, 1, 1), StartOfWork = 5, EndOfWork = 5, CreatedAt = new DateTime(2025, 1, 1, 8, 0, 0), LastModified = new DateTime(2025, 1, 1, 17, 0, 0) },
-    //         new() { Date = new DateOnly(2025, 1, 2), StartOfWork = 7, EndOfWork = 7, CreatedAt = new DateTime(2025, 1, 2, 8, 30, 0), LastModified = new DateTime(2025, 1, 2, 16, 30, 0) },
-    //         new() { Date = new DateOnly(2025, 1, 3), StartOfWork = 3, EndOfWork = 3, CreatedAt = new DateTime(2025, 1, 3, 9, 0, 0), LastModified = new DateTime(2025, 1, 3, 18, 0, 0) },
-    //         new() { Date = new DateOnly(2025, 1, 4), StartOfWork = 9, EndOfWork = 9, CreatedAt = new DateTime(2025, 1, 4, 8, 15, 0), LastModified = new DateTime(2025, 1, 4, 17, 45, 0) }
-    //     };
-    //     var dateRange = DateRange.Last7Days;
+    [Fact]
+    public async Task GenerateLineGraph_AllZeroImpact_ShouldMatchApproval()
+    {
+        // Arrange - All entries have identical start and end values (zero impact)
+        var (today, zeroImpactEntries) = MoodDataTestHelper.GetFakeData(new DateOnly(2025, 1, 1), 
+            (5, 5), 
+            (7, 7), 
+            (3, 3), 
+            (9, 9),
+            (2, 2),
+            (1, 1),
+            (1, 1),
+            (9, 9)
+        );
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-    //         zeroImpactEntries, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         GraphMode.Impact, 
-    //         Microsoft.Maui.Graphics.Colors.Gray);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            zeroImpactEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Impact, 
+            Microsoft.Maui.Graphics.Colors.Green);
 
-    //     // Assert - Should show a flat line at y=0
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert - Should show a flat line at y=0
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
     #endregion
 }
