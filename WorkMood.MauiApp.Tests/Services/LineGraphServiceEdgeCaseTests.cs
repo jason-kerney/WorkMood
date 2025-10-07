@@ -198,31 +198,26 @@ public class LineGraphServiceEdgeCaseTests
         Approvals.VerifyBinaryFile(imageBytes, "png");
     }
 
-    // [Fact]
-    // public async Task GenerateLineGraph_DataOutsideRange_ShouldMatchApproval()
-    // {
-    //     // Arrange - Mood entries that fall outside the requested date range
-    //     var outsideRangeEntries = new List<MoodEntry>
-    //     {
-    //         new() { Date = new DateOnly(2024, 12, 31), StartOfWork = 5, EndOfWork = 7, CreatedAt = new DateTime(2024, 12, 31, 8, 0, 0), LastModified = new DateTime(2024, 12, 31, 17, 0, 0) }, // Before range
-    //         new() { Date = new DateOnly(2025, 1, 15), StartOfWork = 6, EndOfWork = 4, CreatedAt = new DateTime(2025, 1, 15, 8, 30, 0), LastModified = new DateTime(2025, 1, 15, 16, 30, 0) }, // In range
-    //         new() { Date = new DateOnly(2025, 2, 1), StartOfWork = 3, EndOfWork = 8, CreatedAt = new DateTime(2025, 2, 1, 9, 0, 0), LastModified = new DateTime(2025, 2, 1, 18, 0, 0) } // After range
-    //     };
-    //     var limitedRange = DateRange.LastMonth;
+    [Fact]
+    public async Task GenerateLineGraph_DataOutsideRange_ShouldMatchApproval()
+    {
+        // Arrange - Mood entries that fall outside the requested date range
+        var (today,outsideRangeEntries) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(1848, 5, 8), seed: 2317, count: 90);
+        var limitedRange = new DateRangeInfo(DateRange.LastMonth, new FakeDateShim(today.AddDays(-30)));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-    //         outsideRangeEntries, 
-    //         limitedRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         GraphMode.Impact, 
-    //         Microsoft.Maui.Graphics.Colors.Brown);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            outsideRangeEntries, 
+            limitedRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Impact, 
+            Microsoft.Maui.Graphics.Colors.Brown);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
     #endregion
 
