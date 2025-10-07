@@ -61,6 +61,98 @@ public class LineGraphServiceApprovalTests
     }
 
     [Fact]
+    public async Task GenerateLineGraph_ImpactMode_WithDataPointsAndGrid_Skip_Weekends_at_end_ShouldMatchApproval()
+    {
+        // Arrange
+        var (today, moodEntries) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(2025, 10, 6).AddDays(-7), true, seed: 123, count: 7);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
+
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            moodEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Impact, 
+            StandardLineColor,
+            width: 800, 
+            height: 600);
+
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
+
+    [Fact]
+    public async Task GenerateLineGraph_ImpactMode_WithDataPointsAndGrid_Skip_Weekends_at_start_ShouldMatchApproval()
+    {
+        // Arrange
+        var (today, moodEntries) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(2025, 10, 6).AddDays(-9), true, seed: 123, count: 7);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
+
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            moodEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Impact, 
+            StandardLineColor,
+            width: 800, 
+            height: 600);
+
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
+
+    [Fact]
+    public async Task GenerateLineGraph_ImpactMode_WithDataPointsAndGrid_Skip_Weekends_in_middle_ShouldMatchApproval()
+    {
+        // Arrange
+        var (today, moodEntries) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(2025, 10, 6).AddDays(-12), true, seed: 123, count: 7);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
+
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            moodEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Impact, 
+            StandardLineColor,
+            width: 800, 
+            height: 600);
+
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
+
+    [Fact]
+    public async Task GenerateLineGraph_ImpactMode_WithDataPointsAndGrid_Skip_Weekends_on_both_sides_ShouldMatchApproval()
+    {
+        // Arrange
+        var (today, moodEntries) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(2025, 10, 6).AddDays(-8), true, seed: 123, count: 7);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
+
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            moodEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Impact, 
+            StandardLineColor,
+            width: 800, 
+            height: 600);
+
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
+
+    [Fact]
     public async Task GenerateLineGraph_ImpactMode_LineOnly_ShouldMatchApproval()
     {
         // Arrange

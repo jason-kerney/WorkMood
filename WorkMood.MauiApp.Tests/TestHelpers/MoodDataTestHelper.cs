@@ -15,20 +15,36 @@ public static class MoodDataTestHelper
     /// <returns>A tuple containing the end date (day after last entry) and the list of mood entries</returns>
     public static (DateOnly EndDate, List<MoodEntry> Entries) GetFakeData(DateOnly startDate, params (int startMood, int endMood)[] moods)
     {
+        return GetFakeData(startDate, false, moods);
+    }
+
+    /// <summary>
+    /// Generates a list of fake mood entries starting from the specified date
+    /// </summary>
+    /// <param name="startDate">The starting date for the first mood entry</param>
+    /// <param name="skipWeekends">If true, weekends (Saturday and Sunday) will be skipped but still count against the total number of entries</param>
+    /// <param name="moods">Array of tuples containing (startMood, endMood) values for each day</param>
+    /// <returns>A tuple containing the end date (day after last entry) and the list of mood entries</returns>
+    public static (DateOnly EndDate, List<MoodEntry> Entries) GetFakeData(DateOnly startDate, bool skipWeekends, params (int startMood, int endMood)[] moods)
+    {
         var entries = new List<MoodEntry>();
         var date = startDate;
-        
+
         for (int i = 0; i < moods.Length; i++)
         {
-            entries.Add(new MoodEntry
+            // If we're skipping weekends and this is a weekend, advance the date but still use the mood data
+            if (!skipWeekends || (date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday))
             {
-                Date = date,
-                StartOfWork = moods[i].startMood,
-                EndOfWork = moods[i].endMood,
-                CreatedAt = date.ToDateTime(new TimeOnly(8, 0, 0)),
-                LastModified = date.ToDateTime(new TimeOnly(17, 0, 0))
-            });
-            date = date.AddDays(1); // Fixed: increment by 1 day each iteration
+                entries.Add(new MoodEntry
+                {
+                    Date = date,
+                    StartOfWork = moods[i].startMood,
+                    EndOfWork = moods[i].endMood,
+                    CreatedAt = date.ToDateTime(new TimeOnly(8, 0, 0)),
+                    LastModified = date.ToDateTime(new TimeOnly(17, 0, 0))
+                });
+            }
+            date = date.AddDays(1);
         }
 
         return (date, entries);
@@ -45,6 +61,11 @@ public static class MoodDataTestHelper
     /// <returns>A tuple containing the end date (day after last entry) and the list of mood entries</returns>
     public static (DateOnly EndDate, List<MoodEntry> Entries) GetRandomFakeData(DateOnly startDate, int seed, int count)
     {
+        return GetRandomFakeData(startDate, false, seed, count);
+    }
+    
+    public static (DateOnly EndDate, List<MoodEntry> Entries) GetRandomFakeData(DateOnly startDate, bool skippWeekends, int seed, int count)
+    {
         const int minMood = 1, maxMood = 10;
 
         if (count <= 0)
@@ -60,7 +81,7 @@ public static class MoodDataTestHelper
             moodPairs[i] = (startMood, endMood);
         }
 
-        return GetFakeData(startDate, moodPairs);
+        return GetFakeData(startDate, skippWeekends, moodPairs);
     }
 
     /// <summary>
@@ -71,19 +92,27 @@ public static class MoodDataTestHelper
     /// <returns>A tuple containing the end date (day after last entry) and the list of mood entries</returns>
     public static (DateOnly EndDate, List<MoodEntry> Entries) GetFakeStartOnlyData(DateOnly startDate, params int[] startMoods)
     {
+        return GetFakeStartOnlyData(startDate, false, startMoods);
+    }
+
+    public static (DateOnly EndDate, List<MoodEntry> Entries) GetFakeStartOnlyData(DateOnly startDate, bool skipWeekends, params int[] startMoods)
+    {
         var entries = new List<MoodEntry>();
         var date = startDate;
-        
+
         for (int i = 0; i < startMoods.Length; i++)
         {
-            entries.Add(new MoodEntry
+            if (!skipWeekends || (date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday))
             {
-                Date = date,
-                StartOfWork = startMoods[i],
-                EndOfWork = null, // Only start moods
-                CreatedAt = date.ToDateTime(new TimeOnly(8, 0, 0)),
-                LastModified = date.ToDateTime(new TimeOnly(8, 0, 0)) // Same as created since no end mood
-            });
+                entries.Add(new MoodEntry
+                {
+                    Date = date,
+                    StartOfWork = startMoods[i],
+                    EndOfWork = null, // Only start moods
+                    CreatedAt = date.ToDateTime(new TimeOnly(8, 0, 0)),
+                    LastModified = date.ToDateTime(new TimeOnly(8, 0, 0)) // Same as created since no end mood
+                });
+            }
             date = date.AddDays(1);
         }
 
@@ -99,6 +128,10 @@ public static class MoodDataTestHelper
     /// <returns>A tuple containing the end date (day after last entry) and the list of mood entries</returns>
     public static (DateOnly EndDate, List<MoodEntry> Entries) GetRandomFakeStartOnlyData(DateOnly startDate, int seed, int count)
     {
+        return GetRandomFakeStartOnlyData(startDate, false, seed, count);
+    }
+    public static (DateOnly EndDate, List<MoodEntry> Entries) GetRandomFakeStartOnlyData(DateOnly startDate, bool skipWeekends, int seed, int count)
+    {
         const int minMood = 1, maxMood = 10;
 
         if (count <= 0)
@@ -112,7 +145,7 @@ public static class MoodDataTestHelper
             startMoods[i] = random.Next(minMood, maxMood + 1);
         }
 
-        return GetFakeStartOnlyData(startDate, startMoods);
+        return GetFakeStartOnlyData(startDate, skipWeekends, startMoods);
     }
 
     /// <summary>
