@@ -13,7 +13,7 @@ public static class MoodDataTestHelper
     /// <param name="startDate">The starting date for the first mood entry</param>
     /// <param name="moods">Array of tuples containing (startMood, endMood) values for each day</param>
     /// <returns>A tuple containing the end date (day after last entry) and the list of mood entries</returns>
-    public static (DateOnly EndDate, List<MoodEntry> Entries) GetFakeData(DateOnly startDate, params (int startMood, int endMood)[] moods)
+    public static (DateOnly EndDate, List<MoodEntry> Entries) GetFakeData(DateOnly startDate, params (int? startMood, int? endMood)[] moods)
     {
         return GetFakeData(startDate, false, moods);
     }
@@ -25,7 +25,7 @@ public static class MoodDataTestHelper
     /// <param name="skipWeekends">If true, weekends (Saturday and Sunday) will be skipped but still count against the total number of entries</param>
     /// <param name="moods">Array of tuples containing (startMood, endMood) values for each day</param>
     /// <returns>A tuple containing the end date (day after last entry) and the list of mood entries</returns>
-    public static (DateOnly EndDate, List<MoodEntry> Entries) GetFakeData(DateOnly startDate, bool skipWeekends, params (int startMood, int endMood)[] moods)
+    public static (DateOnly EndDate, List<MoodEntry> Entries) GetFakeData(DateOnly startDate, bool skipWeekends, params (int? startMood, int? endMood)[] moods)
     {
         var entries = new List<MoodEntry>();
         var date = startDate;
@@ -72,7 +72,7 @@ public static class MoodDataTestHelper
             throw new ArgumentException("Count must be greater than 0", nameof(count));
 
         var random = new Random(seed);
-        var moodPairs = new (int startMood, int endMood)[count];
+        var moodPairs = new (int? startMood, int? endMood)[count];
 
         for (int i = 0; i < count; i++)
         {
@@ -90,12 +90,12 @@ public static class MoodDataTestHelper
     /// <param name="startDate">The starting date for the first mood entry</param>
     /// <param name="startMoods">Array of start mood values for each day</param>
     /// <returns>A tuple containing the end date (day after last entry) and the list of mood entries</returns>
-    public static (DateOnly EndDate, List<MoodEntry> Entries) GetFakeStartOnlyData(DateOnly startDate, params int[] startMoods)
+    public static (DateOnly EndDate, List<MoodEntry> Entries) GetFakeStartOnlyData(DateOnly startDate, params int?[] startMoods)
     {
         return GetFakeStartOnlyData(startDate, false, startMoods);
     }
 
-    public static (DateOnly EndDate, List<MoodEntry> Entries) GetFakeStartOnlyData(DateOnly startDate, bool skipWeekends, params int[] startMoods)
+    public static (DateOnly EndDate, List<MoodEntry> Entries) GetFakeStartOnlyData(DateOnly startDate, bool skipWeekends, params int?[] startMoods)
     {
         var entries = new List<MoodEntry>();
         var date = startDate;
@@ -138,7 +138,7 @@ public static class MoodDataTestHelper
             throw new ArgumentException("Count must be greater than 0", nameof(count));
 
         var random = new Random(seed);
-        var startMoods = new int[count];
+        var startMoods = new int?[count];
 
         for (int i = 0; i < count; i++)
         {

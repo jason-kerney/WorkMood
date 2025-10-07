@@ -227,15 +227,14 @@ public class LineGraphServiceEdgeCaseTests
     public async Task GenerateLineGraph_MixedNullValues_ImpactMode_ShouldMatchApproval()
     {
         // Arrange - Mix of entries with null EndOfWork values
-        var mixedNullEntries = new List<MoodEntry>
-        {
-            new() { Date = new DateOnly(2025, 1, 1), StartOfWork = 5, EndOfWork = 7, CreatedAt = new DateTime(2025, 1, 1, 8, 0, 0), LastModified = new DateTime(2025, 1, 1, 17, 0, 0) },
-            new() { Date = new DateOnly(2025, 1, 2), StartOfWork = 6, EndOfWork = null, CreatedAt = new DateTime(2025, 1, 2, 8, 30, 0), LastModified = new DateTime(2025, 1, 2, 8, 30, 0) }, // Null end
-            new() { Date = new DateOnly(2025, 1, 3), StartOfWork = 3, EndOfWork = 8, CreatedAt = new DateTime(2025, 1, 3, 9, 0, 0), LastModified = new DateTime(2025, 1, 3, 18, 0, 0) },
-            new() { Date = new DateOnly(2025, 1, 4), StartOfWork = null, EndOfWork = 8, CreatedAt = new DateTime(2025, 1, 4, 9, 0, 0), LastModified = new DateTime(2025, 1, 4, 18, 0, 0) }, // Null start - should be filtered out in Impact mode
-            new() { Date = new DateOnly(2025, 1, 5), StartOfWork = 7, EndOfWork = null, CreatedAt = new DateTime(2025, 1, 5, 8, 15, 0), LastModified = new DateTime(2025, 1, 5, 8, 15, 0) } // Null end
-        };
-        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(new DateOnly(2025, 1, 6)));
+        var (today, mixedNullEntries) = MoodDataTestHelper.GetFakeData(new DateOnly(2025, 1, 1), 
+            (5, 7), 
+            (6, null), // Null end
+            (3, 8), 
+            (null, 8), // Null start - should be filtered out in Impact mode
+            (7, null)  // Null end
+        );
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
         var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
