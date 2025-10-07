@@ -177,29 +177,26 @@ public class LineGraphServiceEdgeCaseTests
 
     #region Date Range Edge Cases
 
-    // [Fact]
-    // public async Task GenerateLineGraph_SingleDayRange_ShouldMatchApproval()
-    // {
-    //     // Arrange - Date range spanning only one day
-    //     var singleDayEntries = new List<MoodEntry>
-    //     {
-    //         new() { Date = new DateOnly(2025, 1, 1), StartOfWork = 5, EndOfWork = 8, CreatedAt = new DateTime(2025, 1, 1, 8, 0, 0), LastModified = new DateTime(2025, 1, 1, 17, 0, 0) }
-    //     };
-    //     var singleDayRange = DateRange.Last7Days; // Even single day tests work within the 7-day range
+    [Fact]
+    public async Task GenerateLineGraph_SingleDayRange_ShouldMatchApproval()
+    {
+        // Arrange - Date range spanning only one day
+        var (today, singleDayEntries) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(1888, 4, 4), seed: 7332, count: 1);
+        var singleDayRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-    //         singleDayEntries, 
-    //         singleDayRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         GraphMode.Impact, 
-    //         Microsoft.Maui.Graphics.Colors.Teal);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            singleDayEntries, 
+            singleDayRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Impact, 
+            Microsoft.Maui.Graphics.Colors.Teal);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
     // [Fact]
     // public async Task GenerateLineGraph_DataOutsideRange_ShouldMatchApproval()
