@@ -58,7 +58,7 @@ public class DateRangeInfo
             _ => yesterday.AddDays(-6) // Default to last 7 days
         };
 
-        EndDate = DateOnly.FromDateTime(DateTime.Today).AddDays(-1);
+        EndDate = yesterday;
     }
 
     public DateRange DateRange { get; private set; }

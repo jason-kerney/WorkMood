@@ -20,8 +20,9 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
     public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
     {
-        // Filter entries based on graph mode
+        // Filter entries based on graph mode and date range
         var filteredEntries = FilterEntriesForGraphMode(moodEntries, graphMode)
+            .Where(e => e.Date >= dateRange.StartDate && e.Date <= dateRange.EndDate)
             .OrderBy(e => e.Date)
             .ToList();
 
@@ -42,8 +43,9 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
     public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
-        // Filter entries based on graph mode
+        // Filter entries based on graph mode and date range
         var filteredEntries = FilterEntriesForGraphMode(moodEntries, graphMode)
+            .Where(e => e.Date >= dateRange.StartDate && e.Date <= dateRange.EndDate)
             .OrderBy(e => e.Date)
             .ToList();
 
