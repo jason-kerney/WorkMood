@@ -485,57 +485,47 @@ public class LineGraphServiceApprovalTests
 
     #region Extreme Value Tests
 
-    // [Fact]
-    // public async Task GenerateLineGraph_ExtremePositiveValues_ShouldMatchApproval()
-    // {
-    //     // Arrange - Create entries with maximum positive impact
-    //     var extremeEntries = new List<MoodEntry>
-    //     {
-    //         new() { Date = new DateOnly(2025, 1, 1), StartOfWork = 1, EndOfWork = 10, CreatedAt = new DateTime(2025, 1, 1, 8, 0, 0), LastModified = new DateTime(2025, 1, 1, 17, 0, 0) },
-    //         new() { Date = new DateOnly(2025, 1, 2), StartOfWork = 2, EndOfWork = 10, CreatedAt = new DateTime(2025, 1, 2, 8, 30, 0), LastModified = new DateTime(2025, 1, 2, 16, 30, 0) },
-    //         new() { Date = new DateOnly(2025, 1, 3), StartOfWork = 1, EndOfWork = 9, CreatedAt = new DateTime(2025, 1, 3, 9, 0, 0), LastModified = new DateTime(2025, 1, 3, 18, 0, 0) }
-    //     };
-    //     var dateRange = CreateStandardDateRange();
+    [Fact]
+    public async Task GenerateLineGraph_ExtremePositiveValues_ShouldMatchApproval()
+    {
+        // Arrange - Create entries with maximum positive impact
+        var (today, extremeEntries) = MoodDataTestHelper.GetFakeData(new DateOnly(1796, 02, 25), [(1, 10), (10, 2), (9, 1), (1, 10)]);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-    //         extremeEntries, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         GraphMode.Impact, 
-    //         StandardLineColor);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            extremeEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Impact, 
+            StandardLineColor);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
-    // [Fact]
-    // public async Task GenerateLineGraph_ExtremeNegativeValues_ShouldMatchApproval()
-    // {
-    //     // Arrange - Create entries with maximum negative impact
-    //     var extremeEntries = new List<MoodEntry>
-    //     {
-    //         new() { Date = new DateOnly(2025, 1, 1), StartOfWork = 10, EndOfWork = 1, CreatedAt = new DateTime(2025, 1, 1, 8, 0, 0), LastModified = new DateTime(2025, 1, 1, 17, 0, 0) },
-    //         new() { Date = new DateOnly(2025, 1, 2), StartOfWork = 9, EndOfWork = 1, CreatedAt = new DateTime(2025, 1, 2, 8, 30, 0), LastModified = new DateTime(2025, 1, 2, 16, 30, 0) },
-    //         new() { Date = new DateOnly(2025, 1, 3), StartOfWork = 8, EndOfWork = 1, CreatedAt = new DateTime(2025, 1, 3, 9, 0, 0), LastModified = new DateTime(2025, 1, 3, 18, 0, 0) }
-    //     };
-    //     var dateRange = CreateStandardDateRange();
+    [Fact]
+    public async Task GenerateLineGraph_ExtremeNegativeValues_ShouldMatchApproval()
+    {
+        // Arrange - Create entries with maximum negative impact
+        var (today, extremeEntries) = MoodDataTestHelper.GetFakeData(new DateOnly(1825, 02, 28), [(10, 1), (10, 1), (9, 1), (1, 9), (1, 8), (8, 1)]);
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-    //         extremeEntries, 
-    //         dateRange, 
-    //         showDataPoints: true, 
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         GraphMode.Impact, 
-    //         StandardLineColor);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            extremeEntries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Impact, 
+            StandardLineColor);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
     #endregion
 }
