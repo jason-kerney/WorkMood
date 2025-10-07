@@ -255,50 +255,28 @@ public class LineGraphServiceEdgeCaseTests
 
     #region Performance Stress Tests
 
-    // [Fact]
-    // public async Task GenerateLineGraph_LargeDataset_ShouldMatchApproval()
-    // {
-    //     // Arrange - Generate a year's worth of data
-    //     var largeMoodEntries = new List<MoodEntry>();
-    //     var startDate = new DateOnly(2025, 1, 1);
-        
-    //     for (int i = 0; i < 365; i++)
-    //     {
-    //         var date = startDate.AddDays(i);
-    //         // Create varying but predictable mood patterns
-    //         var dayOfYear = i + 1;
-    //         var startMood = 5 + (int)(Math.Sin(dayOfYear * 0.1) * 2); // Seasonal variation
-    //         var endMood = startMood + (int)(Math.Cos(dayOfYear * 0.05) * 3); // Daily variation
-    //         startMood = Math.Clamp(startMood, 1, 10);
-    //         endMood = Math.Clamp(endMood, 1, 10);
-            
-    //         largeMoodEntries.Add(new MoodEntry 
-    //         { 
-    //             Date = date, 
-    //             StartOfWork = startMood, 
-    //             EndOfWork = endMood,
-    //             CreatedAt = date.ToDateTime(new TimeOnly(8, 0, 0)),
-    //             LastModified = date.ToDateTime(new TimeOnly(17, 0, 0))
-    //         });
-    //     }
-        
-    //     var yearRange = DateRange.LastYear;
+    [Fact]
+    public async Task GenerateLineGraph_LastYearDataset_ShouldMatchApproval()
+    {
+        // Arrange - Generate a year's worth of data
+        var (today, largeMoodEntries) = MoodDataTestHelper.GetRandomFakeData(new DateOnly(2025, 1, 1), seed: 1234, count: 365);
+        var yearRange = new DateRangeInfo(DateRange.LastYear, new FakeDateShim(today));
 
-    //     // Act
-    //     var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-    //         largeMoodEntries, 
-    //         yearRange, 
-    //         showDataPoints: false, // Too many points to show individually
-    //         showAxesAndGrid: true, 
-    //         showTitle: true, 
-    //         GraphMode.Impact, 
-    //         Microsoft.Maui.Graphics.Colors.DarkGreen,
-    //         width: 1600,  // Larger canvas to accommodate more data
-    //         height: 800);
+        // Act
+        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+            largeMoodEntries, 
+            yearRange, 
+            showDataPoints: false, // Too many points to show individually
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            GraphMode.Impact, 
+            Microsoft.Maui.Graphics.Colors.DarkGreen,
+            width: 1600,  // Larger canvas to accommodate more data
+            height: 800);
 
-    //     // Assert
-    //     Approvals.VerifyBinaryFile(imageBytes, "png");
-    // }
+        // Assert
+        Approvals.VerifyBinaryFile(imageBytes, "png");
+    }
 
     #endregion
 
