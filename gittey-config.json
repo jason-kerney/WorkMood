@@ -27,12 +27,12 @@
         },
         {
             "name": "check:windows",
-            "command": "cls && powershell -ExecutionPolicy Bypass -File cleanup-test-folders.ps1 && dotnet test WorkMood.MauiApp.Tests --collect:\"XPlat Code Coverage\" && reportgenerator -reports:\"WorkMood.MauiApp.Tests\\TestResults\\**\\coverage.cobertura.xml\" -targetdir:\"CoverageReport\" -reporttypes:\"TextSummary\" -verbosity:Off && type \"CoverageReport\\Summary.txt\"",
+            "command": "cls && powershell -ExecutionPolicy Bypass -File generate-coverage-report.ps1",
             "description": "Run tests and generate coverage report (Windows)"
         },
         {
             "name": "check:mac",
-            "command": "clear && rm -rf WorkMood.MauiApp.Tests/TestResults CoverageReport && dotnet test WorkMood.MauiApp.Tests --collect:\"XPlat Code Coverage\" && reportgenerator -reports:\"WorkMood.MauiApp.Tests/TestResults/**/coverage.cobertura.xml\" -targetdir:\"CoverageReport\" -reporttypes:\"TextSummary\" -verbosity:Off && cat CoverageReport/Summary.txt",
+            "command": "clear && chmod +x generate-coverage-report.sh && ./generate-coverage-report.sh",
             "description": "Run tests and generate coverage report (Mac)"
         },
         {
