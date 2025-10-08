@@ -15,7 +15,7 @@ namespace WorkMood.MauiApp.Tests.Services;
 /// Additional approval tests for LineGraphService background image functionality
 /// </summary>
 [UseReporter(typeof(ClipboardReporter))]
-[UseApprovalSubdirectory("ApprovalFiles")]
+[UseApprovalSubdirectory("ApprovalFiles/Backgrounds")]
 public class LineGraphServiceBackgroundTests
 {
     private readonly LineGraphService _lineGraphService;
