@@ -155,7 +155,8 @@ coverage*.info
 
 # Test Results and Coverage Reports
 TestResults/
-CoverageReport/
+CoverageReport/*
+!CoverageReport/Summary.txt
 
 # Visual Studio code coverage results
 *.coverage
