@@ -1,25 +1,25 @@
 Summary
-  Generated on: 10/7/2025 - 5:01:20 PM
-  Coverage date: 10/7/2025 - 5:01:19 PM
+  Generated on: 10/8/2025 - 11:53:42 AM
+  Coverage date: 10/8/2025 - 11:53:41 AM
   Parser: Cobertura
   Assemblies: 1
   Classes: 106
   Files: 67
-  Line coverage: 14.2%
-  Covered lines: 886
-  Uncovered lines: 5348
-  Coverable lines: 6234
-  Total lines: 11671
-  Branch coverage: 10.6% (178 of 1673)
-  Covered branches: 178
-  Total branches: 1673
-  Method coverage: 14.8% (145 of 975)
-  Full method coverage: 13.8% (135 of 975)
-  Covered methods: 145
-  Fully covered methods: 135
-  Total methods: 975
+  Line coverage: 14%
+  Covered lines: 874
+  Uncovered lines: 5349
+  Coverable lines: 6223
+  Total lines: 11768
+  Branch coverage: 10.3% (173 of 1669)
+  Covered branches: 173
+  Total branches: 1669
+  Method coverage: 15.3% (151 of 982)
+  Full method coverage: 14.2% (140 of 982)
+  Covered methods: 151
+  Fully covered methods: 140
+  Total methods: 982
 
-WorkMood.MauiApp                                                        14.2%
+WorkMood.MauiApp                                                          14%
   WorkMood.MauiApp.Adapters.VisualizationDataAdapter                       0%
   WorkMood.MauiApp.App                                                     0%
   WorkMood.MauiApp.AppShell                                                0%
@@ -70,7 +70,7 @@ WorkMood.MauiApp                                                        14.2%
   WorkMood.MauiApp.Services.EveningReminderCommand                      96.7%
   WorkMood.MauiApp.Services.EveningReminderData                          100%
   WorkMood.MauiApp.Services.EveningReminderEventArgs                       0%
-  WorkMood.MauiApp.Services.LineGraphService                            94.7%
+  WorkMood.MauiApp.Services.LineGraphService                            94.4%
   WorkMood.MauiApp.Services.LoggingService                                 0%
   WorkMood.MauiApp.Services.LoggingServiceExtensions                       0%
   WorkMood.MauiApp.Services.MoodDataService                                0%

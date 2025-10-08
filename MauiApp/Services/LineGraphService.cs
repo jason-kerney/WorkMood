@@ -544,6 +544,17 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     private void DrawRawDataAxes(ICanvasShim canvas, SKRect area)
     {
         DrawBasicAxes(canvas, area);
+
+        // Center line at mood value 5.5 (middle of 1-10 range)
+        var centerValue = 5.5f;
+        var centerY = area.Bottom - ((centerValue - 1) * area.Height / 9); // 9 = 10-1
+        using var centerLinePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
+        {
+            Color = drawShimFactory.Colors.DarkGray,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 4
+        });
+        canvas.DrawLine(area.Left, centerY, area.Right, centerY, centerLinePaint);
     }
 
     private void DrawRawDataLines(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color lineColor)
