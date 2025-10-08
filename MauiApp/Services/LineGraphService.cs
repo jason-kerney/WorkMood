@@ -14,34 +14,148 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     private const int MinYValue = -9;
     private const int MaxYValue = 9;
     private const int Padding = 60;
+    
+    /// <summary>
+    /// Initializes a new instance of the LineGraphService with default factory implementations.
+    /// </summary>
     public LineGraphService() : this(new DrawShimFactory(), new FileShimFactory()) { }
 
-    // New overloads with GraphMode support
-
-    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
+    /// <summary>
+    /// Creates a bitmap with canvas, executes the drawing action, and returns the encoded PNG bytes
+    /// </summary>
+    private async Task<byte[]> GenerateImageAsync(int width, int height, Func<ICanvasShim, Task> drawAction)
     {
-        // Filter entries based on graph mode and date range
-        var filteredEntries = FilterEntriesForGraphMode(moodEntries, graphMode)
-            .Where(e => e.Date >= dateRange.StartDate && e.Date <= dateRange.EndDate)
-            .OrderBy(e => e.Date)
-            .ToList();
-
-        // using var bitmap = new SKBitmap(width, height);
         using var bitmap = drawShimFactory.BitmapFromDimensions(width, height);
         using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
-
-        // Clear canvas with white background
-        canvas.Clear(drawShimFactory.Colors.White);
-
-        await Task.Run(() => DrawGraphForMode(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, graphMode, true)); // Draw white background for normal graphs
-
+        
+        await drawAction(canvas);
+        
         using var image = drawShimFactory.ImageFromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-
         return data.ToArray();
     }
 
-    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    /// <summary>
+    /// Sets up the canvas background - either white or custom image
+    /// </summary>
+    private void SetupCanvasBackground(ICanvasShim canvas, string? backgroundImagePath, int width, int height)
+    {
+        if (!string.IsNullOrEmpty(backgroundImagePath))
+        {
+            var fileShim = fileShimFactory.Create();
+            if (fileShim.Exists(backgroundImagePath))
+            {
+                using var backgroundBitmap = drawShimFactory.DecodeBitmapFromFile(backgroundImagePath);
+                if (backgroundBitmap != null)
+                {
+                    canvas.DrawBitmap(backgroundBitmap, new SKRect(0, 0, width, height));
+                    return;
+                }
+            }
+        }
+        
+        // Fallback to white background
+        canvas.Clear(drawShimFactory.Colors.White);
+    }
+
+    /// <summary>
+    /// Saves generated image bytes to the specified file path
+    /// </summary>
+    private async Task SaveImageDataAsync(byte[] imageData, string filePath)
+    {
+        var fileShim = fileShimFactory.Create();
+        await fileShim.WriteAllBytesAsync(filePath, imageData);
+    }
+
+    /// <summary>
+    /// Draws grid lines with the specified Y range and vertical line configuration
+    /// </summary>
+    private void DrawGrid(ICanvasShim canvas, SKRect area, int minY, int maxY, int verticalLineCount = 10, int verticalLineSpacing = 80)
+    {
+        using var gridPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
+        {
+            Color = drawShimFactory.Colors.LightGray,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 1,
+            PathEffect = drawShimFactory.PathEffects.CreateDash([5, 5], 0)
+        });
+
+        // Horizontal grid lines
+        var yRange = maxY - minY;
+        var yStep = area.Height / yRange;
+        for (int i = minY + 1; i < maxY; i++)
+        {
+            var y = area.Bottom - ((i - minY) * yStep);
+            canvas.DrawLine(area.Left, y, area.Right, y, gridPaint);
+        }
+
+        // Vertical grid lines
+        if (area.Width > 200)
+        {
+            var verticalLines = Math.Min(verticalLineCount, (int)(area.Width / verticalLineSpacing));
+            var xStep = area.Width / verticalLines;
+            for (int i = 1; i < verticalLines; i++)
+            {
+                var x = area.Left + (i * xStep);
+                canvas.DrawLine(x, area.Top, x, area.Bottom, gridPaint);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Draws basic X and Y axes
+    /// </summary>
+    private void DrawBasicAxes(ICanvasShim canvas, SKRect area)
+    {
+        using var axisPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
+        {
+            Color = drawShimFactory.Colors.Black,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 2
+        });
+
+        // Y-axis
+        canvas.DrawLine(area.Left, area.Top, area.Left, area.Bottom, axisPaint);
+
+        // X-axis
+        canvas.DrawLine(area.Left, area.Bottom, area.Right, area.Bottom, axisPaint);
+    }
+
+    // New overloads with GraphMode support
+
+    /// <summary>
+    /// Generates a line graph PNG image from mood entry data with the specified graph mode and white background.
+    /// </summary>
+    /// <param name="moodEntries">The mood entries to graph</param>
+    /// <param name="dateRange">The requested date range for proportional positioning</param>
+    /// <param name="showDataPoints">Whether to show individual data points on the graph</param>
+    /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
+    /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="graphMode">The graph mode determining how mood data is interpreted (Impact or Average)</param>
+    /// <param name="lineColor">Color for the graph line and data points</param>
+    /// <param name="width">Width of the graph in pixels (default: 800)</param>
+    /// <param name="height">Height of the graph in pixels (default: 600)</param>
+    /// <returns>PNG image data as byte array</returns>
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
+    {
+        return await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, graphMode, null, lineColor, width, height);
+    }
+
+    /// <summary>
+    /// Generates a line graph PNG image from mood entry data with the specified graph mode and custom background image.
+    /// </summary>
+    /// <param name="moodEntries">The mood entries to graph</param>
+    /// <param name="dateRange">The requested date range for proportional positioning</param>
+    /// <param name="showDataPoints">Whether to show individual data points on the graph</param>
+    /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
+    /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="graphMode">The graph mode determining how mood data is interpreted (Impact or Average)</param>
+    /// <param name="backgroundImagePath">Path to the custom background image file, or null for white background</param>
+    /// <param name="lineColor">Color for the graph line and data points</param>
+    /// <param name="width">Width of the graph in pixels (default: 800)</param>
+    /// <param name="height">Height of the graph in pixels (default: 600)</param>
+    /// <returns>PNG image data as byte array</returns>
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, string? backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         // Filter entries based on graph mode and date range
         var filteredEntries = FilterEntriesForGraphMode(moodEntries, graphMode)
@@ -49,31 +163,13 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
             .OrderBy(e => e.Date)
             .ToList();
 
-        using var bitmap = drawShimFactory.BitmapFromDimensions(width, height);
-        using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
-
-        // Load and draw custom background
-        var fileShim = fileShimFactory.Create();
-        if (fileShim.Exists(backgroundImagePath))
+        return await GenerateImageAsync(width, height, async canvas =>
         {
-            using var backgroundBitmap = drawShimFactory.DecodeBitmapFromFile(backgroundImagePath);
-            if (backgroundBitmap != null)
-            {
-                canvas.DrawBitmap(backgroundBitmap, new SKRect(0, 0, width, height));
-            }
-        }
-        else
-        {
-            // Fallback to white background if image doesn't exist
-            canvas.Clear(drawShimFactory.Colors.White);
-        }
+            SetupCanvasBackground(canvas, backgroundImagePath, width, height);
+            var hasCustomBackground = !string.IsNullOrEmpty(backgroundImagePath);
 
-        await Task.Run(() => DrawGraphForMode(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, graphMode, false)); // Don't draw white background when using custom background
-
-        // Convert to PNG
-        using var image = drawShimFactory.ImageFromBitmap(bitmap);
-        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-        return data.ToArray();
+            await Task.Run(() => DrawGraphForMode(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, graphMode, !hasCustomBackground));
+        });
     }
 
     private void DrawBackground(ICanvasShim canvas, SKRect area)
@@ -221,53 +317,13 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
     private void DrawGridForMode(ICanvasShim canvas, SKRect area, GraphMode graphMode)
     {
-        // Use existing grid method - the Y range constants will be updated based on mode
         var (minY, maxY) = GetYRangeForMode(graphMode);
-
-        using var gridPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
-        {
-            Color = drawShimFactory.Colors.LightGray,
-            Style = SKPaintStyle.Stroke,
-            StrokeWidth = 1,
-            PathEffect = drawShimFactory.PathEffects.CreateDash([5, 5], 0)
-        });
-
-        // Horizontal grid lines
-        var yRange = maxY - minY;
-        var yStep = area.Height / yRange;
-        for (int i = minY + 1; i < maxY; i++)
-        {
-            var y = area.Bottom - ((i - minY) * yStep);
-            canvas.DrawLine(area.Left, y, area.Right, y, gridPaint);
-        }
-
-        // Vertical grid lines - draw fewer lines for readability
-        if (area.Width > 200)
-        {
-            var verticalLines = Math.Min(10, (int)(area.Width / 80));
-            var xStep = area.Width / verticalLines;
-            for (int i = 1; i < verticalLines; i++)
-            {
-                var x = area.Left + (i * xStep);
-                canvas.DrawLine(x, area.Top, x, area.Bottom, gridPaint);
-            }
-        }
+        DrawGrid(canvas, area, minY, maxY);
     }
 
     private void DrawAxesForMode(ICanvasShim canvas, SKRect area, GraphMode graphMode)
     {
-        using var axisPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
-        {
-            Color = drawShimFactory.Colors.Black,
-            Style = SKPaintStyle.Stroke,
-            StrokeWidth = 2
-        });
-
-        // Y-axis
-        canvas.DrawLine(area.Left, area.Top, area.Left, area.Bottom, axisPaint);
-
-        // X-axis
-        canvas.DrawLine(area.Left, area.Bottom, area.Right, area.Bottom, axisPaint);
+        DrawBasicAxes(canvas, area);
 
         // Zero line (horizontal line at y=0)
         var (minY, maxY) = GetYRangeForMode(graphMode);
@@ -480,50 +536,14 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
     private void DrawRawDataGrid(ICanvasShim canvas, SKRect area)
     {
-        using var gridPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
-        {
-            Color = drawShimFactory.Colors.LightGray,
-            Style = SKPaintStyle.Stroke,
-            StrokeWidth = 1,
-            PathEffect = drawShimFactory.PathEffects.CreateDash([5, 5], 0)
-        });
-
-        // Horizontal grid lines for mood scale 1-10
-        var yRange = 10 - 1;
-        var yStep = area.Height / yRange;
-        for (int i = 2; i < 10; i++) // Skip 1 and 10 to avoid edge lines
-        {
-            var y = area.Bottom - ((i - 1) * yStep);
-            canvas.DrawLine(area.Left, y, area.Right, y, gridPaint);
-        }
-
-        // Vertical grid lines - fewer lines for datetime readability
-        if (area.Width > 200)
-        {
-            var verticalLines = Math.Min(6, (int)(area.Width / 120));
-            var xStep = area.Width / verticalLines;
-            for (int i = 1; i < verticalLines; i++)
-            {
-                var x = area.Left + (i * xStep);
-                canvas.DrawLine(x, area.Top, x, area.Bottom, gridPaint);
-            }
-        }
+        // For raw data, we want to skip edge lines (2 to 9 instead of 1 to 10)
+        // and use fewer vertical lines for datetime readability
+        DrawGrid(canvas, area, 1, 10, verticalLineCount: 6, verticalLineSpacing: 120);
     }
 
     private void DrawRawDataAxes(ICanvasShim canvas, SKRect area)
     {
-        using var axisPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
-        {
-            Color = drawShimFactory.Colors.Black,
-            Style = SKPaintStyle.Stroke,
-            StrokeWidth = 2
-        });
-
-        // Y-axis
-        canvas.DrawLine(area.Left, area.Top, area.Left, area.Bottom, axisPaint);
-
-        // X-axis
-        canvas.DrawLine(area.Left, area.Bottom, area.Right, area.Bottom, axisPaint);
+        DrawBasicAxes(canvas, area);
     }
 
     private void DrawRawDataLines(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color lineColor)
@@ -683,82 +703,148 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
     // New save methods with GraphMode support
 
+    /// <summary>
+    /// Saves a line graph PNG image to the specified file path with the specified graph mode and white background.
+    /// </summary>
+    /// <param name="moodEntries">The mood entries to graph</param>
+    /// <param name="dateRange">The requested date range for proportional positioning</param>
+    /// <param name="showDataPoints">Whether to show individual data points on the graph</param>
+    /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
+    /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="filePath">Path where to save the PNG file</param>
+    /// <param name="graphMode">The graph mode determining how mood data is interpreted (Impact or Average)</param>
+    /// <param name="lineColor">Color for the graph line and data points</param>
+    /// <param name="width">Width of the graph in pixels (default: 800)</param>
+    /// <param name="height">Height of the graph in pixels (default: 600)</param>
+    /// <returns>Task representing the async operation</returns>
     public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
     {
         var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, graphMode, lineColor, width, height);
-        var fileShim = fileShimFactory.Create();
-        await fileShim.WriteAllBytesAsync(filePath, imageData);
+        await SaveImageDataAsync(imageData, filePath);
     }
 
+    /// <summary>
+    /// Saves a line graph PNG image to the specified file path with the specified graph mode and custom background image.
+    /// </summary>
+    /// <param name="moodEntries">The mood entries to graph</param>
+    /// <param name="dateRange">The requested date range for proportional positioning</param>
+    /// <param name="showDataPoints">Whether to show individual data points on the graph</param>
+    /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
+    /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="filePath">Path where to save the PNG file</param>
+    /// <param name="graphMode">The graph mode determining how mood data is interpreted (Impact or Average)</param>
+    /// <param name="backgroundImagePath">Path to the custom background image file</param>
+    /// <param name="lineColor">Color for the graph line and data points</param>
+    /// <param name="width">Width of the graph in pixels (default: 800)</param>
+    /// <param name="height">Height of the graph in pixels (default: 600)</param>
+    /// <returns>Task representing the async operation</returns>
     public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, graphMode, backgroundImagePath, lineColor, width, height);
-        var fileShim = fileShimFactory.Create();
-        await fileShim.WriteAllBytesAsync(filePath, imageData);
+        await SaveImageDataAsync(imageData, filePath);
     }
 
     // Raw Data graph implementations
 
+    /// <summary>
+    /// Generates a scatter plot PNG image from raw mood data points with white background.
+    /// </summary>
+    /// <param name="rawDataPoints">The raw mood data points to plot</param>
+    /// <param name="dateRange">The requested date range for proportional positioning</param>
+    /// <param name="showDataPoints">Whether to show individual data points on the graph</param>
+    /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
+    /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="lineColor">Color for the data points and connecting lines</param>
+    /// <param name="width">Width of the graph in pixels (default: 800)</param>
+    /// <param name="height">Height of the graph in pixels (default: 600)</param>
+    /// <returns>PNG image data as byte array</returns>
     public async Task<byte[]> GenerateRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, Color lineColor, int width = 800, int height = 600)
     {
-        var sortedPoints = rawDataPoints.OrderBy(p => p.Timestamp).ToList();
-
-        using var bitmap = drawShimFactory.BitmapFromDimensions(width, height);
-        using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
-
-        // Clear canvas with white background
-        canvas.Clear(drawShimFactory.Colors.White.Raw);
-
-        await Task.Run(() => DrawRawDataGraph(canvas.Raw, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, true));
-
-        // using var image = SKImage.FromBitmap(bitmap);
-        using IImageShim image = drawShimFactory.ImageFromBitmap(bitmap);
-        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-
-        return data.ToArray();
+        return await GenerateRawDataGraphAsync(rawDataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, null, lineColor, width, height);
     }
 
-    public async Task<byte[]> GenerateRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    /// <summary>
+    /// Generates a scatter plot PNG image from raw mood data points with custom background image.
+    /// </summary>
+    /// <param name="rawDataPoints">The raw mood data points to plot</param>
+    /// <param name="dateRange">The requested date range for proportional positioning</param>
+    /// <param name="showDataPoints">Whether to show individual data points on the graph</param>
+    /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
+    /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="backgroundImagePath">Path to the custom background image file, or null for white background</param>
+    /// <param name="lineColor">Color for the data points and connecting lines</param>
+    /// <param name="width">Width of the graph in pixels (default: 800)</param>
+    /// <param name="height">Height of the graph in pixels (default: 600)</param>
+    /// <returns>PNG image data as byte array</returns>
+    public async Task<byte[]> GenerateRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string? backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         var sortedPoints = rawDataPoints.OrderBy(p => p.Timestamp).ToList();
 
-        using var bitmap = drawShimFactory.BitmapFromDimensions(width, height);
-        using var canvas = drawShimFactory.CanvasFromBitmap(bitmap);
-
-        // Load and draw custom background
-        var fileShim = fileShimFactory.Create();
-        if (fileShim.Exists(backgroundImagePath))
+        return await GenerateImageAsync(width, height, async canvas =>
         {
-            using var backgroundBitmap = drawShimFactory.DecodeBitmapFromFile(backgroundImagePath);
-            if (backgroundBitmap != null)
+            // Need special handling for RawData background since it uses .Raw property
+            if (!string.IsNullOrEmpty(backgroundImagePath))
             {
-                canvas.DrawBitmap(backgroundBitmap, new SKRect(0, 0, width, height));
+                var fileShim = fileShimFactory.Create();
+                if (fileShim.Exists(backgroundImagePath))
+                {
+                    using var backgroundBitmap = drawShimFactory.DecodeBitmapFromFile(backgroundImagePath);
+                    if (backgroundBitmap != null)
+                    {
+                        canvas.DrawBitmap(backgroundBitmap, new SKRect(0, 0, width, height));
+                    }
+                }
+                else
+                {
+                    canvas.Clear(drawShimFactory.Colors.White.Raw);
+                }
             }
-        }
-        else
-        {
-            // Fallback to white background if image doesn't exist
-            canvas.Clear(drawShimFactory.Colors.White.Raw);
-        }
+            else
+            {
+                canvas.Clear(drawShimFactory.Colors.White.Raw);
+            }
 
-        await Task.Run(() => DrawRawDataGraph(canvas.Raw, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, false));
-
-        using IImageShim image = drawShimFactory.ImageFromBitmap(bitmap);
-        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-        return data.ToArray();
+            var hasCustomBackground = !string.IsNullOrEmpty(backgroundImagePath);
+            await Task.Run(() => DrawRawDataGraph(canvas.Raw, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, !hasCustomBackground));
+        });
     }
 
+    /// <summary>
+    /// Saves a scatter plot PNG image to the specified file path from raw mood data points with white background.
+    /// </summary>
+    /// <param name="rawDataPoints">The raw mood data points to plot</param>
+    /// <param name="dateRange">The requested date range for proportional positioning</param>
+    /// <param name="showDataPoints">Whether to show individual data points on the graph</param>
+    /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
+    /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="filePath">Path where to save the PNG file</param>
+    /// <param name="lineColor">Color for the data points and connecting lines</param>
+    /// <param name="width">Width of the graph in pixels (default: 800)</param>
+    /// <param name="height">Height of the graph in pixels (default: 600)</param>
+    /// <returns>Task representing the async operation</returns>
     public async Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, Color lineColor, int width = 800, int height = 600)
     {
         var imageData = await GenerateRawDataGraphAsync(rawDataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, lineColor, width, height);
-        var fileShim = fileShimFactory.Create();
-        await fileShim.WriteAllBytesAsync(filePath, imageData);
+        await SaveImageDataAsync(imageData, filePath);
     }
 
+    /// <summary>
+    /// Saves a scatter plot PNG image to the specified file path from raw mood data points with custom background image.
+    /// </summary>
+    /// <param name="rawDataPoints">The raw mood data points to plot</param>
+    /// <param name="dateRange">The requested date range for proportional positioning</param>
+    /// <param name="showDataPoints">Whether to show individual data points on the graph</param>
+    /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
+    /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="filePath">Path where to save the PNG file</param>
+    /// <param name="backgroundImagePath">Path to the custom background image file</param>
+    /// <param name="lineColor">Color for the data points and connecting lines</param>
+    /// <param name="width">Width of the graph in pixels (default: 800)</param>
+    /// <param name="height">Height of the graph in pixels (default: 600)</param>
+    /// <returns>Task representing the async operation</returns>
     public async Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         var imageData = await GenerateRawDataGraphAsync(rawDataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, backgroundImagePath, lineColor, width, height);
-        var fileShim = fileShimFactory.Create();
-        await fileShim.WriteAllBytesAsync(filePath, imageData);
+        await SaveImageDataAsync(imageData, filePath);
     }
 }
