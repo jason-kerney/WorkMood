@@ -13,7 +13,7 @@ namespace WorkMood.MauiApp.Tests.Services;
 /// Approval tests for LineGraphService to verify visual output of generated graphs
 /// </summary>
 [UseReporter(typeof(ClipboardReporter))]
-[UseApprovalSubdirectory("ApprovalFiles")]
+[UseApprovalSubdirectory("ApprovalFiles/LineGraphs")]
 public class LineGraphServiceApprovalTests
 {
     private readonly LineGraphService _lineGraphService;
