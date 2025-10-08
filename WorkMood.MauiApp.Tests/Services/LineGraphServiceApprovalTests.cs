@@ -51,9 +51,10 @@ public class LineGraphServiceApprovalTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             StandardLineColor,
-            width: 800, 
+            width: 800,
             height: 600);
 
         // Assert
@@ -74,6 +75,7 @@ public class LineGraphServiceApprovalTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             StandardLineColor,
             width: 800, 
@@ -97,6 +99,7 @@ public class LineGraphServiceApprovalTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             StandardLineColor,
             width: 800, 
@@ -120,6 +123,7 @@ public class LineGraphServiceApprovalTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             StandardLineColor,
             width: 800, 
@@ -143,6 +147,7 @@ public class LineGraphServiceApprovalTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             StandardLineColor,
             width: 800, 
@@ -166,6 +171,7 @@ public class LineGraphServiceApprovalTests
             showDataPoints: false, 
             showAxesAndGrid: false, 
             showTitle: false, 
+            showTrendLine: false,
             GraphMode.Impact, 
             StandardLineColor);
 
@@ -187,6 +193,7 @@ public class LineGraphServiceApprovalTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             Microsoft.Maui.Graphics.Colors.Red);
 
@@ -212,6 +219,7 @@ public class LineGraphServiceApprovalTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Average, 
             StandardLineColor);
 
@@ -233,6 +241,7 @@ public class LineGraphServiceApprovalTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Average, 
             StandardLineColor);
 
@@ -362,6 +371,7 @@ public class LineGraphServiceApprovalTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             StandardLineColor);
 
@@ -383,6 +393,7 @@ public class LineGraphServiceApprovalTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             StandardLineColor);
 
@@ -424,6 +435,7 @@ public class LineGraphServiceApprovalTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             StandardLineColor);
 
@@ -449,6 +461,7 @@ public class LineGraphServiceApprovalTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             StandardLineColor,
             width: 1200, 
@@ -472,6 +485,7 @@ public class LineGraphServiceApprovalTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             StandardLineColor,
             width: 400, 
@@ -499,6 +513,7 @@ public class LineGraphServiceApprovalTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             StandardLineColor);
 
@@ -520,6 +535,7 @@ public class LineGraphServiceApprovalTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             StandardLineColor);
 

@@ -193,6 +193,24 @@ public class GraphViewModel : ViewModelBase
         }
     }
     
+    private bool _showTrendLine = false;
+    
+    /// <summary>
+    /// Whether to show the trend line on the graph
+    /// </summary>
+    public bool ShowTrendLine
+    {
+        get => _showTrendLine;
+        set
+        {
+            if (SetProperty(ref _showTrendLine, value))
+            {
+                // Auto-update graph when trend line visibility changes
+                _ = UpdateGraphAsync();
+            }
+        }
+    }
+    
     /// <summary>
     /// Calculated width for the graph based on the selected date range
     /// </summary>
@@ -558,7 +576,7 @@ public class GraphViewModel : ViewModelBase
                 }
                 else
                 {
-                    imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, SelectedGraphMode, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                    imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedGraphMode, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
                 }
             }
             

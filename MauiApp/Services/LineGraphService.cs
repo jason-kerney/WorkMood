@@ -131,14 +131,15 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <param name="showDataPoints">Whether to show individual data points on the graph</param>
     /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
     /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="showTrendLine">Whether to show the trend line</param>
     /// <param name="graphMode">The graph mode determining how mood data is interpreted (Impact or Average)</param>
     /// <param name="lineColor">Color for the graph line and data points</param>
     /// <param name="width">Width of the graph in pixels (default: 800)</param>
     /// <param name="height">Height of the graph in pixels (default: 600)</param>
     /// <returns>PNG image data as byte array</returns>
-    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
     {
-        return await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, graphMode, null, lineColor, width, height);
+        return await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, graphMode, null, lineColor, width, height);
     }
 
     /// <summary>
@@ -149,13 +150,14 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <param name="showDataPoints">Whether to show individual data points on the graph</param>
     /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
     /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="showTrendLine">Whether to show the trend line</param>
     /// <param name="graphMode">The graph mode determining how mood data is interpreted (Impact or Average)</param>
     /// <param name="backgroundImagePath">Path to the custom background image file, or null for white background</param>
     /// <param name="lineColor">Color for the graph line and data points</param>
     /// <param name="width">Width of the graph in pixels (default: 800)</param>
     /// <param name="height">Height of the graph in pixels (default: 600)</param>
     /// <returns>PNG image data as byte array</returns>
-    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, string? backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, GraphMode graphMode, string? backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         // Filter entries based on graph mode and date range
         var filteredEntries = FilterEntriesForGraphMode(moodEntries, graphMode)
@@ -168,8 +170,16 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
             SetupCanvasBackground(canvas, backgroundImagePath, width, height);
             var hasCustomBackground = !string.IsNullOrEmpty(backgroundImagePath);
 
-            await Task.Run(() => DrawGraphForMode(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, graphMode, !hasCustomBackground));
+            await Task.Run(() => DrawGraphForMode(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor, graphMode, !hasCustomBackground));
         });
+    }
+
+    /// <summary>
+    /// Generates a line graph PNG image from mood entry data with the specified graph mode and custom background image (without trend line).
+    /// </summary>
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    {
+        return await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, false, graphMode, backgroundImagePath, lineColor, width, height);
     }
 
     private void DrawBackground(ICanvasShim canvas, SKRect area)
@@ -267,7 +277,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <summary>
     /// Draws graph with mode-specific logic for data extraction
     /// </summary>
-    private void DrawGraphForMode(ICanvasShim canvas, List<MoodEntry> entries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color lineColor, GraphMode graphMode, bool drawWhiteBackground = true)
+    private void DrawGraphForMode(ICanvasShim canvas, List<MoodEntry> entries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color lineColor, GraphMode graphMode, bool drawWhiteBackground = true)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
 
@@ -299,6 +309,12 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         if (showDataPoints)
         {
             DrawDataPointsForMode(canvas, graphArea, entries, requestedStartDate, requestedEndDate, lineColor, graphMode);
+        }
+
+        // Draw trend line if requested
+        if (showTrendLine)
+        {
+            DrawTrendLineForMode(canvas, graphArea, entries, requestedStartDate, requestedEndDate, lineColor, graphMode, drawWhiteBackground);
         }
 
         // Conditionally draw labels
@@ -469,6 +485,132 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
             GraphMode.Average => entry.GetAdjustedAverageMood() ?? 0,
             _ => entry.Value ?? 0
         };
+    }
+
+    /// <summary>
+    /// Draws a trend line using linear regression for the mood data
+    /// </summary>
+    private void DrawTrendLineForMode(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode, bool drawWhiteBackground)
+    {
+        if (entries.Count < 2) return;
+
+        // Calculate linear regression
+        var dataPoints = new List<(double x, double y)>();
+        var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
+        
+        foreach (var entry in entries)
+        {
+            var value = GetValueForMode(entry, graphMode);
+            var dayOffset = entry.Date.DayNumber - requestedStartDate.DayNumber;
+            var normalizedX = (double)dayOffset / totalDays; // Normalize to 0-1
+            dataPoints.Add((normalizedX, value));
+        }
+
+        // Calculate linear regression coefficients (y = mx + b)
+        var n = dataPoints.Count;
+        var sumX = dataPoints.Sum(p => p.x);
+        var sumY = dataPoints.Sum(p => p.y);
+        var sumXY = dataPoints.Sum(p => p.x * p.y);
+        var sumXX = dataPoints.Sum(p => p.x * p.x);
+
+        var slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+        var intercept = (sumY - slope * sumX) / n;
+
+        // Calculate trend line endpoints
+        var (minY, maxY) = GetYRangeForMode(graphMode);
+        var startY = intercept; // x = 0
+        var endY = slope + intercept; // x = 1
+
+        // Convert to canvas coordinates
+        var startX = area.Left;
+        var endX = area.Right;
+        var startCanvasY = (float)(area.Bottom - ((startY - minY) * area.Height / (maxY - minY)));
+        var endCanvasY = (float)(area.Bottom - ((endY - minY) * area.Height / (maxY - minY)));
+
+        // Determine trend line color for optimal visibility
+        var trendColor = GetOptimalTrendLineColor(lineColor, drawWhiteBackground);
+
+        using var trendPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
+        {
+            Color = trendColor,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 2,
+            IsAntialias = true,
+            PathEffect = drawShimFactory.PathEffects.CreateDash([10, 5], 0) // Dashed line to distinguish from data line
+        });
+
+        canvas.DrawLine(startX, startCanvasY, endX, endCanvasY, trendPaint);
+    }
+
+    /// <summary>
+    /// Calculates the optimal color for the trend line to ensure visibility against background and line color
+    /// </summary>
+    private IColorShim GetOptimalTrendLineColor(Color lineColor, bool hasWhiteBackground)
+    {
+        // Convert MAUI Color to RGB values (0-1 range)
+        var lineR = lineColor.Red;
+        var lineG = lineColor.Green;
+        var lineB = lineColor.Blue;
+
+        // Calculate luminance of the line color
+        var lineLuminance = 0.299 * lineR + 0.587 * lineG + 0.114 * lineB;
+
+        // Background is assumed to be white if hasWhiteBackground is true, otherwise unknown/dark
+        var backgroundLuminance = hasWhiteBackground ? 1.0f : 0.0f;
+
+        // We want the trend line to be different from both the line color and background
+        // If line is dark and background is white, make trend line a medium tone
+        // If line is light and background is white, make trend line darker
+        // If background is unknown/dark, use a lighter color that contrasts with the line
+
+        IColorShim trendColor;
+
+        if (hasWhiteBackground)
+        {
+            // White background case
+            if (lineLuminance < 0.3) // Line is dark
+            {
+                // Use a medium gray that's different from the dark line
+                trendColor = drawShimFactory.Colors.FromArgb(100, 100, 100, 255);
+            }
+            else if (lineLuminance > 0.7) // Line is light
+            {
+                // Use a darker color
+                trendColor = drawShimFactory.Colors.FromArgb(50, 50, 50, 255);
+            }
+            else // Line is medium
+            {
+                // Use either darker or lighter depending on which provides more contrast
+                var darkContrast = Math.Abs(lineLuminance - 0.2);
+                var lightContrast = Math.Abs(lineLuminance - 0.8);
+                
+                if (darkContrast > lightContrast)
+                {
+                    trendColor = drawShimFactory.Colors.FromArgb(50, 50, 50, 255);
+                }
+                else
+                {
+                    trendColor = drawShimFactory.Colors.FromArgb(200, 200, 200, 255);
+                }
+            }
+        }
+        else
+        {
+            // Unknown/potentially dark background - use a color that should be visible
+            // Pick a complementary or contrasting color to the line color
+            if (lineLuminance < 0.5)
+            {
+                // Line is darkish, use a lighter trend line
+                trendColor = drawShimFactory.Colors.FromArgb(180, 180, 180, 255);
+            }
+            else
+            {
+                // Line is lightish, use a darker trend line
+                trendColor = drawShimFactory.Colors.FromArgb(80, 80, 80, 255);
+            }
+        }
+
+        return trendColor;
     }
 
     // Raw Data drawing methods
@@ -730,7 +872,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <returns>Task representing the async operation</returns>
     public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
     {
-        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, graphMode, lineColor, width, height);
+        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, false, graphMode, lineColor, width, height);
         await SaveImageDataAsync(imageData, filePath);
     }
 
@@ -751,7 +893,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <returns>Task representing the async operation</returns>
     public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
-        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, graphMode, backgroundImagePath, lineColor, width, height);
+        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, false, graphMode, backgroundImagePath, lineColor, width, height);
         await SaveImageDataAsync(imageData, filePath);
     }
 

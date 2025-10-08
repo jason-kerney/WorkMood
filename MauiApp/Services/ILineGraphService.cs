@@ -15,12 +15,13 @@ public interface ILineGraphService
     /// <param name="showDataPoints">Whether to show individual data points</param>
     /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
     /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="showTrendLine">Whether to show the trend line</param>
     /// <param name="graphMode">The graph mode (Impact or Average)</param>
     /// <param name="lineColor">Color for the graph line</param>
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>PNG image data as byte array</returns>
-    Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, Color lineColor, int width = 800, int height = 600);
+    Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, GraphMode graphMode, Color lineColor, int width = 800, int height = 600);
 
     /// <summary>
     /// Generates a line graph PNG image from mood entry data with graph mode and custom background

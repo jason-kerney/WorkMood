@@ -42,7 +42,8 @@ public class LineGraphServiceEdgeCaseTests
             wideRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
-            showTitle: true, 
+            showTitle: true,
+            showTrendLine: false,
             GraphMode.Impact, 
             Microsoft.Maui.Graphics.Colors.Blue);
 
@@ -63,7 +64,8 @@ public class LineGraphServiceEdgeCaseTests
             dateRange, 
             showDataPoints: false, // Hide individual points due to density
             showAxesAndGrid: true, 
-            showTitle: true, 
+            showTitle: true,
+            showTrendLine: false,
             GraphMode.Impact, 
             Microsoft.Maui.Graphics.Colors.Purple);
 
@@ -88,7 +90,8 @@ public class LineGraphServiceEdgeCaseTests
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
-            showTitle: true, 
+            showTitle: true,
+            showTrendLine: false,
             GraphMode.Average, 
             Microsoft.Maui.Graphics.Colors.Red);
 
@@ -109,7 +112,8 @@ public class LineGraphServiceEdgeCaseTests
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
-            showTitle: true, 
+            showTitle: true,
+            showTrendLine: false,
             GraphMode.Average, 
             Microsoft.Maui.Graphics.Colors.Green);
 
@@ -166,7 +170,7 @@ public class LineGraphServiceEdgeCaseTests
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
-            showTitle: true, 
+            showTitle: true,
             Microsoft.Maui.Graphics.Colors.Magenta);
 
         // Assert
@@ -190,7 +194,8 @@ public class LineGraphServiceEdgeCaseTests
             singleDayRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
-            showTitle: true, 
+            showTitle: true,
+            showTrendLine: false,
             GraphMode.Impact, 
             Microsoft.Maui.Graphics.Colors.Teal);
 
@@ -207,12 +212,13 @@ public class LineGraphServiceEdgeCaseTests
 
         // Act
         var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-            outsideRangeEntries, 
-            limitedRange, 
-            showDataPoints: true, 
-            showAxesAndGrid: true, 
-            showTitle: true, 
-            GraphMode.Impact, 
+            outsideRangeEntries,
+            limitedRange,
+            showDataPoints: true,
+            showAxesAndGrid: true,
+            showTitle: true,
+            showTrendLine: false,
+            GraphMode.Impact,
             Microsoft.Maui.Graphics.Colors.Brown);
 
         // Assert
@@ -238,12 +244,13 @@ public class LineGraphServiceEdgeCaseTests
 
         // Act
         var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-            mixedNullEntries, 
-            dateRange, 
-            showDataPoints: true, 
-            showAxesAndGrid: true, 
-            showTitle: true, 
-            GraphMode.Impact, 
+            mixedNullEntries,
+            dateRange,
+            showDataPoints: true,
+            showAxesAndGrid: true,
+            showTitle: true,
+            showTrendLine: false,
+            GraphMode.Impact,
             Microsoft.Maui.Graphics.Colors.Navy);
 
         // Assert
@@ -263,14 +270,15 @@ public class LineGraphServiceEdgeCaseTests
 
         // Act
         var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-            largeMoodEntries, 
-            yearRange, 
+            largeMoodEntries,
+            yearRange,
             showDataPoints: false, // Too many points to show individually
-            showAxesAndGrid: true, 
-            showTitle: true, 
-            GraphMode.Impact, 
+            showAxesAndGrid: true,
+            showTitle: true,
+            showTrendLine: false,
+            GraphMode.Impact,
             Microsoft.Maui.Graphics.Colors.DarkGreen,
-            width: 1600,  // Larger canvas to accommodate more data
+            width: 1600, // Larger canvas to accommodate more data
             height: 800);
 
         // Assert
@@ -299,12 +307,13 @@ public class LineGraphServiceEdgeCaseTests
 
         // Act
         var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-            zeroImpactEntries, 
-            dateRange, 
-            showDataPoints: true, 
-            showAxesAndGrid: true, 
-            showTitle: true, 
-            GraphMode.Impact, 
+            zeroImpactEntries,
+            dateRange,
+            showDataPoints: true,
+            showAxesAndGrid: true,
+            showTitle: true,
+            showTrendLine: true, // Trend line should be flat
+            GraphMode.Impact,
             Microsoft.Maui.Graphics.Colors.Green);
 
         // Assert - Should show a flat line at y=0
