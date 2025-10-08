@@ -1,25 +1,25 @@
 Summary
-  Generated on: 10/8/2025 - 2:29:06 PM
-  Coverage date: 10/8/2025 - 2:29:05 PM
+  Generated on: 10/8/2025 - 3:30:05 PM
+  Coverage date: 10/8/2025 - 3:30:04 PM
   Parser: Cobertura
   Assemblies: 1
   Classes: 106
   Files: 67
-  Line coverage: 14.7%
-  Covered lines: 933
-  Uncovered lines: 5380
-  Coverable lines: 6313
-  Total lines: 11928
-  Branch coverage: 10.7% (182 of 1689)
-  Covered branches: 182
+  Line coverage: 14.8%
+  Covered lines: 936
+  Uncovered lines: 5374
+  Coverable lines: 6310
+  Total lines: 11920
+  Branch coverage: 10.9% (185 of 1689)
+  Covered branches: 185
   Total branches: 1689
-  Method coverage: 15.7% (155 of 987)
-  Full method coverage: 14.4% (143 of 987)
-  Covered methods: 155
-  Fully covered methods: 143
-  Total methods: 987
+  Method coverage: 15.6% (154 of 986)
+  Full method coverage: 14.4% (142 of 986)
+  Covered methods: 154
+  Fully covered methods: 142
+  Total methods: 986
 
-WorkMood.MauiApp                                                        14.7%
+WorkMood.MauiApp                                                        14.8%
   WorkMood.MauiApp.Adapters.VisualizationDataAdapter                       0%
   WorkMood.MauiApp.App                                                     0%
   WorkMood.MauiApp.AppShell                                                0%
@@ -70,7 +70,7 @@ WorkMood.MauiApp                                                        14.7%
   WorkMood.MauiApp.Services.EveningReminderCommand                      96.7%
   WorkMood.MauiApp.Services.EveningReminderData                          100%
   WorkMood.MauiApp.Services.EveningReminderEventArgs                       0%
-  WorkMood.MauiApp.Services.LineGraphService                            91.3%
+  WorkMood.MauiApp.Services.LineGraphService                            92.3%
   WorkMood.MauiApp.Services.LoggingService                                 0%
   WorkMood.MauiApp.Services.LoggingServiceExtensions                       0%
   WorkMood.MauiApp.Services.MoodDataService                                0%

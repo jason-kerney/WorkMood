@@ -142,6 +142,7 @@ public class LineGraphServiceBackgroundTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             backgroundPath,
             Microsoft.Maui.Graphics.Colors.Yellow);
@@ -165,6 +166,7 @@ public class LineGraphServiceBackgroundTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Average, 
             backgroundPath,
             Microsoft.Maui.Graphics.Colors.DarkRed);
@@ -188,6 +190,7 @@ public class LineGraphServiceBackgroundTests
             showDataPoints: true, 
             showAxesAndGrid: false, 
             showTitle: false, 
+            showTrendLine: false,
             GraphMode.Impact, 
             backgroundPath,
             Microsoft.Maui.Graphics.Colors.Purple);
@@ -211,6 +214,7 @@ public class LineGraphServiceBackgroundTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             nonExistentPath,
             Microsoft.Maui.Graphics.Colors.Blue);
@@ -309,6 +313,7 @@ public class LineGraphServiceBackgroundTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             backgroundPath,
             Microsoft.Maui.Graphics.Colors.Yellow);
@@ -333,6 +338,7 @@ public class LineGraphServiceBackgroundTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             GraphMode.Impact, 
             backgroundPath,
             Microsoft.Maui.Graphics.Colors.DarkBlue);
@@ -342,4 +348,32 @@ public class LineGraphServiceBackgroundTests
     }
 
     #endregion
+
+    [Fact]
+    public async Task GenerateLineGraphAsync_WithBackgroundImageAndTrendLine_ReturnsValidImageData()
+    {
+        // Arrange
+        var service = new LineGraphService();
+        var startDate = new DateOnly(1937, 7, 19);
+        var (today, entries) = MoodDataTestHelper.GetRandomFakeData(startDate, seed: 2795, count: 10);
+        
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
+        var lineColor = Colors.Orange;
+        var backgroundImagePath = Path.Combine(_testImagesPath, "light_background.png");
+
+        // Act
+        var result = await service.GenerateLineGraphAsync(
+            entries, 
+            dateRange, 
+            showDataPoints: true, 
+            showAxesAndGrid: true, 
+            showTitle: true, 
+            showTrendLine: true, // Test the newly added parameter
+            GraphMode.Impact, 
+            backgroundImagePath,
+            lineColor);
+
+        // Assert
+        Approvals.VerifyBinaryFile(result, "png");
+    }
 }

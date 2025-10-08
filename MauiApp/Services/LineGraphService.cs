@@ -139,7 +139,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <returns>PNG image data as byte array</returns>
     public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
     {
-        return await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, graphMode, null, lineColor, width, height);
+        return await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, graphMode, "", lineColor, width, height);
     }
 
     /// <summary>
@@ -152,12 +152,12 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <param name="showTitle">Whether to show the graph title</param>
     /// <param name="showTrendLine">Whether to show the trend line</param>
     /// <param name="graphMode">The graph mode determining how mood data is interpreted (Impact or Average)</param>
-    /// <param name="backgroundImagePath">Path to the custom background image file, or null for white background</param>
+    /// <param name="backgroundImagePath">Path to the custom background image file, or empty string for white background</param>
     /// <param name="lineColor">Color for the graph line and data points</param>
     /// <param name="width">Width of the graph in pixels (default: 800)</param>
     /// <param name="height">Height of the graph in pixels (default: 600)</param>
     /// <returns>PNG image data as byte array</returns>
-    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, GraphMode graphMode, string? backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         // Filter entries based on graph mode and date range
         var filteredEntries = FilterEntriesForGraphMode(moodEntries, graphMode)
@@ -172,14 +172,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
             await Task.Run(() => DrawGraphForMode(canvas, filteredEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor, graphMode, !hasCustomBackground));
         });
-    }
-
-    /// <summary>
-    /// Generates a line graph PNG image from mood entry data with the specified graph mode and custom background image (without trend line).
-    /// </summary>
-    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
-    {
-        return await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, false, graphMode, backgroundImagePath, lineColor, width, height);
     }
 
     private void DrawBackground(ICanvasShim canvas, SKRect area)
