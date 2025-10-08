@@ -332,7 +332,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         {
             Color = drawShimFactory.Colors.DarkGray,
             Style = SKPaintStyle.Stroke,
-            StrokeWidth = 2
+            StrokeWidth = 4
         });
         canvas.DrawLine(area.Left, zeroY, area.Right, zeroY, zeroLinePaint);
     }
