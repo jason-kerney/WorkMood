@@ -13,7 +13,7 @@ namespace WorkMood.MauiApp.Tests.Services;
 /// Comprehensive edge case tests for LineGraphService
 /// </summary>
 [UseReporter(typeof(ClipboardReporter))]
-[UseApprovalSubdirectory("ApprovalFiles")]
+[UseApprovalSubdirectory("ApprovalFiles/EdgeCases")]
 public class LineGraphServiceEdgeCaseTests
 {
     private readonly LineGraphService _lineGraphService;
