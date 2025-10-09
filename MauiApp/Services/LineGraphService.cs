@@ -736,6 +736,16 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
     private void DrawRawDataLines(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color lineColor)
     {
+        // Transform RawMoodDataPoint objects to GraphDataPoint objects and delegate to the refactored method
+        var graphDataPoints = _dataTransformer.TransformRawDataPoints(dataPoints).ToList();
+        DrawRawDataLinesFromGraphDataPoints(canvas, area, graphDataPoints, startDateTime, endDateTime, lineColor);
+    }
+
+    /// <summary>
+    /// Draws raw data lines using unified GraphDataPoint objects (refactored version)
+    /// </summary>
+    private void DrawRawDataLinesFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color lineColor)
+    {
         if (dataPoints.Count < 2)
             return;
 
@@ -764,8 +774,8 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
             var proportionalPosition = (float)(timeFromStart.TotalMilliseconds / totalTimeSpan.TotalMilliseconds);
             var x = area.Left + (proportionalPosition * area.Width);
 
-            // Calculate Y position based on mood value (1-10 range)
-            var y = (float)(area.Bottom - ((point.MoodValue - 1) * area.Height / 9)); // 9 = 10-1
+            // Calculate Y position based on mood value (assuming 1-10 range)
+            var y = (float)(area.Bottom - ((point.Value - 1) * area.Height / 9)); // 9 = 10-1
 
             if (isFirstPoint)
             {
