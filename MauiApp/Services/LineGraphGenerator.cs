@@ -19,11 +19,11 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
     /// <summary>
     /// Generates a line graph PNG image from unified graph data points
     /// </summary>
-    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<GraphDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, Color lineColor, int width = 800, int height = 600)
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<GraphDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, Color lineColor, AxisRange yAxisRange, int width = 800, int height = 600)
     {
         return await GenerateImageAsync(width, height, canvas =>
         {
-            DrawGraph(canvas, dataPoints.ToList(), dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor);
+            DrawGraph(canvas, dataPoints.ToList(), dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor, yAxisRange);
             return Task.CompletedTask;
         });
     }
@@ -31,12 +31,12 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
     /// <summary>
     /// Generates a line graph PNG image from unified graph data points with custom background
     /// </summary>
-    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<GraphDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    public async Task<byte[]> GenerateLineGraphAsync(IEnumerable<GraphDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string backgroundImagePath, Color lineColor, AxisRange yAxisRange, int width = 800, int height = 600)
     {
         return await GenerateImageAsync(width, height, canvas =>
         {
             SetupCanvasBackground(canvas, backgroundImagePath, width, height);
-            DrawGraph(canvas, dataPoints.ToList(), dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor, drawWhiteBackground: false);
+            DrawGraph(canvas, dataPoints.ToList(), dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor, yAxisRange, drawWhiteBackground: false);
             return Task.CompletedTask;
         });
     }
@@ -44,18 +44,18 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
     /// <summary>
     /// Saves a line graph PNG image to the specified file path
     /// </summary>
-    public async Task SaveLineGraphAsync(IEnumerable<GraphDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, Color lineColor, int width = 800, int height = 600)
+    public async Task SaveLineGraphAsync(IEnumerable<GraphDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, Color lineColor, AxisRange yAxisRange, int width = 800, int height = 600)
     {
-        var imageData = await GenerateLineGraphAsync(dataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, lineColor, width, height);
+        var imageData = await GenerateLineGraphAsync(dataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, lineColor, yAxisRange, width, height);
         await SaveImageDataAsync(imageData, filePath);
     }
 
     /// <summary>
     /// Saves a line graph PNG image to the specified file path with custom background
     /// </summary>
-    public async Task SaveLineGraphAsync(IEnumerable<GraphDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    public async Task SaveLineGraphAsync(IEnumerable<GraphDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, string backgroundImagePath, Color lineColor, AxisRange yAxisRange, int width = 800, int height = 600)
     {
-        var imageData = await GenerateLineGraphAsync(dataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath, lineColor, width, height);
+        var imageData = await GenerateLineGraphAsync(dataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath, lineColor, yAxisRange, width, height);
         await SaveImageDataAsync(imageData, filePath);
     }
 
@@ -109,7 +109,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
     /// <summary>
     /// Main drawing logic for unified data points
     /// </summary>
-    private void DrawGraph(ICanvasShim canvas, List<GraphDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color lineColor, bool drawWhiteBackground = true)
+    private void DrawGraph(ICanvasShim canvas, List<GraphDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color lineColor, AxisRange yAxisRange, bool drawWhiteBackground = true)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
 
@@ -123,8 +123,8 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
             DrawBackground(canvas, graphArea);
         }
 
-        // Use unified Y range for all graph data points (assumes mood values 1-10, converted to -4 to +5 impact range if needed)
-        var (minY, maxY) = GetYRangeForDataPoints(dataPoints);
+        // Use provided Y range
+        var (minY, maxY) = (yAxisRange.Min, yAxisRange.Max);
 
         // Conditionally draw grid and axes
         if (showAxesAndGrid)
