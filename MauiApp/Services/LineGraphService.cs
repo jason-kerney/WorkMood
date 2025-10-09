@@ -856,15 +856,16 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <param name="showDataPoints">Whether to show individual data points on the graph</param>
     /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
     /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="showTrendLine">Whether to show the trend line</param>
     /// <param name="filePath">Path where to save the PNG file</param>
     /// <param name="graphMode">The graph mode determining how mood data is interpreted (Impact or Average)</param>
     /// <param name="lineColor">Color for the graph line and data points</param>
     /// <param name="width">Width of the graph in pixels (default: 800)</param>
     /// <param name="height">Height of the graph in pixels (default: 600)</param>
     /// <returns>Task representing the async operation</returns>
-    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
+    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, GraphMode graphMode, Color lineColor, int width = 800, int height = 600)
     {
-        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, false, graphMode, lineColor, width, height);
+        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, graphMode, lineColor, width, height);
         await SaveImageDataAsync(imageData, filePath);
     }
 

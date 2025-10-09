@@ -648,7 +648,7 @@ public class GraphViewModel : ViewModelBase
                 }
                 else
                 {
-                    await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedGraphMode, SelectedLineColor, exportWidth, exportHeight);
+                    await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, false, filePath, SelectedGraphMode, SelectedLineColor, exportWidth, exportHeight);
                 }
             }
             
@@ -710,7 +710,7 @@ public class GraphViewModel : ViewModelBase
                 }
                 else
                 {
-                    await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedGraphMode, SelectedLineColor, exportWidth, exportHeight);
+                    await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, false, filePath, SelectedGraphMode, SelectedLineColor, exportWidth, exportHeight);
                 }
             }
             

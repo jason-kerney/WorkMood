@@ -48,13 +48,14 @@ public interface ILineGraphService
     /// <param name="showDataPoints">Whether to show individual data points</param>
     /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
     /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="showTrendLine">Whether to show the trend line</param>
     /// <param name="filePath">Path where to save the PNG file</param>
     /// <param name="graphMode">The graph mode (Impact or Average)</param>
     /// <param name="lineColor">Color for the graph line</param>
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>Task representing the async operation</returns>
-    Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, Color lineColor, int width = 800, int height = 600);
+    Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, GraphMode graphMode, Color lineColor, int width = 800, int height = 600);
 
     /// <summary>
     /// Saves a line graph PNG image to the specified file path with graph mode and custom background
