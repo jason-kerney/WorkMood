@@ -9,11 +9,13 @@ namespace WorkMood.MauiApp.Services;
 /// <summary>
 /// Implementation of line graph service using SkiaSharp for rendering
 /// </summary>
-public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory fileShimFactory) : ILineGraphService
+public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory fileShimFactory, IGraphDataTransformer? dataTransformer = null) : ILineGraphService
 {
     private const int MinYValue = -9;
     private const int MaxYValue = 9;
     private const int Padding = 60;
+    
+    private readonly IGraphDataTransformer _dataTransformer = dataTransformer ?? new GraphDataTransformer();
     
     /// <summary>
     /// Initializes a new instance of the LineGraphService with default factory implementations.
@@ -258,12 +260,21 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// </summary>
     private IEnumerable<MoodEntry> FilterEntriesForGraphMode(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
     {
-        return graphMode switch
-        {
-            GraphMode.Impact => moodEntries.Where(e => e.Value.HasValue),
-            GraphMode.Average => moodEntries.Where(e => e.GetAdjustedAverageMood().HasValue),
-            _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, null)
-        };
+        // Use the data transformer's filtering logic by getting the transformed data and finding matching original entries
+        var transformedData = _dataTransformer.TransformMoodEntries(moodEntries, graphMode).ToList();
+        
+        // Since the transformer filters, match back to original entries based on date
+        var transformedDates = transformedData.Select(d => DateOnly.FromDateTime(d.Timestamp)).ToHashSet();
+        
+        return moodEntries.Where(entry => transformedDates.Contains(entry.Date));
+    }
+
+    /// <summary>
+    /// Transforms mood entries to graph data points using the data transformer
+    /// </summary>
+    private IEnumerable<GraphDataPoint> TransformMoodEntriesToGraphDataPoints(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
+    {
+        return _dataTransformer.TransformMoodEntries(moodEntries, graphMode);
     }
 
     /// <summary>
@@ -471,12 +482,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
     private double GetValueForMode(MoodEntry entry, GraphMode graphMode)
     {
-        return graphMode switch
-        {
-            GraphMode.Impact => entry.Value ?? 0,
-            GraphMode.Average => entry.GetAdjustedAverageMood() ?? 0,
-            _ => entry.Value ?? 0
-        };
+        return _dataTransformer.GetValueForMoodEntry(entry, graphMode);
     }
 
     /// <summary>
