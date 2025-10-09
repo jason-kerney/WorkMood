@@ -14,7 +14,7 @@ namespace WorkMood.MauiApp.Tests.Services;
 /// <summary>
 /// Additional approval tests for LineGraphService background image functionality
 /// </summary>
-[UseReporter(typeof(ClipboardReporter))]
+[UseReporter(typeof(QuietReporter))]
 [UseApprovalSubdirectory("ApprovalFiles/Backgrounds")]
 public class LineGraphServiceBackgroundTests
 {
@@ -242,6 +242,7 @@ public class LineGraphServiceBackgroundTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             backgroundPath,
             Microsoft.Maui.Graphics.Colors.Orange);
 
@@ -264,6 +265,7 @@ public class LineGraphServiceBackgroundTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             backgroundPath,
             Microsoft.Maui.Graphics.Colors.DarkBlue);
 
@@ -286,6 +288,7 @@ public class LineGraphServiceBackgroundTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
+            showTrendLine: false,
             nonExistentPath,
             Microsoft.Maui.Graphics.Colors.Green);
 

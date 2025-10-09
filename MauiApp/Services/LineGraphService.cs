@@ -606,15 +606,15 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     }
 
     // Raw Data drawing methods
-    private void DrawRawDataGraph(SKCanvas canvas, List<RawMoodDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color pointColor, bool drawWhiteBackground = true)
+    private void DrawRawDataGraph(SKCanvas canvas, List<RawMoodDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color pointColor, bool drawWhiteBackground = true)
     {
-        DrawRawDataGraph(drawShimFactory.FromRaw(canvas), dataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, pointColor, drawWhiteBackground);
+        DrawRawDataGraph(drawShimFactory.FromRaw(canvas), dataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, pointColor, drawWhiteBackground);
     }
 
     /// <summary>
     /// Draws a scatter plot graph for raw mood data points
     /// </summary>
-    private void DrawRawDataGraph(ICanvasShim canvas, List<RawMoodDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, int width, int height, Color pointColor, bool drawWhiteBackground = true)
+    private void DrawRawDataGraph(ICanvasShim canvas, List<RawMoodDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color pointColor, bool drawWhiteBackground = true)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
 
@@ -659,6 +659,12 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         {
             DrawRawDataYAxisLabels(canvas, graphArea);
             DrawRawDataXAxisLabels(canvas, graphArea, dataPoints, startDateTime, endDateTime, pointColor);
+        }
+
+        // Conditionally draw trend line
+        if (showTrendLine && dataPoints.Count > 1)
+        {
+            DrawRawDataTrendLine(canvas, graphArea, dataPoints, startDateTime, endDateTime, pointColor, drawWhiteBackground);
         }
 
         // Conditionally draw title
@@ -846,6 +852,65 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         canvas.DrawText("Raw Mood Data Over Time", width / 2, 30, titlePaint);
     }
 
+    private void DrawRawDataTrendLine(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor, bool drawWhiteBackground)
+    {
+        if (dataPoints.Count < 2) return;
+
+        // Filter and sort points within the date range
+        var filteredPoints = dataPoints
+            .Where(point => point.Timestamp >= startDateTime && point.Timestamp <= endDateTime)
+            .OrderBy(point => point.Timestamp)
+            .ToList();
+
+        if (filteredPoints.Count < 2) return;
+
+        // Calculate linear regression (y = mx + b) where x is time and y is mood value
+        var n = filteredPoints.Count;
+        var totalTimeSpan = endDateTime - startDateTime;
+        
+        // Convert timestamps to normalized time values (0 to 1)
+        var timeValues = filteredPoints.Select(p => 
+        {
+            var timeFromStart = p.Timestamp - startDateTime;
+            return timeFromStart.TotalMilliseconds / totalTimeSpan.TotalMilliseconds;
+        }).ToList();
+        
+        var moodValues = filteredPoints.Select(p => (double)p.MoodValue).ToList();
+
+        // Linear regression calculations
+        var sumX = timeValues.Sum();
+        var sumY = moodValues.Sum();
+        var sumXY = timeValues.Zip(moodValues, (x, y) => x * y).Sum();
+        var sumXX = timeValues.Select(x => x * x).Sum();
+
+        var slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+        var intercept = (sumY - slope * sumX) / n;
+
+        // Calculate start and end points of trend line
+        var startY = slope * 0.0 + intercept; // At time 0
+        var endY = slope * 1.0 + intercept;   // At time 1
+
+        // Convert to screen coordinates
+        var startX = area.Left;
+        var endX = area.Right;
+        var startScreenY = (float)(area.Bottom - ((startY - 1) * area.Height / 9)); // 9 = 10-1 for raw data range
+        var endScreenY = (float)(area.Bottom - ((endY - 1) * area.Height / 9));
+
+        // Get optimal trend line color
+        var trendLineColor = GetOptimalTrendLineColor(pointColor, drawWhiteBackground);
+
+        using var trendLinePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
+        {
+            Color = trendLineColor,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 3,
+            IsAntialias = true,
+            PathEffect = drawShimFactory.PathEffects.CreateDash([10, 5], 0) // Dashed line
+        });
+
+        canvas.DrawLine(startX, startScreenY, endX, endScreenY, trendLinePaint);
+    }
+
     // New save methods with GraphMode support
 
     /// <summary>
@@ -904,9 +969,9 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <param name="width">Width of the graph in pixels (default: 800)</param>
     /// <param name="height">Height of the graph in pixels (default: 600)</param>
     /// <returns>PNG image data as byte array</returns>
-    public async Task<byte[]> GenerateRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, Color lineColor, int width = 800, int height = 600)
+    public async Task<byte[]> GenerateRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, Color lineColor, int width = 800, int height = 600)
     {
-        return await GenerateRawDataGraphAsync(rawDataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, null, lineColor, width, height);
+        return await GenerateRawDataGraphAsync(rawDataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, null, lineColor, width, height);
     }
 
     /// <summary>
@@ -922,7 +987,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <param name="width">Width of the graph in pixels (default: 800)</param>
     /// <param name="height">Height of the graph in pixels (default: 600)</param>
     /// <returns>PNG image data as byte array</returns>
-    public async Task<byte[]> GenerateRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string? backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    public async Task<byte[]> GenerateRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string? backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
         var sortedPoints = rawDataPoints.OrderBy(p => p.Timestamp).ToList();
 
@@ -951,7 +1016,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
             }
 
             var hasCustomBackground = !string.IsNullOrEmpty(backgroundImagePath);
-            await Task.Run(() => DrawRawDataGraph(canvas.Raw, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, width, height, lineColor, !hasCustomBackground));
+            await Task.Run(() => DrawRawDataGraph(canvas.Raw, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor, !hasCustomBackground));
         });
     }
 
@@ -970,7 +1035,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <returns>Task representing the async operation</returns>
     public async Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, Color lineColor, int width = 800, int height = 600)
     {
-        var imageData = await GenerateRawDataGraphAsync(rawDataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, lineColor, width, height);
+        var imageData = await GenerateRawDataGraphAsync(rawDataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, false, lineColor, width, height);
         await SaveImageDataAsync(imageData, filePath);
     }
 
@@ -990,7 +1055,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <returns>Task representing the async operation</returns>
     public async Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
-        var imageData = await GenerateRawDataGraphAsync(rawDataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, backgroundImagePath, lineColor, width, height);
+        var imageData = await GenerateRawDataGraphAsync(rawDataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, false, backgroundImagePath, lineColor, width, height);
         await SaveImageDataAsync(imageData, filePath);
     }
 }

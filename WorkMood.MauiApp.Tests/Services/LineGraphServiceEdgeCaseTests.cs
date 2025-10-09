@@ -12,7 +12,7 @@ namespace WorkMood.MauiApp.Tests.Services;
 /// <summary>
 /// Comprehensive edge case tests for LineGraphService
 /// </summary>
-[UseReporter(typeof(ClipboardReporter))]
+[UseReporter(typeof(QuietReporter))]
 [UseApprovalSubdirectory("ApprovalFiles/EdgeCases")]
 public class LineGraphServiceEdgeCaseTests
 {
@@ -144,7 +144,8 @@ public class LineGraphServiceEdgeCaseTests
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
-            showTitle: true, 
+            showTitle: true,
+            showTrendLine: false,
             Microsoft.Maui.Graphics.Colors.Orange);
 
         // Assert
@@ -171,6 +172,7 @@ public class LineGraphServiceEdgeCaseTests
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true,
+            showTrendLine: false,
             Microsoft.Maui.Graphics.Colors.Magenta);
 
         // Assert

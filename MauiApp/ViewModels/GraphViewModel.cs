@@ -560,11 +560,11 @@ public class GraphViewModel : ViewModelBase
                 
                 if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
                 {
-                    imageData = await _lineGraphService.GenerateRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                    imageData = await _lineGraphService.GenerateRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, false, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
                 }
                 else
                 {
-                    imageData = await _lineGraphService.GenerateRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                    imageData = await _lineGraphService.GenerateRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, false, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
                 }
             }
             else

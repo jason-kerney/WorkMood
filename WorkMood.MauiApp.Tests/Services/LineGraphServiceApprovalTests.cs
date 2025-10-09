@@ -12,7 +12,7 @@ namespace WorkMood.MauiApp.Tests.Services;
 /// <summary>
 /// Approval tests for LineGraphService to verify visual output of generated graphs
 /// </summary>
-[UseReporter(typeof(ClipboardReporter))]
+[UseReporter(typeof(QuietReporter))]
 [UseApprovalSubdirectory("ApprovalFiles/LineGraphs")]
 public class LineGraphServiceApprovalTests
 {
@@ -266,7 +266,8 @@ public class LineGraphServiceApprovalTests
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
-            showTitle: true, 
+            showTitle: true,
+            showTrendLine: false,
             StandardLineColor);
 
         // Assert
@@ -286,7 +287,8 @@ public class LineGraphServiceApprovalTests
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
-            showTitle: true, 
+            showTitle: true,
+            showTrendLine: false,
             StandardLineColor);
 
         // Assert
@@ -306,7 +308,8 @@ public class LineGraphServiceApprovalTests
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
-            showTitle: true, 
+            showTitle: true,
+            showTrendLine: false,
             StandardLineColor);
 
         // Assert
@@ -326,7 +329,8 @@ public class LineGraphServiceApprovalTests
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
-            showTitle: true, 
+            showTitle: true,
+            showTrendLine: false,
             StandardLineColor);
 
         // Assert
@@ -346,7 +350,8 @@ public class LineGraphServiceApprovalTests
             dateRange, 
             showDataPoints: false, 
             showAxesAndGrid: false, 
-            showTitle: false, 
+            showTitle: false,
+            showTrendLine: false,
             StandardLineColor);
 
         // Assert
@@ -414,7 +419,8 @@ public class LineGraphServiceApprovalTests
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
-            showTitle: true, 
+            showTitle: true,
+            showTrendLine: false,
             StandardLineColor);
 
         // Assert
