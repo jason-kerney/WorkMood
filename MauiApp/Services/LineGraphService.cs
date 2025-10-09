@@ -186,7 +186,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         canvas.DrawRect(area, backgroundPaint);
     }
 
-    private void DrawXAxisLabels(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor)
+    private void DrawXAxisLabelsFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor)
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
@@ -216,7 +216,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         }
 
         // Also show data point dates if they don't overlap too much and showDataPoints is true
-        if (showDataPoints && entries.Count > 0 && entries.Count <= 10)
+        if (showDataPoints && dataPoints.Count > 0 && dataPoints.Count <= 10)
         {
             using var dataLabelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
             {
@@ -226,15 +226,24 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
                 TextAlign = SKTextAlign.Center
             });
 
-            foreach (var entry in entries)
+            foreach (var dataPoint in dataPoints)
             {
-                var daysFromStart = entry.Date.DayNumber - requestedStartDate.DayNumber;
+                var dataDate = DateOnly.FromDateTime(dataPoint.Timestamp);
+                var daysFromStart = dataDate.DayNumber - requestedStartDate.DayNumber;
                 var proportionalPosition = (float)daysFromStart / totalDays;
                 var x = area.Left + (proportionalPosition * area.Width);
 
                 canvas.DrawText("●", x, area.Bottom + 35, dataLabelPaint);
             }
         }
+    }
+
+    private void DrawXAxisLabels(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor)
+    {
+        // Transform MoodEntry objects to GraphDataPoint objects and delegate to the refactored method
+        // For this legacy method, we'll use Impact mode as the default since this method doesn't specify a mode
+        var graphDataPoints = _dataTransformer.TransformMoodEntries(entries, GraphMode.Impact).ToList();
+        DrawXAxisLabelsFromGraphDataPoints(canvas, area, graphDataPoints, requestedStartDate, requestedEndDate, showDataPoints, lineColor);
     }
 
     private void DrawNoDataMessage(ICanvasShim canvas, SKRect area)
@@ -278,9 +287,9 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     }
 
     /// <summary>
-    /// Draws graph with mode-specific logic for data extraction
+    /// Draws graph with mode-specific logic for data extraction using GraphDataPoint format
     /// </summary>
-    private void DrawGraphForMode(ICanvasShim canvas, List<MoodEntry> entries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color lineColor, GraphMode graphMode, bool drawWhiteBackground = true)
+    private void DrawGraphForModeFromGraphDataPoints(ICanvasShim canvas, List<GraphDataPoint> dataPoints, List<MoodEntry> originalEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color lineColor, GraphMode graphMode, bool drawWhiteBackground = true)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
 
@@ -301,30 +310,30 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
             DrawAxesForMode(canvas, graphArea, graphMode);
         }
 
-        if (entries.Count == 0)
+        if (dataPoints.Count == 0)
         {
             DrawNoDataMessage(canvas, graphArea);
             return;
         }
 
         // Draw data line and optionally points with proportional positioning
-        DrawDataLineForMode(canvas, graphArea, entries, requestedStartDate, requestedEndDate, lineColor, graphMode);
+        DrawDataLineFromGraphDataPoints(canvas, graphArea, dataPoints, requestedStartDate, requestedEndDate, lineColor, graphMode);
         if (showDataPoints)
         {
-            DrawDataPointsForMode(canvas, graphArea, entries, requestedStartDate, requestedEndDate, lineColor, graphMode);
+            DrawDataPointsFromGraphDataPoints(canvas, graphArea, dataPoints, requestedStartDate, requestedEndDate, lineColor, graphMode);
         }
 
         // Draw trend line if requested
         if (showTrendLine)
         {
-            DrawTrendLineForMode(canvas, graphArea, entries, requestedStartDate, requestedEndDate, lineColor, graphMode, drawWhiteBackground);
+            DrawTrendLineFromGraphDataPoints(canvas, graphArea, dataPoints, requestedStartDate, requestedEndDate, lineColor, graphMode, drawWhiteBackground);
         }
 
         // Conditionally draw labels
         if (showAxesAndGrid)
         {
             DrawYAxisLabelsForMode(canvas, graphArea, graphMode);
-            DrawXAxisLabelsForMode(canvas, graphArea, entries, requestedStartDate, requestedEndDate, showDataPoints, lineColor, graphMode);
+            DrawXAxisLabelsFromGraphDataPoints(canvas, graphArea, dataPoints, requestedStartDate, requestedEndDate, showDataPoints, lineColor);
         }
 
         // Conditionally draw title
@@ -332,6 +341,16 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         {
             DrawTitleForMode(canvas, width, graphMode);
         }
+    }
+
+    /// <summary>
+    /// Draws graph with mode-specific logic for data extraction
+    /// </summary>
+    private void DrawGraphForMode(ICanvasShim canvas, List<MoodEntry> entries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color lineColor, GraphMode graphMode, bool drawWhiteBackground = true)
+    {
+        // Transform MoodEntry objects to GraphDataPoint objects and delegate to the refactored method
+        var graphDataPoints = _dataTransformer.TransformMoodEntries(entries, graphMode).ToList();
+        DrawGraphForModeFromGraphDataPoints(canvas, graphDataPoints, entries, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor, graphMode, drawWhiteBackground);
     }
 
     private void DrawGridForMode(ICanvasShim canvas, SKRect area, GraphMode graphMode)
@@ -465,8 +484,9 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
     private void DrawXAxisLabelsForMode(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor, GraphMode graphMode)
     {
-        // Reuse existing X-axis label logic since it doesn't depend on graph mode
-        DrawXAxisLabels(canvas, area, entries, requestedStartDate, requestedEndDate, showDataPoints, lineColor);
+        // Transform MoodEntry objects to GraphDataPoint objects and delegate to the refactored method
+        var graphDataPoints = _dataTransformer.TransformMoodEntries(entries, graphMode).ToList();
+        DrawXAxisLabelsFromGraphDataPoints(canvas, area, graphDataPoints, requestedStartDate, requestedEndDate, showDataPoints, lineColor);
     }
 
     private void DrawTitleForMode(ICanvasShim canvas, int width, GraphMode graphMode)
@@ -649,9 +669,9 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     }
 
     /// <summary>
-    /// Draws a scatter plot graph for raw mood data points
+    /// Draws a scatter plot graph for raw mood data points using GraphDataPoint format
     /// </summary>
-    private void DrawRawDataGraph(ICanvasShim canvas, List<RawMoodDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color pointColor, bool drawWhiteBackground = true)
+    private void DrawRawDataGraphFromGraphDataPoints(ICanvasShim canvas, List<GraphDataPoint> dataPoints, List<RawMoodDataPoint> originalDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color pointColor, bool drawWhiteBackground = true)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
 
@@ -683,25 +703,25 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         }
 
         // Draw connecting lines between points
-        DrawRawDataLines(canvas, graphArea, dataPoints, startDateTime, endDateTime, pointColor);
+        DrawRawDataLinesFromGraphDataPoints(canvas, graphArea, dataPoints, startDateTime, endDateTime, pointColor);
 
         // Draw data points on top of lines
         if (showDataPoints)
         {
-            DrawRawDataPoints(canvas, graphArea, dataPoints, startDateTime, endDateTime, pointColor);
+            DrawRawDataPointsFromGraphDataPoints(canvas, graphArea, dataPoints, originalDataPoints, startDateTime, endDateTime, pointColor);
         }
 
         // Conditionally draw labels
         if (showAxesAndGrid)
         {
             DrawRawDataYAxisLabels(canvas, graphArea);
-            DrawRawDataXAxisLabels(canvas, graphArea, dataPoints, startDateTime, endDateTime, pointColor);
+            DrawRawDataXAxisLabelsFromGraphDataPoints(canvas, graphArea, dataPoints, startDateTime, endDateTime, pointColor);
         }
 
         // Conditionally draw trend line
         if (showTrendLine && dataPoints.Count > 1)
         {
-            DrawRawDataTrendLine(canvas, graphArea, dataPoints, startDateTime, endDateTime, pointColor, drawWhiteBackground);
+            DrawRawDataTrendLineFromGraphDataPoints(canvas, graphArea, dataPoints, startDateTime, endDateTime, pointColor, drawWhiteBackground);
         }
 
         // Conditionally draw title
@@ -709,6 +729,16 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         {
             DrawRawDataTitle(canvas, width);
         }
+    }
+
+    /// <summary>
+    /// Draws a scatter plot graph for raw mood data points
+    /// </summary>
+    private void DrawRawDataGraph(ICanvasShim canvas, List<RawMoodDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color pointColor, bool drawWhiteBackground = true)
+    {
+        // Transform RawMoodDataPoint objects to GraphDataPoint objects and delegate to the refactored method
+        var graphDataPoints = _dataTransformer.TransformRawDataPoints(dataPoints).ToList();
+        DrawRawDataGraphFromGraphDataPoints(canvas, graphDataPoints, dataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, pointColor, drawWhiteBackground);
     }
 
     private void DrawRawDataGrid(ICanvasShim canvas, SKRect area)
@@ -791,7 +821,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         canvas.DrawPath(path, linePaint);
     }
 
-    private void DrawRawDataPoints(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
+    private void DrawRawDataPointsFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, List<RawMoodDataPoint> originalDataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
     {
         // Create different paints for start and end of work
         using var startPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -811,20 +841,24 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
         var totalTimeSpan = endDateTime - startDateTime;
 
-        foreach (var point in dataPoints)
+        // We need the original data to determine MoodType for shape rendering
+        for (int i = 0; i < dataPoints.Count && i < originalDataPoints.Count; i++)
         {
-            if (point.Timestamp >= startDateTime && point.Timestamp <= endDateTime)
+            var graphPoint = dataPoints[i];
+            var originalPoint = originalDataPoints[i];
+            
+            if (graphPoint.Timestamp >= startDateTime && graphPoint.Timestamp <= endDateTime)
             {
                 // Calculate X position based on timestamp
-                var timeFromStart = point.Timestamp - startDateTime;
+                var timeFromStart = graphPoint.Timestamp - startDateTime;
                 var proportionalPosition = (float)(timeFromStart.TotalMilliseconds / totalTimeSpan.TotalMilliseconds);
                 var x = area.Left + (proportionalPosition * area.Width);
 
                 // Calculate Y position based on mood value (1-10 range)
-                var y = (float)(area.Bottom - ((point.MoodValue - 1) * area.Height / 9)); // 9 = 10-1
+                var y = (float)(area.Bottom - ((graphPoint.Value - 1) * area.Height / 9)); // 9 = 10-1
 
                 // Draw different shapes for start vs end of work
-                if (point.MoodType == MoodType.StartOfWork)
+                if (originalPoint.MoodType == MoodType.StartOfWork)
                 {
                     // Filled circle for start of work
                     canvas.DrawCircle(x, y, 6, startPaint);
@@ -836,6 +870,13 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
                 }
             }
         }
+    }
+
+    private void DrawRawDataPoints(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
+    {
+        // Transform RawMoodDataPoint objects to GraphDataPoint objects and delegate to the refactored method
+        var graphDataPoints = _dataTransformer.TransformRawDataPoints(dataPoints).ToList();
+        DrawRawDataPointsFromGraphDataPoints(canvas, area, graphDataPoints, dataPoints, startDateTime, endDateTime, pointColor);
     }
 
     private void DrawRawDataYAxisLabels(ICanvasShim canvas, SKRect area)
@@ -858,7 +899,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         }
     }
 
-    private void DrawRawDataXAxisLabels(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
+    private void DrawRawDataXAxisLabelsFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
@@ -885,6 +926,13 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         }
     }
 
+    private void DrawRawDataXAxisLabels(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
+    {
+        // Transform RawMoodDataPoint objects to GraphDataPoint objects and delegate to the refactored method
+        var graphDataPoints = _dataTransformer.TransformRawDataPoints(dataPoints).ToList();
+        DrawRawDataXAxisLabelsFromGraphDataPoints(canvas, area, graphDataPoints, startDateTime, endDateTime, pointColor);
+    }
+
     private void DrawRawDataTitle(ICanvasShim canvas, int width)
     {
         using IPaintShim titlePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -899,7 +947,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         canvas.DrawText("Raw Mood Data Over Time", width / 2, 30, titlePaint);
     }
 
-    private void DrawRawDataTrendLine(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor, bool drawWhiteBackground)
+    private void DrawRawDataTrendLineFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor, bool drawWhiteBackground)
     {
         if (dataPoints.Count < 2) return;
 
@@ -922,7 +970,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
             return timeFromStart.TotalMilliseconds / totalTimeSpan.TotalMilliseconds;
         }).ToList();
         
-        var moodValues = filteredPoints.Select(p => (double)p.MoodValue).ToList();
+        var moodValues = filteredPoints.Select(p => (double)p.Value).ToList();
 
         // Linear regression calculations
         var sumX = timeValues.Sum();
@@ -956,6 +1004,13 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         });
 
         canvas.DrawLine(startX, startScreenY, endX, endScreenY, trendLinePaint);
+    }
+
+    private void DrawRawDataTrendLine(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor, bool drawWhiteBackground)
+    {
+        // Transform RawMoodDataPoint objects to GraphDataPoint objects and delegate to the refactored method
+        var graphDataPoints = _dataTransformer.TransformRawDataPoints(dataPoints).ToList();
+        DrawRawDataTrendLineFromGraphDataPoints(canvas, area, graphDataPoints, startDateTime, endDateTime, pointColor, drawWhiteBackground);
     }
 
     // New save methods with GraphMode support
