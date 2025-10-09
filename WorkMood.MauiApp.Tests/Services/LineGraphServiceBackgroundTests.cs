@@ -27,7 +27,7 @@ public class LineGraphServiceBackgroundTests
     {
         _drawShimFactory = new DrawShimFactory();
         _fileShimFactory = new FileShimFactory();
-        _lineGraphService = new LineGraphService(_drawShimFactory, _fileShimFactory);
+        _lineGraphService = new LineGraphService(_drawShimFactory, _fileShimFactory, dataTransformer: new GraphDataTransformer(), lineGraphGenerator: new LineGraphGenerator());
 
         // Create test images directory
         _testImagesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestImages");

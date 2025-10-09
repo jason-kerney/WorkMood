@@ -28,7 +28,7 @@ public interface IGraphDataTransformer
     /// </summary>
     /// <param name="moodEntries">The mood entries to transform</param>
     /// <returns>Collection of graph data points representing raw mood data</returns>
-    IEnumerable<GraphDataPoint> TransformMoodEntriesToRawDataPoints(IEnumerable<MoodEntry> moodEntries);
+    IEnumerable<GraphDataPoint> TransformRawDataPoints(IEnumerable<MoodEntry> moodEntries);
 
     /// <summary>
     /// Gets the value for a single mood entry based on the graph mode

@@ -9,18 +9,19 @@ namespace WorkMood.MauiApp.Services;
 /// <summary>
 /// Implementation of line graph service using SkiaSharp for rendering
 /// </summary>
-public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory fileShimFactory, IGraphDataTransformer? dataTransformer = null) : ILineGraphService
+public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory fileShimFactory, IGraphDataTransformer dataTransformer, ILineGraphGenerator lineGraphGenerator) : ILineGraphService
 {
     private const int MinYValue = -9;
     private const int MaxYValue = 9;
     private const int Padding = 60;
-    
-    private readonly IGraphDataTransformer _dataTransformer = dataTransformer ?? new GraphDataTransformer();
-    
+
+    private readonly IGraphDataTransformer _dataTransformer = dataTransformer;
+    private readonly ILineGraphGenerator _lineGraphGenerator = lineGraphGenerator;
+
     /// <summary>
     /// Initializes a new instance of the LineGraphService with default factory implementations.
     /// </summary>
-    public LineGraphService() : this(new DrawShimFactory(), new FileShimFactory()) { }
+    public LineGraphService() : this(new DrawShimFactory(), new FileShimFactory(), new GraphDataTransformer(), new LineGraphGenerator()) { }
 
     /// <summary>
     /// Creates a bitmap with canvas, executes the drawing action, and returns the encoded PNG bytes
@@ -1037,6 +1038,13 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
             await Task.Run(() => DrawRawDataGraph(canvas.Raw, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor, !hasCustomBackground));
         });
     }
+
+    // public async Task<byte[]> GenerateRawDataGraphAsync(IEnumerable<MoodEntry> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string? backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    // {
+    //     var dataPoints = _dataTransformer.TransformRawDataPoints(rawDataPoints);
+    //     return await this.
+    // }
+
 
     /// <summary>
     /// Saves a scatter plot PNG image to the specified file path from raw mood data points with white background.

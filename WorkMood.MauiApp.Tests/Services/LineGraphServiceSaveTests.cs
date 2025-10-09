@@ -99,7 +99,7 @@ public class LineGraphServiceSaveTests
         _mockCanvas.Setup(x => x.DrawPath(It.IsAny<SkiaSharp.SKPath>(), It.IsAny<IPaintShim>()));
         _mockCanvas.Setup(x => x.DrawRect(It.IsAny<SkiaSharp.SKRect>(), It.IsAny<IPaintShim>()));
 
-        _sut = new LineGraphService(_mockDrawShimFactory.Object, _mockFileShimFactory.Object);
+        _sut = new LineGraphService(_mockDrawShimFactory.Object, _mockFileShimFactory.Object, dataTransformer: new GraphDataTransformer(), lineGraphGenerator: new LineGraphGenerator(_mockDrawShimFactory.Object, _mockFileShimFactory.Object));
     }
 
     [Fact]

@@ -46,7 +46,7 @@ public class GraphDataTransformer : IGraphDataTransformer
     /// </summary>
     /// <param name="moodEntries">The mood entries to transform</param>
     /// <returns>Collection of graph data points representing raw mood data, sorted by timestamp</returns>
-    public IEnumerable<GraphDataPoint> TransformMoodEntriesToRawDataPoints(IEnumerable<MoodEntry> moodEntries)
+    public IEnumerable<GraphDataPoint> TransformRawDataPoints(IEnumerable<MoodEntry> moodEntries)
     {
         return moodEntries.SelectMany(entry =>
         {
