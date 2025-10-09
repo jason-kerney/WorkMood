@@ -23,6 +23,14 @@ public interface IGraphDataTransformer
     IEnumerable<GraphDataPoint> TransformRawDataPoints(IEnumerable<RawMoodDataPoint> rawDataPoints);
 
     /// <summary>
+    /// Transforms mood entries into raw graph data points (equivalent to RawMoodDataPoint conversion)
+    /// Each MoodEntry produces two GraphDataPoints: one for StartOfWork and one for EndOfWork
+    /// </summary>
+    /// <param name="moodEntries">The mood entries to transform</param>
+    /// <returns>Collection of graph data points representing raw mood data</returns>
+    IEnumerable<GraphDataPoint> TransformMoodEntriesToRawDataPoints(IEnumerable<MoodEntry> moodEntries);
+
+    /// <summary>
     /// Gets the value for a single mood entry based on the graph mode
     /// </summary>
     /// <param name="entry">The mood entry</param>

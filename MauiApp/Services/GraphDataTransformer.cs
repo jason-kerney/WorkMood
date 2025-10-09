@@ -37,6 +37,25 @@ public class GraphDataTransformer : IGraphDataTransformer
     }
 
     /// <summary>
+    /// Transforms mood entries into raw graph data points (equivalent to RawMoodDataPoint conversion)
+    /// Each MoodEntry produces two GraphDataPoints: one for StartOfWork and one for EndOfWork
+    /// </summary>
+    /// <param name="moodEntries">The mood entries to transform</param>
+    /// <returns>Collection of graph data points representing raw mood data</returns>
+    public IEnumerable<GraphDataPoint> TransformMoodEntriesToRawDataPoints(IEnumerable<MoodEntry> moodEntries)
+    {
+        return moodEntries.SelectMany(entry =>
+        {
+            var startOfWork = entry.StartOfWork.GetValueOrDefault();
+            return new[]
+            {
+                new GraphDataPoint(startOfWork, entry.CreatedAt),
+                new GraphDataPoint(entry.EndOfWork.GetValueOrDefault(startOfWork), entry.LastModified)
+            };
+        });
+    }
+
+    /// <summary>
     /// Filters mood entries based on the selected graph mode
     /// </summary>
     private static IEnumerable<MoodEntry> FilterEntriesForGraphMode(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
