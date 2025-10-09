@@ -358,7 +358,17 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
     private void DrawDataLineForMode(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
     {
-        if (entries.Count < 2) return;
+        // Transform MoodEntry objects to GraphDataPoint objects and delegate to the refactored method
+        var dataPoints = _dataTransformer.TransformMoodEntries(entries, graphMode).ToList();
+        DrawDataLineFromGraphDataPoints(canvas, area, dataPoints, requestedStartDate, requestedEndDate, lineColor, graphMode);
+    }
+
+    /// <summary>
+    /// Draws data line using unified GraphDataPoint objects (refactored version)
+    /// </summary>
+    private void DrawDataLineFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
+    {
+        if (dataPoints.Count < 2) return;
 
         using var linePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
@@ -374,14 +384,15 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
         var (minY, maxY) = GetYRangeForMode(graphMode);
 
-        for (int i = 0; i < entries.Count; i++)
+        for (int i = 0; i < dataPoints.Count; i++)
         {
-            var entry = entries[i];
-            var daysFromStart = entry.Date.DayNumber - requestedStartDate.DayNumber;
+            var dataPoint = dataPoints[i];
+            var entryDate = DateOnly.FromDateTime(dataPoint.Timestamp);
+            var daysFromStart = entryDate.DayNumber - requestedStartDate.DayNumber;
             var proportionalPosition = (float)daysFromStart / totalDays;
             var x = area.Left + (proportionalPosition * area.Width);
 
-            var value = GetValueForMode(entry, graphMode);
+            var value = dataPoint.Value;
             var y = (float)(area.Bottom - ((value - minY) * area.Height / (maxY - minY)));
 
             if (i == 0)
@@ -393,8 +404,17 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         canvas.DrawPath(path, linePaint);
     }
 
-
     private void DrawDataPointsForMode(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
+    {
+        // Transform MoodEntry objects to GraphDataPoint objects and delegate to the refactored method
+        var dataPoints = _dataTransformer.TransformMoodEntries(entries, graphMode).ToList();
+        DrawDataPointsFromGraphDataPoints(canvas, area, dataPoints, requestedStartDate, requestedEndDate, lineColor, graphMode);
+    }
+
+    /// <summary>
+    /// Draws data points using unified GraphDataPoint objects (refactored version)
+    /// </summary>
+    private void DrawDataPointsFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
     {
         using var pointPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
@@ -407,14 +427,15 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
         var (minY, maxY) = GetYRangeForMode(graphMode);
 
-        for (int i = 0; i < entries.Count; i++)
+        for (int i = 0; i < dataPoints.Count; i++)
         {
-            var entry = entries[i];
-            var daysFromStart = entry.Date.DayNumber - requestedStartDate.DayNumber;
+            var dataPoint = dataPoints[i];
+            var entryDate = DateOnly.FromDateTime(dataPoint.Timestamp);
+            var daysFromStart = entryDate.DayNumber - requestedStartDate.DayNumber;
             var proportionalPosition = (float)daysFromStart / totalDays;
             var x = area.Left + (proportionalPosition * area.Width);
 
-            var value = GetValueForMode(entry, graphMode);
+            var value = dataPoint.Value;
             var y = (float)(area.Bottom - ((value - minY) * area.Height / (maxY - minY)));
 
             canvas.DrawCircle(x, y, 4, pointPaint);
@@ -490,26 +511,36 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// </summary>
     private void DrawTrendLineForMode(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode, bool drawWhiteBackground)
     {
-        if (entries.Count < 2) return;
+        // Transform MoodEntry objects to GraphDataPoint objects and delegate to the refactored method
+        var dataPoints = _dataTransformer.TransformMoodEntries(entries, graphMode).ToList();
+        DrawTrendLineFromGraphDataPoints(canvas, area, dataPoints, requestedStartDate, requestedEndDate, lineColor, graphMode, drawWhiteBackground);
+    }
+
+    /// <summary>
+    /// Draws trend line using unified GraphDataPoint objects (refactored version)
+    /// </summary>
+    private void DrawTrendLineFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode, bool drawWhiteBackground)
+    {
+        if (dataPoints.Count < 2) return;
 
         // Calculate linear regression
-        var dataPoints = new List<(double x, double y)>();
+        var regressionPoints = new List<(double x, double y)>();
         var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
         
-        foreach (var entry in entries)
+        foreach (var dataPoint in dataPoints)
         {
-            var value = GetValueForMode(entry, graphMode);
-            var dayOffset = entry.Date.DayNumber - requestedStartDate.DayNumber;
+            var entryDate = DateOnly.FromDateTime(dataPoint.Timestamp);
+            var dayOffset = entryDate.DayNumber - requestedStartDate.DayNumber;
             var normalizedX = (double)dayOffset / totalDays; // Normalize to 0-1
-            dataPoints.Add((normalizedX, value));
+            regressionPoints.Add((normalizedX, dataPoint.Value));
         }
 
         // Calculate linear regression coefficients (y = mx + b)
-        var n = dataPoints.Count;
-        var sumX = dataPoints.Sum(p => p.x);
-        var sumY = dataPoints.Sum(p => p.y);
-        var sumXY = dataPoints.Sum(p => p.x * p.y);
-        var sumXX = dataPoints.Sum(p => p.x * p.x);
+        var n = regressionPoints.Count;
+        var sumX = regressionPoints.Sum(p => p.x);
+        var sumY = regressionPoints.Sum(p => p.y);
+        var sumXY = regressionPoints.Sum(p => p.x * p.y);
+        var sumXX = regressionPoints.Sum(p => p.x * p.x);
 
         var slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
         var intercept = (sumY - slope * sumX) / n;
