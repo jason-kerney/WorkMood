@@ -1028,14 +1028,15 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <param name="showDataPoints">Whether to show individual data points on the graph</param>
     /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
     /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="showTrendLine">Whether to show a trend line</param>
     /// <param name="filePath">Path where to save the PNG file</param>
     /// <param name="lineColor">Color for the data points and connecting lines</param>
     /// <param name="width">Width of the graph in pixels (default: 800)</param>
     /// <param name="height">Height of the graph in pixels (default: 600)</param>
     /// <returns>Task representing the async operation</returns>
-    public async Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, Color lineColor, int width = 800, int height = 600)
+    public async Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, Color lineColor, int width = 800, int height = 600)
     {
-        var imageData = await GenerateRawDataGraphAsync(rawDataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, false, lineColor, width, height);
+        var imageData = await GenerateRawDataGraphAsync(rawDataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, lineColor, width, height);
         await SaveImageDataAsync(imageData, filePath);
     }
 
@@ -1047,15 +1048,16 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <param name="showDataPoints">Whether to show individual data points on the graph</param>
     /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
     /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="showTrendLine">Whether to show a trend line</param>
     /// <param name="filePath">Path where to save the PNG file</param>
     /// <param name="backgroundImagePath">Path to the custom background image file</param>
     /// <param name="lineColor">Color for the data points and connecting lines</param>
     /// <param name="width">Width of the graph in pixels (default: 800)</param>
     /// <param name="height">Height of the graph in pixels (default: 600)</param>
     /// <returns>Task representing the async operation</returns>
-    public async Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    public async Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
-        var imageData = await GenerateRawDataGraphAsync(rawDataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, false, backgroundImagePath, lineColor, width, height);
+        var imageData = await GenerateRawDataGraphAsync(rawDataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath, lineColor, width, height);
         await SaveImageDataAsync(imageData, filePath);
     }
 }

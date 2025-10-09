@@ -114,12 +114,13 @@ public interface ILineGraphService
     /// <param name="showDataPoints">Whether to show individual data points</param>
     /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
     /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="showTrendLine">Whether to show a trend line</param>
     /// <param name="filePath">Path where to save the PNG file</param>
     /// <param name="lineColor">Color for the data points</param>
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>Task representing the async operation</returns>
-    Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, Color lineColor, int width = 800, int height = 600);
+    Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, Color lineColor, int width = 800, int height = 600);
 
     /// <summary>
     /// Saves a scatter plot PNG image to the specified file path from raw mood data points with custom background
@@ -129,11 +130,12 @@ public interface ILineGraphService
     /// <param name="showDataPoints">Whether to show individual data points</param>
     /// <param name="showAxesAndGrid">Whether to show axes and grid lines</param>
     /// <param name="showTitle">Whether to show the graph title</param>
+    /// <param name="showTrendLine">Whether to show a trend line</param>
     /// <param name="filePath">Path where to save the PNG file</param>
     /// <param name="backgroundImagePath">Path to the custom background image</param>
     /// <param name="lineColor">Color for the data points</param>
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>Task representing the async operation</returns>
-    Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600);
+    Task SaveRawDataGraphAsync(IEnumerable<RawMoodDataPoint> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600);
 }

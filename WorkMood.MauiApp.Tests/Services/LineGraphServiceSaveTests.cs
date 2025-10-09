@@ -77,6 +77,9 @@ public class LineGraphServiceSaveTests
         var mockPaint = new Mock<IPaintShim>();
         _mockDrawShimFactory.Setup(x => x.PaintFromArgs(It.IsAny<PaintShimArgs>())).Returns(mockPaint.Object);
 
+        // Setup FromRaw method to prevent errors
+        _mockDrawShimFactory.Setup(x => x.FromRaw(It.IsAny<SkiaSharp.SKCanvas>())).Returns(_mockCanvas.Object);
+
         // Setup font factory to prevent errors
         var mockFonts = new Mock<IFontShimFactory>();
         var mockFontStyles = new Mock<IFontStyleShimFactory>();
@@ -320,6 +323,161 @@ public class LineGraphServiceSaveTests
 
         // Assert
         _mockFileShim.Verify(x => x.WriteAllBytesAsync(filePath, It.IsAny<byte[]>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveRawDataGraphAsync_WithShowTrendLineTrue_CallsFileShimWithCorrectPathAndParameterCount()
+    {
+        // Arrange
+        const string expectedFilePath = @"C:\test\raw_output.png";
+        var rawDataPoints = CreateTestRawDataPoints();
+        var dateRange = CreateTestDateRange();
+        const bool showDataPoints = true;
+        const bool showAxesAndGrid = true;
+        const bool showTitle = true;
+        const bool showTrendLine = true;
+        var lineColor = Colors.Blue;
+        const int width = 800;
+        const int height = 600;
+
+        // Act
+        await _sut.SaveRawDataGraphAsync(
+            rawDataPoints,
+            dateRange,
+            showDataPoints,
+            showAxesAndGrid,
+            showTitle,
+            showTrendLine,
+            expectedFilePath,
+            lineColor,
+            width,
+            height);
+
+        // Assert
+        _mockFileShim.Verify(x => x.WriteAllBytesAsync(expectedFilePath, It.IsAny<byte[]>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveRawDataGraphAsync_WithShowTrendLineFalse_CallsFileShimWithCorrectPathAndParameterCount()
+    {
+        // Arrange
+        const string expectedFilePath = @"C:\test\raw_output_no_trend.png";
+        var rawDataPoints = CreateTestRawDataPoints();
+        var dateRange = CreateTestDateRange();
+        const bool showDataPoints = false;
+        const bool showAxesAndGrid = false;
+        const bool showTitle = false;
+        const bool showTrendLine = false;
+        var lineColor = Colors.Red;
+        const int width = 1024;
+        const int height = 768;
+
+        // Act
+        await _sut.SaveRawDataGraphAsync(
+            rawDataPoints,
+            dateRange,
+            showDataPoints,
+            showAxesAndGrid,
+            showTitle,
+            showTrendLine,
+            expectedFilePath,
+            lineColor,
+            width,
+            height);
+
+        // Assert
+        _mockFileShim.Verify(x => x.WriteAllBytesAsync(expectedFilePath, It.IsAny<byte[]>()), Times.Once);
+        _mockFileShim.Verify(x => x.WriteAllBytesAsync(It.IsAny<string>(), It.IsAny<byte[]>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveRawDataGraphAsync_WithBackgroundImage_CallsFileShimWithCorrectPathAndParameterCount()
+    {
+        // Arrange
+        const string expectedFilePath = @"C:\test\raw_output_with_background.png";
+        const string backgroundImagePath = @"C:\test\background.png";
+        var rawDataPoints = CreateTestRawDataPoints();
+        var dateRange = CreateTestDateRange();
+        const bool showDataPoints = true;
+        const bool showAxesAndGrid = true;
+        const bool showTitle = true;
+        const bool showTrendLine = false;
+        var lineColor = Colors.Green;
+        const int width = 800;
+        const int height = 600;
+
+        // Setup file exists for background image to prevent errors
+        _mockFileShim.Setup(x => x.Exists(backgroundImagePath)).Returns(true);
+        _mockDrawShimFactory.Setup(x => x.DecodeBitmapFromFile(backgroundImagePath)).Returns(_mockBitmap.Object);
+
+        // Act
+        await _sut.SaveRawDataGraphAsync(
+            rawDataPoints,
+            dateRange,
+            showDataPoints,
+            showAxesAndGrid,
+            showTitle,
+            showTrendLine,
+            expectedFilePath,
+            backgroundImagePath,
+            lineColor,
+            width,
+            height);
+
+        // Assert
+        _mockFileShim.Verify(x => x.WriteAllBytesAsync(expectedFilePath, It.IsAny<byte[]>()), Times.Once);
+        _mockFileShim.Verify(x => x.WriteAllBytesAsync(It.IsAny<string>(), It.IsAny<byte[]>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(@"C:\path\to\raw_file.png")]
+    [InlineData(@"/unix/path/to/raw_file.png")]
+    [InlineData(@"relative\path\raw_file.png")]
+    [InlineData(@"raw_file.png")]
+    public async Task SaveRawDataGraphAsync_WithVariousFilePaths_CallsFileShimWithExactPath(string filePath)
+    {
+        // Arrange
+        var rawDataPoints = CreateTestRawDataPoints();
+        var dateRange = CreateTestDateRange();
+        const bool showDataPoints = true;
+        const bool showAxesAndGrid = true;
+        const bool showTitle = true;
+        const bool showTrendLine = true;
+        var lineColor = Colors.Blue;
+
+        // Act
+        await _sut.SaveRawDataGraphAsync(
+            rawDataPoints,
+            dateRange,
+            showDataPoints,
+            showAxesAndGrid,
+            showTitle,
+            showTrendLine,
+            filePath,
+            lineColor);
+
+        // Assert
+        _mockFileShim.Verify(x => x.WriteAllBytesAsync(filePath, It.IsAny<byte[]>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Creates test raw data points for testing purposes
+    /// </summary>
+    private static IEnumerable<RawMoodDataPoint> CreateTestRawDataPoints()
+    {
+        var today = new DateOnly(2025, 10, 8);
+        var baseDateTime = today.ToDateTime(TimeOnly.MinValue);
+        
+        return new[]
+        {
+            new RawMoodDataPoint(baseDateTime.AddDays(-6), 3, MoodType.StartOfWork, today.AddDays(-6)),
+            new RawMoodDataPoint(baseDateTime.AddDays(-5), 5, MoodType.EndOfWork, today.AddDays(-5)),
+            new RawMoodDataPoint(baseDateTime.AddDays(-4), 7, MoodType.StartOfWork, today.AddDays(-4)),
+            new RawMoodDataPoint(baseDateTime.AddDays(-3), 4, MoodType.EndOfWork, today.AddDays(-3)),
+            new RawMoodDataPoint(baseDateTime.AddDays(-2), 6, MoodType.StartOfWork, today.AddDays(-2)),
+            new RawMoodDataPoint(baseDateTime.AddDays(-1), 8, MoodType.EndOfWork, today.AddDays(-1)),
+            new RawMoodDataPoint(baseDateTime, 5, MoodType.StartOfWork, today)
+        };
     }
 
     /// <summary>

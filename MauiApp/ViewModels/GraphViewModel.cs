@@ -632,11 +632,11 @@ public class GraphViewModel : ViewModelBase
                 
                 if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
                 {
-                    await _lineGraphService.SaveRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                    await _lineGraphService.SaveRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, false, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
                 }
                 else
                 {
-                    await _lineGraphService.SaveRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedLineColor, exportWidth, exportHeight);
+                    await _lineGraphService.SaveRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, false, filePath, SelectedLineColor, exportWidth, exportHeight);
                 }
             }
             else
@@ -694,11 +694,11 @@ public class GraphViewModel : ViewModelBase
                 
                 if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
                 {
-                    await _lineGraphService.SaveRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                    await _lineGraphService.SaveRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, false, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
                 }
                 else
                 {
-                    await _lineGraphService.SaveRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedLineColor, exportWidth, exportHeight);
+                    await _lineGraphService.SaveRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, false, filePath, SelectedLineColor, exportWidth, exportHeight);
                 }
             }
             else
