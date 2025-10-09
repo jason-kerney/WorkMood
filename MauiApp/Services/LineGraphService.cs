@@ -123,8 +123,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         canvas.DrawLine(area.Left, area.Bottom, area.Right, area.Bottom, axisPaint);
     }
 
-    // New overloads with GraphMode support
-
     /// <summary>
     /// Generates a line graph PNG image from mood entry data with the specified graph mode and white background.
     /// </summary>
@@ -238,14 +236,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         }
     }
 
-    private void DrawXAxisLabels(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor)
-    {
-        // Transform MoodEntry objects to GraphDataPoint objects and delegate to the refactored method
-        // For this legacy method, we'll use Impact mode as the default since this method doesn't specify a mode
-        var graphDataPoints = _dataTransformer.TransformMoodEntries(entries, GraphMode.Impact).ToList();
-        DrawXAxisLabelsFromGraphDataPoints(canvas, area, graphDataPoints, requestedStartDate, requestedEndDate, showDataPoints, lineColor);
-    }
-
     private void DrawNoDataMessage(ICanvasShim canvas, SKRect area)
     {
         using var messagePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -276,14 +266,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         var transformedDates = transformedData.Select(d => DateOnly.FromDateTime(d.Timestamp)).ToHashSet();
         
         return moodEntries.Where(entry => transformedDates.Contains(entry.Date));
-    }
-
-    /// <summary>
-    /// Transforms mood entries to graph data points using the data transformer
-    /// </summary>
-    private IEnumerable<GraphDataPoint> TransformMoodEntriesToGraphDataPoints(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
-    {
-        return _dataTransformer.TransformMoodEntries(moodEntries, graphMode);
     }
 
     /// <summary>
@@ -375,13 +357,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         canvas.DrawLine(area.Left, zeroY, area.Right, zeroY, zeroLinePaint);
     }
 
-    private void DrawDataLineForMode(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
-    {
-        // Transform MoodEntry objects to GraphDataPoint objects and delegate to the refactored method
-        var dataPoints = _dataTransformer.TransformMoodEntries(entries, graphMode).ToList();
-        DrawDataLineFromGraphDataPoints(canvas, area, dataPoints, requestedStartDate, requestedEndDate, lineColor, graphMode);
-    }
-
     /// <summary>
     /// Draws data line using unified GraphDataPoint objects (refactored version)
     /// </summary>
@@ -421,13 +396,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         }
 
         canvas.DrawPath(path, linePaint);
-    }
-
-    private void DrawDataPointsForMode(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
-    {
-        // Transform MoodEntry objects to GraphDataPoint objects and delegate to the refactored method
-        var dataPoints = _dataTransformer.TransformMoodEntries(entries, graphMode).ToList();
-        DrawDataPointsFromGraphDataPoints(canvas, area, dataPoints, requestedStartDate, requestedEndDate, lineColor, graphMode);
     }
 
     /// <summary>
@@ -482,13 +450,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         }
     }
 
-    private void DrawXAxisLabelsForMode(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor, GraphMode graphMode)
-    {
-        // Transform MoodEntry objects to GraphDataPoint objects and delegate to the refactored method
-        var graphDataPoints = _dataTransformer.TransformMoodEntries(entries, graphMode).ToList();
-        DrawXAxisLabelsFromGraphDataPoints(canvas, area, graphDataPoints, requestedStartDate, requestedEndDate, showDataPoints, lineColor);
-    }
-
     private void DrawTitleForMode(ICanvasShim canvas, int width, GraphMode graphMode)
     {
         using var titlePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -519,21 +480,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
             GraphMode.RawData => (1, 10), // 1 to 10 (raw mood values)
             _ => (MinYValue, MaxYValue)
         };
-    }
-
-    private double GetValueForMode(MoodEntry entry, GraphMode graphMode)
-    {
-        return _dataTransformer.GetValueForMoodEntry(entry, graphMode);
-    }
-
-    /// <summary>
-    /// Draws a trend line using linear regression for the mood data
-    /// </summary>
-    private void DrawTrendLineForMode(ICanvasShim canvas, SKRect area, List<MoodEntry> entries, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode, bool drawWhiteBackground)
-    {
-        // Transform MoodEntry objects to GraphDataPoint objects and delegate to the refactored method
-        var dataPoints = _dataTransformer.TransformMoodEntries(entries, graphMode).ToList();
-        DrawTrendLineFromGraphDataPoints(canvas, area, dataPoints, requestedStartDate, requestedEndDate, lineColor, graphMode, drawWhiteBackground);
     }
 
     /// <summary>
@@ -764,13 +710,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         canvas.DrawLine(area.Left, centerY, area.Right, centerY, centerLinePaint);
     }
 
-    private void DrawRawDataLines(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color lineColor)
-    {
-        // Transform RawMoodDataPoint objects to GraphDataPoint objects and delegate to the refactored method
-        var graphDataPoints = _dataTransformer.TransformRawDataPoints(dataPoints).ToList();
-        DrawRawDataLinesFromGraphDataPoints(canvas, area, graphDataPoints, startDateTime, endDateTime, lineColor);
-    }
-
     /// <summary>
     /// Draws raw data lines using unified GraphDataPoint objects (refactored version)
     /// </summary>
@@ -872,13 +811,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         }
     }
 
-    private void DrawRawDataPoints(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
-    {
-        // Transform RawMoodDataPoint objects to GraphDataPoint objects and delegate to the refactored method
-        var graphDataPoints = _dataTransformer.TransformRawDataPoints(dataPoints).ToList();
-        DrawRawDataPointsFromGraphDataPoints(canvas, area, graphDataPoints, dataPoints, startDateTime, endDateTime, pointColor);
-    }
-
     private void DrawRawDataYAxisLabels(ICanvasShim canvas, SKRect area)
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -924,13 +856,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
             canvas.DrawText(timeText, x, area.Bottom + 20, labelPaint);
         }
-    }
-
-    private void DrawRawDataXAxisLabels(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
-    {
-        // Transform RawMoodDataPoint objects to GraphDataPoint objects and delegate to the refactored method
-        var graphDataPoints = _dataTransformer.TransformRawDataPoints(dataPoints).ToList();
-        DrawRawDataXAxisLabelsFromGraphDataPoints(canvas, area, graphDataPoints, startDateTime, endDateTime, pointColor);
     }
 
     private void DrawRawDataTitle(ICanvasShim canvas, int width)
@@ -1005,15 +930,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
 
         canvas.DrawLine(startX, startScreenY, endX, endScreenY, trendLinePaint);
     }
-
-    private void DrawRawDataTrendLine(ICanvasShim canvas, SKRect area, List<RawMoodDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor, bool drawWhiteBackground)
-    {
-        // Transform RawMoodDataPoint objects to GraphDataPoint objects and delegate to the refactored method
-        var graphDataPoints = _dataTransformer.TransformRawDataPoints(dataPoints).ToList();
-        DrawRawDataTrendLineFromGraphDataPoints(canvas, area, graphDataPoints, startDateTime, endDateTime, pointColor, drawWhiteBackground);
-    }
-
-    // New save methods with GraphMode support
 
     /// <summary>
     /// Saves a line graph PNG image to the specified file path with the specified graph mode and white background.
