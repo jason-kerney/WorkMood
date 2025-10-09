@@ -195,6 +195,7 @@ public class LineGraphServiceSaveTests
             showDataPoints, 
             showAxesAndGrid, 
             showTitle, 
+            false, // showTrendLine
             expectedFilePath, 
             graphMode, 
             backgroundImagePath, 

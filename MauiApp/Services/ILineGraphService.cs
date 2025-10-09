@@ -72,7 +72,7 @@ public interface ILineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>Task representing the async operation</returns>
-    Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600);
+    Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600);
 
     // Raw Data overloads for handling individual mood recordings with timestamps
 

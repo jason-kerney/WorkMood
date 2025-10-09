@@ -884,9 +884,9 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <param name="width">Width of the graph in pixels (default: 800)</param>
     /// <param name="height">Height of the graph in pixels (default: 600)</param>
     /// <returns>Task representing the async operation</returns>
-    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, string filePath, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    public async Task SaveLineGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, GraphMode graphMode, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
-        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, false, graphMode, backgroundImagePath, lineColor, width, height);
+        var imageData = await GenerateLineGraphAsync(moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, graphMode, backgroundImagePath, lineColor, width, height);
         await SaveImageDataAsync(imageData, filePath);
     }
 

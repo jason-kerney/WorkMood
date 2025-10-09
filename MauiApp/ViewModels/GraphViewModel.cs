@@ -644,7 +644,7 @@ public class GraphViewModel : ViewModelBase
                 // Use existing logic for Impact and Average modes
                 if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
                 {
-                    await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedGraphMode, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                    await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedGraphMode, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
                 }
                 else
                 {
@@ -706,7 +706,7 @@ public class GraphViewModel : ViewModelBase
                 // Use existing logic for Impact and Average modes
                 if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
                 {
-                    await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, filePath, SelectedGraphMode, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                    await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedGraphMode, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
                 }
                 else
                 {
