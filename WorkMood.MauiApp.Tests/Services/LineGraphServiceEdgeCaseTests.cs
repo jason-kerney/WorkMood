@@ -22,7 +22,7 @@ public class LineGraphServiceEdgeCaseTests
     {
         var drawShimFactory = new DrawShimFactory();
         var fileShimFactory = new FileShimFactory();
-        _lineGraphService = new LineGraphService(drawShimFactory, fileShimFactory, dataTransformer: new GraphDataTransformer(), lineGraphGenerator: new LineGraphGenerator());
+        _lineGraphService = new LineGraphService(drawShimFactory, fileShimFactory, lineGraphGenerator: new LineGraphGenerator());
         
         ApprovalTestConfiguration.Initialize();
     }

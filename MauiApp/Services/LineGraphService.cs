@@ -9,19 +9,16 @@ namespace WorkMood.MauiApp.Services;
 /// <summary>
 /// Implementation of line graph service using SkiaSharp for rendering
 /// </summary>
-public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory fileShimFactory, IGraphDataTransformer dataTransformer, ILineGraphGenerator lineGraphGenerator) : ILineGraphService
+public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory fileShimFactory, ILineGraphGenerator lineGraphGenerator) : ILineGraphService
 {
     private const int MinYValue = -9;
     private const int MaxYValue = 9;
     private const int Padding = 60;
 
-    private readonly IGraphDataTransformer _dataTransformer = dataTransformer;
-    private readonly ILineGraphGenerator _lineGraphGenerator = lineGraphGenerator;
-
     /// <summary>
     /// Initializes a new instance of the LineGraphService with default factory implementations.
     /// </summary>
-    public LineGraphService() : this(new DrawShimFactory(), new FileShimFactory(), new GraphDataTransformer(), new LineGraphGenerator()) { }
+    public LineGraphService() : this(new DrawShimFactory(), new FileShimFactory(), new LineGraphGenerator()) { }
 
     /// <summary>
     /// Creates a bitmap with canvas, executes the drawing action, and returns the encoded PNG bytes
@@ -253,6 +250,86 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         canvas.DrawText("No mood data available for the selected period", centerX, centerY, messagePaint);
     }
 
+    // Data transformation methods (replacing GraphDataTransformer dependency)
+
+    /// <summary>
+    /// Transforms mood entries into graph data points based on the specified graph mode
+    /// Results are sorted by timestamp for proper graph rendering
+    /// </summary>
+    /// <param name="moodEntries">The mood entries to transform</param>
+    /// <param name="graphMode">The mode determining how to extract values (Impact or Average)</param>
+    /// <returns>Collection of graph data points sorted by timestamp</returns>
+    private IEnumerable<GraphDataPoint> TransformMoodEntries(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
+    {
+        var filteredEntries = FilterMoodEntriesForGraphMode(moodEntries, graphMode);
+        
+        return filteredEntries
+            .Select(entry => new GraphDataPoint(
+                GetValueForMode(entry, graphMode), 
+                entry.Date.ToDateTime(TimeOnly.MinValue)
+            ))
+            .OrderBy(point => point.Timestamp);
+    }
+
+    /// <summary>
+    /// Transforms raw mood data points into graph data points
+    /// Results are sorted by timestamp for proper graph rendering
+    /// </summary>
+    /// <param name="rawDataPoints">The raw mood data points to transform</param>
+    /// <returns>Collection of graph data points sorted by timestamp</returns>
+    private IEnumerable<GraphDataPoint> TransformRawDataPoints(IEnumerable<RawMoodDataPoint> rawDataPoints)
+    {
+        return rawDataPoints
+            .Select(point => new GraphDataPoint(point.MoodValue, point.Timestamp))
+            .OrderBy(point => point.Timestamp);
+    }
+
+    /// <summary>
+    /// Transforms mood entries into raw graph data points (equivalent to RawMoodDataPoint conversion)
+    /// Each MoodEntry produces two GraphDataPoints: one for StartOfWork and one for EndOfWork
+    /// Results are sorted by timestamp for proper graph rendering
+    /// </summary>
+    /// <param name="moodEntries">The mood entries to transform</param>
+    /// <returns>Collection of graph data points representing raw mood data, sorted by timestamp</returns>
+    private IEnumerable<GraphDataPoint> TransformRawDataPointsFromMoodEntries(IEnumerable<MoodEntry> moodEntries)
+    {
+        return moodEntries.SelectMany(entry =>
+        {
+            var startOfWork = entry.StartOfWork.GetValueOrDefault();
+            return new[]
+            {
+                new GraphDataPoint(startOfWork, entry.CreatedAt),
+                new GraphDataPoint(entry.EndOfWork.GetValueOrDefault(startOfWork), entry.LastModified)
+            };
+        }).OrderBy(point => point.Timestamp);
+    }
+
+    /// <summary>
+    /// Filters mood entries based on the selected graph mode
+    /// </summary>
+    private static IEnumerable<MoodEntry> FilterMoodEntriesForGraphMode(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
+    {
+        return graphMode switch
+        {
+            GraphMode.Impact => moodEntries.Where(e => e.Value.HasValue),
+            GraphMode.Average => moodEntries.Where(e => e.GetAdjustedAverageMood().HasValue),
+            _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, null)
+        };
+    }
+
+    /// <summary>
+    /// Gets the value for a mood entry based on the graph mode
+    /// </summary>
+    private static float GetValueForMode(MoodEntry entry, GraphMode graphMode)
+    {
+        return (float)(graphMode switch
+        {
+            GraphMode.Impact => entry.Value ?? 0,
+            GraphMode.Average => entry.GetAdjustedAverageMood() ?? 0,
+            _ => entry.Value ?? 0
+        });
+    }
+
     // New helper methods for GraphMode support
 
     /// <summary>
@@ -260,13 +337,8 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// </summary>
     private IEnumerable<MoodEntry> FilterEntriesForGraphMode(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
     {
-        // Use the data transformer's filtering logic by getting the transformed data and finding matching original entries
-        var transformedData = _dataTransformer.TransformMoodEntries(moodEntries, graphMode).ToList();
-        
-        // Since the transformer filters, match back to original entries based on date
-        var transformedDates = transformedData.Select(d => DateOnly.FromDateTime(d.Timestamp)).ToHashSet();
-        
-        return moodEntries.Where(entry => transformedDates.Contains(entry.Date));
+        // Use the local transformation logic to filter entries
+        return FilterMoodEntriesForGraphMode(moodEntries, graphMode);
     }
 
     /// <summary>
@@ -332,7 +404,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     private void DrawGraphForMode(ICanvasShim canvas, List<MoodEntry> entries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color lineColor, GraphMode graphMode, bool drawWhiteBackground = true)
     {
         // Transform MoodEntry objects to GraphDataPoint objects and delegate to the refactored method
-        var graphDataPoints = _dataTransformer.TransformMoodEntries(entries, graphMode).ToList();
+        var graphDataPoints = TransformMoodEntries(entries, graphMode).ToList();
         DrawGraphForModeFromGraphDataPoints(canvas, graphDataPoints, entries, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor, graphMode, drawWhiteBackground);
     }
 
@@ -684,7 +756,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     private void DrawRawDataGraph(ICanvasShim canvas, List<RawMoodDataPoint> dataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color pointColor, bool drawWhiteBackground = true)
     {
         // Transform RawMoodDataPoint objects to GraphDataPoint objects and delegate to the refactored method
-        var graphDataPoints = _dataTransformer.TransformRawDataPoints(dataPoints).ToList();
+        var graphDataPoints = TransformRawDataPoints(dataPoints).ToList();
         DrawRawDataGraphFromGraphDataPoints(canvas, graphDataPoints, dataPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, pointColor, drawWhiteBackground);
     }
 
@@ -1038,12 +1110,6 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
             await Task.Run(() => DrawRawDataGraph(canvas.Raw, sortedPoints, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor, !hasCustomBackground));
         });
     }
-
-    // public async Task<byte[]> GenerateRawDataGraphAsync(IEnumerable<MoodEntry> rawDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string? backgroundImagePath, Color lineColor, int width = 800, int height = 600)
-    // {
-    //     var dataPoints = _dataTransformer.TransformRawDataPoints(rawDataPoints);
-    //     return await this.
-    // }
 
 
     /// <summary>

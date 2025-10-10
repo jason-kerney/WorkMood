@@ -24,7 +24,7 @@ public class LineGraphServiceApprovalTests
     {
         _drawShimFactory = new DrawShimFactory();
         _fileShimFactory = new FileShimFactory();
-        _lineGraphService = new LineGraphService(_drawShimFactory, _fileShimFactory, dataTransformer: new GraphDataTransformer(), lineGraphGenerator: new LineGraphGenerator());
+        _lineGraphService = new LineGraphService(_drawShimFactory, _fileShimFactory, lineGraphGenerator: new LineGraphGenerator());
     }
 
     #region Test Data Helpers
