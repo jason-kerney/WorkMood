@@ -8,10 +8,10 @@ namespace WorkMood.MauiApp.Services;
 public interface IGraphDataTransformer
 {
     /// <summary>
-    /// Transforms mood entries into graph data points based on the specified graph mode
+    /// Transforms mood entries into complete graph data including metadata based on the specified graph mode
     /// </summary>
     /// <param name="moodEntries">The mood entries to transform</param>
-    /// <param name="graphMode">The mode determining how to extract values (Impact or Average)</param>
-    /// <returns>Collection of graph data points</returns>
-    IEnumerable<GraphDataPoint> TransformMoodEntries(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode);
+    /// <param name="graphMode">The mode determining how to extract values (Impact, Average, or RawData)</param>
+    /// <returns>Complete graph data including data points, title, axis information, and rendering metadata</returns>
+    GraphData TransformMoodEntries(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode);
 }

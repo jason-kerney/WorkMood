@@ -8,20 +8,22 @@ namespace WorkMood.MauiApp.Services;
 public class GraphDataTransformer : IGraphDataTransformer
 {
     /// <summary>
-    /// Transforms mood entries into graph data points based on the specified graph mode
-    /// Results are sorted by timestamp for proper graph rendering
+    /// Transforms mood entries into complete graph data including metadata based on the specified graph mode
+    /// Results include data points, title, axis information, and rendering metadata
     /// </summary>
     /// <param name="moodEntries">The mood entries to transform</param>
-    /// <param name="graphMode">The mode determining how to extract values (Impact or Average)</param>
-    /// <returns>Collection of graph data points sorted by timestamp</returns>
-    public IEnumerable<GraphDataPoint> TransformMoodEntries(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
+    /// <param name="graphMode">The mode determining how to extract values (Impact, Average, or RawData)</param>
+    /// <returns>Complete graph data including data points, title, axis information, and rendering metadata</returns>
+    public GraphData TransformMoodEntries(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
     {
         var filteredEntries = FilterEntriesForGraphMode(moodEntries, graphMode);
+
+        IEnumerable<GraphDataPoint> dataPoints;
 
         // Special handling for RawData mode - each entry produces two data points
         if (graphMode == GraphMode.RawData)
         {
-            return filteredEntries.SelectMany(entry =>
+            dataPoints = filteredEntries.SelectMany(entry =>
             {
                 var startOfWork = entry.StartOfWork.GetValueOrDefault();
                 return new[]
@@ -31,14 +33,18 @@ public class GraphDataTransformer : IGraphDataTransformer
                 };
             }).OrderBy(point => point.Timestamp);
         }
+        else
+        {
+            // Standard handling for Impact and Average modes - one data point per entry
+            dataPoints = filteredEntries
+                .Select(entry => new GraphDataPoint(
+                    GetValueForMode(entry, graphMode),
+                    entry.Date.ToDateTime(TimeOnly.MinValue)
+                ))
+                .OrderBy(point => point.Timestamp);
+        }
 
-        // Standard handling for Impact and Average modes - one data point per entry
-        return filteredEntries
-            .Select(entry => new GraphDataPoint(
-                GetValueForMode(entry, graphMode),
-                entry.Date.ToDateTime(TimeOnly.MinValue)
-            ))
-            .OrderBy(point => point.Timestamp);
+        return CreateGraphData(dataPoints, graphMode);
     }
     
     /// <summary>
@@ -75,5 +81,52 @@ public class GraphDataTransformer : IGraphDataTransformer
     public float GetValueForMoodEntry(MoodEntry entry, GraphMode graphMode)
     {
         return GetValueForMode(entry, graphMode);
+    }
+
+    /// <summary>
+    /// Creates a GraphData object with appropriate metadata based on the graph mode
+    /// </summary>
+    private static GraphData CreateGraphData(IEnumerable<GraphDataPoint> dataPoints, GraphMode graphMode)
+    {
+        return graphMode switch
+        {
+            GraphMode.Impact => new GraphData
+            {
+                DataPoints = dataPoints,
+                Title = "Mood Change Over Time",
+                YAxisRange = AxisRange.Impact,
+                CenterLineValue = 0,
+                YAxisLabel = "Impact",
+                XAxisLabel = "Date",
+                IsRawData = false,
+                YAxisLabelStep = 3,
+                Description = "Shows the daily impact on mood relative to neutral (0). Positive values indicate mood improvement, negative values indicate mood decline."
+            },
+            GraphMode.Average => new GraphData
+            {
+                DataPoints = dataPoints,
+                Title = "Average Mood Over Time",
+                YAxisRange = AxisRange.Average,
+                CenterLineValue = 0,
+                YAxisLabel = "Average Mood",
+                XAxisLabel = "Date",
+                IsRawData = false,
+                YAxisLabelStep = 3,
+                Description = "Shows the average mood levels over time. Values represent the overall emotional state adjusted for context."
+            },
+            GraphMode.RawData => new GraphData
+            {
+                DataPoints = dataPoints,
+                Title = "Raw Mood Data Over Time",
+                YAxisRange = AxisRange.RawData,
+                CenterLineValue = 5.5f,
+                YAxisLabel = "Mood Level",
+                XAxisLabel = "Time",
+                IsRawData = true,
+                YAxisLabelStep = 2,
+                Description = "Shows raw mood values at the start and end of work periods. Scale ranges from 1 (lowest) to 10 (highest)."
+            },
+            _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, "Unsupported graph mode")
+        };
     }
 }

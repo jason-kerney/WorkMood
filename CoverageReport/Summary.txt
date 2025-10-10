@@ -1,25 +1,25 @@
 Summary
-  Generated on: 10/8/2025 - 3:30:05 PM
-  Coverage date: 10/8/2025 - 3:30:04 PM
+  Generated on: 10/10/2025 - 2:26:09 PM
+  Coverage date: 10/10/2025 - 2:26:09 PM
   Parser: Cobertura
   Assemblies: 1
-  Classes: 106
-  Files: 67
-  Line coverage: 14.8%
-  Covered lines: 936
-  Uncovered lines: 5374
-  Coverable lines: 6310
-  Total lines: 11920
-  Branch coverage: 10.9% (185 of 1689)
-  Covered branches: 185
-  Total branches: 1689
-  Method coverage: 15.6% (154 of 986)
-  Full method coverage: 14.4% (142 of 986)
-  Covered methods: 154
-  Fully covered methods: 142
-  Total methods: 986
+  Classes: 111
+  Files: 72
+  Line coverage: 16.7%
+  Covered lines: 1136
+  Uncovered lines: 5641
+  Coverable lines: 6777
+  Total lines: 12754
+  Branch coverage: 12% (214 of 1771)
+  Covered branches: 214
+  Total branches: 1771
+  Method coverage: 17.8% (185 of 1035)
+  Full method coverage: 16.6% (172 of 1035)
+  Covered methods: 185
+  Fully covered methods: 172
+  Total methods: 1035
 
-WorkMood.MauiApp                                                        14.8%
+WorkMood.MauiApp                                                        16.7%
   WorkMood.MauiApp.Adapters.VisualizationDataAdapter                       0%
   WorkMood.MauiApp.App                                                     0%
   WorkMood.MauiApp.AppShell                                                0%
@@ -43,9 +43,12 @@ WorkMood.MauiApp                                                        14.8%
   WorkMood.MauiApp.Infrastructure.RelayCommand<T>                          0%
   WorkMood.MauiApp.Infrastructure.ViewModelBase                            0%
   WorkMood.MauiApp.MauiProgram                                             0%
+  WorkMood.MauiApp.Models.AxisRange                                     57.1%
   WorkMood.MauiApp.Models.DateRangeInfo                                 76.9%
+  WorkMood.MauiApp.Models.GraphData                                      100%
+  WorkMood.MauiApp.Models.GraphDataPoint                                 100%
   WorkMood.MauiApp.Models.MoodCollection                                   0%
-  WorkMood.MauiApp.Models.MoodEntry                                     36.7%
+  WorkMood.MauiApp.Models.MoodEntry                                     37.9%
   WorkMood.MauiApp.Models.RawMoodDataPoint                               100%
   WorkMood.MauiApp.Models.ScheduleConfig                                43.4%
   WorkMood.MauiApp.Models.ScheduleOverride                              66.6%
@@ -70,7 +73,9 @@ WorkMood.MauiApp                                                        14.8%
   WorkMood.MauiApp.Services.EveningReminderCommand                      96.7%
   WorkMood.MauiApp.Services.EveningReminderData                          100%
   WorkMood.MauiApp.Services.EveningReminderEventArgs                       0%
-  WorkMood.MauiApp.Services.LineGraphService                            92.3%
+  WorkMood.MauiApp.Services.GraphDataTransformer                        97.7%
+  WorkMood.MauiApp.Services.LineGraphGenerator                           0.7%
+  WorkMood.MauiApp.Services.LineGraphService                            95.9%
   WorkMood.MauiApp.Services.LoggingService                                 0%
   WorkMood.MauiApp.Services.LoggingServiceExtensions                       0%
   WorkMood.MauiApp.Services.MoodDataService                                0%
