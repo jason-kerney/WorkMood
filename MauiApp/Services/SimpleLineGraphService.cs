@@ -3,12 +3,17 @@ using WorkMood.MauiApp.Models;
 namespace WorkMood.MauiApp.Services;
 
 /// <summary>
-/// Interface for simple line graph service that generates graphs from MoodEntry data
-/// using GraphDataTransformer and LineGraphGenerator components.
-/// Provides distinct methods for Impact, Average, and Raw graph modes with optional background images.
+/// Simple line graph service that uses GraphDataTransformer and LineGraphGenerator
+/// to provide clean methods for generating graphs from MoodEntry data.
+/// Focuses on Impact, Average, and Raw modes without RawMoodDataPoint usage.
 /// </summary>
-public interface ISimpleLineGraphService
+public class SimpleLineGraphService(IGraphDataTransformer graphDataTransformer, ILineGraphGenerator lineGraphGenerator) : ISimpleLineGraphService
 {
+    /// <summary>
+    /// Initializes a new instance with default implementations.
+    /// </summary>
+    public SimpleLineGraphService() : this(new GraphDataTransformer(), new LineGraphGenerator()) { }
+
     // Impact Graph Methods
 
     /// <summary>
@@ -24,7 +29,11 @@ public interface ISimpleLineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>PNG image data as byte array</returns>
-    Task<byte[]> GenerateImpactGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, Color lineColor, int width = 800, int height = 600);
+    public async Task<byte[]> GenerateImpactGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, Color lineColor, int width = 800, int height = 600)
+    {
+        var graphData = graphDataTransformer.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange);
+        return await lineGraphGenerator.GenerateLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, lineColor, width, height);
+    }
 
     /// <summary>
     /// Generates an Impact mode line graph PNG image with custom background
@@ -40,7 +49,11 @@ public interface ISimpleLineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>PNG image data as byte array</returns>
-    Task<byte[]> GenerateImpactGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string backgroundImagePath, Color lineColor, int width = 800, int height = 600);
+    public async Task<byte[]> GenerateImpactGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    {
+        var graphData = graphDataTransformer.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange);
+        return await lineGraphGenerator.GenerateLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath, lineColor, width, height);
+    }
 
     /// <summary>
     /// Saves an Impact mode line graph PNG image to the specified file path with white background
@@ -56,7 +69,11 @@ public interface ISimpleLineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>Task representing the async operation</returns>
-    Task SaveImpactGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, Color lineColor, int width = 800, int height = 600);
+    public async Task SaveImpactGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, Color lineColor, int width = 800, int height = 600)
+    {
+        var graphData = graphDataTransformer.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange);
+        await lineGraphGenerator.SaveLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, filePath, lineColor, width, height);
+    }
 
     /// <summary>
     /// Saves an Impact mode line graph PNG image to the specified file path with custom background
@@ -73,7 +90,11 @@ public interface ISimpleLineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>Task representing the async operation</returns>
-    Task SaveImpactGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600);
+    public async Task SaveImpactGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    {
+        var graphData = graphDataTransformer.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange);
+        await lineGraphGenerator.SaveLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, filePath, backgroundImagePath, lineColor, width, height);
+    }
 
     // Average Graph Methods
 
@@ -90,7 +111,11 @@ public interface ISimpleLineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>PNG image data as byte array</returns>
-    Task<byte[]> GenerateAverageGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, Color lineColor, int width = 800, int height = 600);
+    public async Task<byte[]> GenerateAverageGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, Color lineColor, int width = 800, int height = 600)
+    {
+        var graphData = graphDataTransformer.TransformMoodEntries(moodEntries, GraphMode.Average, dateRange);
+        return await lineGraphGenerator.GenerateLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, lineColor, width, height);
+    }
 
     /// <summary>
     /// Generates an Average mode line graph PNG image with custom background
@@ -106,7 +131,11 @@ public interface ISimpleLineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>PNG image data as byte array</returns>
-    Task<byte[]> GenerateAverageGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string backgroundImagePath, Color lineColor, int width = 800, int height = 600);
+    public async Task<byte[]> GenerateAverageGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    {
+        var graphData = graphDataTransformer.TransformMoodEntries(moodEntries, GraphMode.Average, dateRange);
+        return await lineGraphGenerator.GenerateLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath, lineColor, width, height);
+    }
 
     /// <summary>
     /// Saves an Average mode line graph PNG image to the specified file path with white background
@@ -122,7 +151,11 @@ public interface ISimpleLineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>Task representing the async operation</returns>
-    Task SaveAverageGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, Color lineColor, int width = 800, int height = 600);
+    public async Task SaveAverageGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, Color lineColor, int width = 800, int height = 600)
+    {
+        var graphData = graphDataTransformer.TransformMoodEntries(moodEntries, GraphMode.Average, dateRange);
+        await lineGraphGenerator.SaveLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, filePath, lineColor, width, height);
+    }
 
     /// <summary>
     /// Saves an Average mode line graph PNG image to the specified file path with custom background
@@ -139,7 +172,11 @@ public interface ISimpleLineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>Task representing the async operation</returns>
-    Task SaveAverageGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600);
+    public async Task SaveAverageGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    {
+        var graphData = graphDataTransformer.TransformMoodEntries(moodEntries, GraphMode.Average, dateRange);
+        await lineGraphGenerator.SaveLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, filePath, backgroundImagePath, lineColor, width, height);
+    }
 
     // Raw Graph Methods
 
@@ -157,7 +194,11 @@ public interface ISimpleLineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>PNG image data as byte array</returns>
-    Task<byte[]> GenerateRawGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, Color lineColor, int width = 800, int height = 600);
+    public async Task<byte[]> GenerateRawGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, Color lineColor, int width = 800, int height = 600)
+    {
+        var graphData = graphDataTransformer.TransformMoodEntries(moodEntries, GraphMode.RawData, dateRange);
+        return await lineGraphGenerator.GenerateLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, lineColor, width, height);
+    }
 
     /// <summary>
     /// Generates a Raw mode line graph PNG image with custom background.
@@ -174,7 +215,11 @@ public interface ISimpleLineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>PNG image data as byte array</returns>
-    Task<byte[]> GenerateRawGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string backgroundImagePath, Color lineColor, int width = 800, int height = 600);
+    public async Task<byte[]> GenerateRawGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    {
+        var graphData = graphDataTransformer.TransformMoodEntries(moodEntries, GraphMode.RawData, dateRange);
+        return await lineGraphGenerator.GenerateLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath, lineColor, width, height);
+    }
 
     /// <summary>
     /// Saves a Raw mode line graph PNG image to the specified file path with white background.
@@ -191,7 +236,11 @@ public interface ISimpleLineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>Task representing the async operation</returns>
-    Task SaveRawGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, Color lineColor, int width = 800, int height = 600);
+    public async Task SaveRawGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, Color lineColor, int width = 800, int height = 600)
+    {
+        var graphData = graphDataTransformer.TransformMoodEntries(moodEntries, GraphMode.RawData, dateRange);
+        await lineGraphGenerator.SaveLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, filePath, lineColor, width, height);
+    }
 
     /// <summary>
     /// Saves a Raw mode line graph PNG image to the specified file path with custom background.
@@ -209,5 +258,9 @@ public interface ISimpleLineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>Task representing the async operation</returns>
-    Task SaveRawGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600);
+    public async Task SaveRawGraphAsync(IEnumerable<MoodEntry> moodEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
+    {
+        var graphData = graphDataTransformer.TransformMoodEntries(moodEntries, GraphMode.RawData, dateRange);
+        await lineGraphGenerator.SaveLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, filePath, backgroundImagePath, lineColor, width, height);
+    }
 }
