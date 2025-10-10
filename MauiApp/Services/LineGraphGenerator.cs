@@ -5,7 +5,8 @@ using WorkMood.MauiApp.Shims;
 namespace WorkMood.MauiApp.Services;
 
 /// <summary>
-/// Implementation of line graph generator using SkiaSharp for rendering, designed to work with GraphData objects
+/// Implementation of line graph generator using SkiaSharp for rendering, designed to work with GraphData objects.
+/// Mimics LineGraphService functionality while accepting GraphData as input.
 /// </summary>
 public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFactory fileShimFactory) : ILineGraphGenerator
 {
@@ -105,7 +106,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
     }
 
     /// <summary>
-    /// Main drawing logic using GraphData
+    /// Main drawing logic using GraphData, mimicking LineGraphService behavior
     /// </summary>
     private void DrawGraph(ICanvasShim canvas, GraphData graphData, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color lineColor, bool drawWhiteBackground = true)
     {
@@ -131,6 +132,12 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         {
             DrawGrid(canvas, graphArea, minY, maxY);
             DrawBasicAxes(canvas, graphArea);
+            
+            // Draw center line if specified in GraphData
+            if (graphData.CenterLineValue.HasValue)
+            {
+                DrawCenterLine(canvas, graphArea, graphData.CenterLineValue.Value, minY, maxY);
+            }
         }
 
         if (dataPoints.Count == 0)
@@ -223,6 +230,21 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
 
         // X-axis
         canvas.DrawLine(area.Left, area.Bottom, area.Right, area.Bottom, axisPaint);
+    }
+
+    /// <summary>
+    /// Draws a center line at the specified Y value (mimicking LineGraphService behavior)
+    /// </summary>
+    private void DrawCenterLine(ICanvasShim canvas, SKRect area, float centerValue, int minY, int maxY)
+    {
+        var centerY = area.Bottom - ((centerValue - minY) * area.Height / (maxY - minY));
+        using var centerLinePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
+        {
+            Color = drawShimFactory.Colors.DarkGray,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 4
+        });
+        canvas.DrawLine(area.Left, centerY, area.Right, centerY, centerLinePaint);
     }
 
     private void DrawNoDataMessage(ICanvasShim canvas, SKRect area)
