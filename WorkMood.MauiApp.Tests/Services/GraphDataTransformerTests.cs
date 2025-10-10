@@ -11,10 +11,17 @@ namespace WorkMood.MauiApp.Tests.Services;
 public class GraphDataTransformerTests
 {
     private readonly GraphDataTransformer _transformer;
+    private readonly FakeDateShim _dateShim;
 
     public GraphDataTransformerTests()
     {
         _transformer = new GraphDataTransformer();
+        _dateShim = new FakeDateShim(new DateOnly(2025, 1, 10)); // Fixed date for testing
+    }
+
+    private DateRangeInfo CreateDateRangeInfo(DateRange dateRange)
+    {
+        return new DateRangeInfo(dateRange, _dateShim);
     }
 
     #region Impact Mode Tests
@@ -31,7 +38,7 @@ public class GraphDataTransformerTests
         );
 
         // Act
-        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.Impact);
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.Impact, CreateDateRangeInfo(DateRange.Last3Years));
 
         // Assert
         Assert.NotNull(result);
@@ -62,7 +69,7 @@ public class GraphDataTransformerTests
         );
 
         // Act
-        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.Impact);
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.Impact, CreateDateRangeInfo(DateRange.Last3Years));
 
         // Assert
         Assert.NotNull(result);
@@ -83,7 +90,7 @@ public class GraphDataTransformerTests
         );
 
         // Act
-        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.Impact);
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.Impact, CreateDateRangeInfo(DateRange.Last3Years));
 
         // Assert
         var dataPoints = result.DataPoints.ToList();
@@ -105,7 +112,7 @@ public class GraphDataTransformerTests
         };
 
         // Act
-        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.Impact);
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.Impact, CreateDateRangeInfo(DateRange.Last3Years));
 
         // Assert
         var dataPoints = result.DataPoints.ToList();
@@ -140,7 +147,7 @@ public class GraphDataTransformerTests
         };
 
         // Act
-        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.Average);
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.Average, CreateDateRangeInfo(DateRange.Last3Years));
 
         // Assert
         Assert.NotNull(result);
@@ -169,7 +176,7 @@ public class GraphDataTransformerTests
         };
 
         // Act
-        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.Average);
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.Average, CreateDateRangeInfo(DateRange.Last3Years));
 
         // Assert
         Assert.NotNull(result);
@@ -192,7 +199,7 @@ public class GraphDataTransformerTests
         );
 
         // Act
-        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.RawData);
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.RawData, CreateDateRangeInfo(DateRange.Last3Years));
 
         // Assert
         Assert.NotNull(result);
@@ -232,7 +239,7 @@ public class GraphDataTransformerTests
         };
 
         // Act
-        var result = _transformer.TransformMoodEntries(new[] { moodEntry }, GraphMode.RawData);
+        var result = _transformer.TransformMoodEntries(new[] { moodEntry }, GraphMode.RawData, CreateDateRangeInfo(DateRange.Last3Years));
 
         // Assert
         var dataPoints = result.DataPoints.ToList();
@@ -262,7 +269,7 @@ public class GraphDataTransformerTests
         };
 
         // Act
-        var result = _transformer.TransformMoodEntries(new[] { moodEntry }, GraphMode.RawData);
+        var result = _transformer.TransformMoodEntries(new[] { moodEntry }, GraphMode.RawData, CreateDateRangeInfo(DateRange.Last3Years));
 
         // Assert
         var dataPoints = result.DataPoints.ToList();
@@ -286,7 +293,7 @@ public class GraphDataTransformerTests
         };
 
         // Act
-        var result = _transformer.TransformMoodEntries(new[] { moodEntry }, GraphMode.RawData);
+        var result = _transformer.TransformMoodEntries(new[] { moodEntry }, GraphMode.RawData, CreateDateRangeInfo(DateRange.Last3Years));
 
         // Assert
         var dataPoints = result.DataPoints.ToList();
@@ -305,7 +312,7 @@ public class GraphDataTransformerTests
         };
 
         // Act
-        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.RawData);
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.RawData, CreateDateRangeInfo(DateRange.Last3Years));
 
         // Assert
         Assert.NotNull(result);
@@ -338,7 +345,7 @@ public class GraphDataTransformerTests
         };
 
         // Act
-        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.RawData);
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.RawData, CreateDateRangeInfo(DateRange.Last3Years));
 
         // Assert
         var dataPoints = result.DataPoints.ToList();
@@ -373,7 +380,7 @@ public class GraphDataTransformerTests
         // Act & Assert for each mode
         foreach (var mode in Enum.GetValues<GraphMode>())
         {
-            var result = _transformer.TransformMoodEntries(emptyEntries, mode);
+            var result = _transformer.TransformMoodEntries(emptyEntries, mode, CreateDateRangeInfo(DateRange.Last3Years));
             Assert.NotNull(result);
             Assert.Empty(result.DataPoints);
             Assert.False(string.IsNullOrEmpty(result.Title));
@@ -389,7 +396,7 @@ public class GraphDataTransformerTests
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => 
-            _transformer.TransformMoodEntries(moodEntries, invalidMode));
+            _transformer.TransformMoodEntries(moodEntries, invalidMode, CreateDateRangeInfo(DateRange.Last3Years)));
     }
 
     [Fact]
@@ -397,7 +404,126 @@ public class GraphDataTransformerTests
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => 
-            _transformer.TransformMoodEntries(null!, GraphMode.Impact));
+            _transformer.TransformMoodEntries(null!, GraphMode.Impact, CreateDateRangeInfo(DateRange.Last3Years)));
+    }
+
+    #endregion
+
+    #region Date Range Filtering Tests
+
+    [Fact]
+    public void TransformMoodEntries_WithDateRangeFilter_ShouldFilterDataCorrectly()
+    {
+        // Arrange - Create mood entries across different dates
+        var moodEntries = new List<MoodEntry>
+        {
+            new() { Date = new DateOnly(2024, 12, 25), StartOfWork = 5, EndOfWork = 7 }, // Outside range
+            new() { Date = new DateOnly(2025, 1, 5), StartOfWork = 6, EndOfWork = 8 },   // Inside range
+            new() { Date = new DateOnly(2025, 1, 8), StartOfWork = 4, EndOfWork = 6 },   // Inside range
+            new() { Date = new DateOnly(2025, 2, 15), StartOfWork = 7, EndOfWork = 9 },  // Outside range
+        };
+
+        // Create a date range that covers Jan 1-9, 2025 (Last 7 Days from Jan 10)
+        var dateRange = CreateDateRangeInfo(DateRange.Last7Days);
+
+        // Act
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange);
+
+        // Assert
+        var dataPoints = result.DataPoints.ToList();
+        Assert.Equal(2, dataPoints.Count); // Only 2 entries should be in range
+        Assert.Equal(2, dataPoints[0].Value); // 8 - 6 = 2 (Jan 5)
+        Assert.Equal(2, dataPoints[1].Value); // 6 - 4 = 2 (Jan 8)
+    }
+
+    [Fact]
+    public void TransformMoodEntries_WithDateRangeFilter_EmptyResult_WhenNoDataInRange()
+    {
+        // Arrange - Create mood entries outside the date range
+        var moodEntries = new List<MoodEntry>
+        {
+            new() { Date = new DateOnly(2023, 1, 1), StartOfWork = 5, EndOfWork = 7 },
+            new() { Date = new DateOnly(2026, 1, 1), StartOfWork = 6, EndOfWork = 8 }
+        };
+
+        var dateRange = CreateDateRangeInfo(DateRange.Last7Days);
+
+        // Act
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange);
+
+        // Assert
+        Assert.Empty(result.DataPoints);
+        Assert.Equal("Mood Change Over Time", result.Title);
+    }
+
+    [Fact]
+    public void TransformMoodEntries_DateRangeFilter_WorksWithAllGraphModes()
+    {
+        // Arrange
+        var moodEntries = new List<MoodEntry>
+        {
+            new() { 
+                Date = new DateOnly(2025, 1, 5), 
+                StartOfWork = 6, 
+                EndOfWork = 8,
+                CreatedAt = new DateTime(2025, 1, 5, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 5, 17, 0, 0)
+            }
+        };
+
+        var dateRange = CreateDateRangeInfo(DateRange.Last7Days);
+
+        // Act & Assert for each mode
+        foreach (var mode in Enum.GetValues<GraphMode>())
+        {
+            var result = _transformer.TransformMoodEntries(moodEntries, mode, dateRange);
+            Assert.NotNull(result);
+            
+            if (mode == GraphMode.RawData)
+            {
+                Assert.Equal(2, result.DataPoints.Count()); // Start and end points
+            }
+            else
+            {
+                Assert.Single(result.DataPoints); // One data point per entry
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(DateRange.Last7Days)]
+    [InlineData(DateRange.Last14Days)]
+    [InlineData(DateRange.LastMonth)]
+    [InlineData(DateRange.Last3Months)]
+    public void TransformMoodEntries_DifferentDateRanges_ShouldFilterCorrectly(DateRange range)
+    {
+        // Arrange - Create mood entries spanning a long period
+        var moodEntries = new List<MoodEntry>();
+        var startDate = new DateOnly(2024, 1, 1);
+        
+        // Add entries for every day over 4 months
+        for (int i = 0; i < 120; i++)
+        {
+            moodEntries.Add(new MoodEntry
+            {
+                Date = startDate.AddDays(i),
+                StartOfWork = 5,
+                EndOfWork = 7
+            });
+        }
+
+        var dateRange = CreateDateRangeInfo(range);
+
+        // Act
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange);
+
+        // Assert - Verify that only entries within the date range are included
+        foreach (var dataPoint in result.DataPoints)
+        {
+            var date = DateOnly.FromDateTime(dataPoint.Timestamp);
+            Assert.True(date >= dateRange.StartDate, $"Date {date} should be >= {dateRange.StartDate}");
+            Assert.True(date <= dateRange.EndDate, $"Date {date} should be <= {dateRange.EndDate}");
+        }
     }
 
     #endregion
@@ -500,7 +626,7 @@ public class GraphDataTransformerTests
         var moodEntries = new List<MoodEntry>();
 
         // Act
-        var result = _transformer.TransformMoodEntries(moodEntries, mode);
+        var result = _transformer.TransformMoodEntries(moodEntries, mode, CreateDateRangeInfo(DateRange.Last3Years));
 
         // Assert
         Assert.Equal(expectedTitle, result.Title);

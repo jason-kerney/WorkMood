@@ -8,15 +8,20 @@ namespace WorkMood.MauiApp.Services;
 public class GraphDataTransformer : IGraphDataTransformer
 {
     /// <summary>
-    /// Transforms mood entries into complete graph data including metadata based on the specified graph mode
+    /// Transforms mood entries into complete graph data including metadata based on the specified graph mode,
+    /// filtered by the provided date range
     /// Results include data points, title, axis information, and rendering metadata
     /// </summary>
     /// <param name="moodEntries">The mood entries to transform</param>
     /// <param name="graphMode">The mode determining how to extract values (Impact, Average, or RawData)</param>
+    /// <param name="dateRangeInfo">The date range info to filter the mood entries by</param>
     /// <returns>Complete graph data including data points, title, axis information, and rendering metadata</returns>
-    public GraphData TransformMoodEntries(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
+    public GraphData TransformMoodEntries(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRangeInfo)
     {
-        var filteredEntries = FilterEntriesForGraphMode(moodEntries, graphMode);
+        // Apply date range filtering based on the provided date range info
+        var entriesInRange = moodEntries.Where(entry => entry.Date >= dateRangeInfo.StartDate && entry.Date <= dateRangeInfo.EndDate);
+
+        var filteredEntries = FilterEntriesForGraphMode(entriesInRange, graphMode);
 
         IEnumerable<GraphDataPoint> dataPoints;
 
@@ -44,7 +49,7 @@ public class GraphDataTransformer : IGraphDataTransformer
                 .OrderBy(point => point.Timestamp);
         }
 
-        return CreateGraphData(dataPoints, graphMode);
+        return CreateGraphData(dataPoints, graphMode, dateRangeInfo);
     }
     
     /// <summary>
@@ -83,17 +88,29 @@ public class GraphDataTransformer : IGraphDataTransformer
         return GetValueForMode(entry, graphMode);
     }
 
+
+
     /// <summary>
-    /// Creates a GraphData object with appropriate metadata based on the graph mode
+    /// Creates a GraphData object with appropriate metadata based on the graph mode and date range info
     /// </summary>
-    private static GraphData CreateGraphData(IEnumerable<GraphDataPoint> dataPoints, GraphMode graphMode)
+    private static GraphData CreateGraphData(IEnumerable<GraphDataPoint> dataPoints, GraphMode graphMode, DateRangeInfo? dateRangeInfo)
     {
+        var baseTitle = graphMode switch
+        {
+            GraphMode.Impact => "Mood Change Over Time",
+            GraphMode.Average => "Average Mood Over Time",
+            GraphMode.RawData => "Raw Mood Data Over Time",
+            _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, "Unsupported graph mode")
+        };
+
+        var title = baseTitle;
+
         return graphMode switch
         {
             GraphMode.Impact => new GraphData
             {
                 DataPoints = dataPoints,
-                Title = "Mood Change Over Time",
+                Title = title,
                 YAxisRange = AxisRange.Impact,
                 CenterLineValue = 0,
                 YAxisLabel = "Impact",
@@ -105,7 +122,7 @@ public class GraphDataTransformer : IGraphDataTransformer
             GraphMode.Average => new GraphData
             {
                 DataPoints = dataPoints,
-                Title = "Average Mood Over Time",
+                Title = title,
                 YAxisRange = AxisRange.Average,
                 CenterLineValue = 0,
                 YAxisLabel = "Average Mood",
@@ -117,7 +134,7 @@ public class GraphDataTransformer : IGraphDataTransformer
             GraphMode.RawData => new GraphData
             {
                 DataPoints = dataPoints,
-                Title = "Raw Mood Data Over Time",
+                Title = title,
                 YAxisRange = AxisRange.RawData,
                 CenterLineValue = 5.5f,
                 YAxisLabel = "Mood Level",
