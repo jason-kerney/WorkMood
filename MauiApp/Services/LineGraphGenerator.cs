@@ -117,10 +117,11 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         var requestedStartDate = dateRange.StartDate;
         var requestedEndDate = dateRange.EndDate;
 
-        // Conditionally draw background
+        // Conditionally draw background for the entire canvas
         if (drawWhiteBackground)
         {
-            DrawBackground(canvas, graphArea);
+            var fullCanvasArea = new SKRect(0, 0, width, height);
+            DrawBackground(canvas, fullCanvasArea);
         }
 
         // Use GraphData's Y range
@@ -164,7 +165,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         if (showAxesAndGrid)
         {
             DrawYAxisLabels(canvas, graphArea, minY, maxY, graphData.YAxisLabelStep);
-            DrawXAxisLabels(canvas, graphArea, dataPoints, requestedStartDate, requestedEndDate);
+            DrawXAxisLabels(canvas, graphArea, dataPoints, requestedStartDate, requestedEndDate, showDataPoints, lineColor);
         }
 
         // Draw title
@@ -397,7 +398,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         }
     }
 
-    private void DrawXAxisLabels(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate)
+    private void DrawXAxisLabels(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor)
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
@@ -416,7 +417,29 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
             var proportion = (float)i / labelCount;
             var x = area.Left + (proportion * area.Width);
             var date = requestedStartDate.AddDays((int)(proportion * totalDays));
-            canvas.DrawText(date.ToString("MM/dd"), x, area.Bottom + 15, labelPaint);
+            canvas.DrawText(date.ToString("MM/dd"), x, area.Bottom + 20, labelPaint);
+        }
+
+        // Show data point dots on the X-axis if showDataPoints is true
+        if (showDataPoints && dataPoints.Count > 0 && dataPoints.Count <= 10)
+        {
+            using var dataLabelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
+            {
+                Color = drawShimFactory.Colors.FromArgb((byte)(lineColor.Red * 180), (byte)(lineColor.Green * 180), (byte)(lineColor.Blue * 180), 255),
+                TextSize = 8,
+                IsAntialias = true,
+                TextAlign = SKTextAlign.Center
+            });
+
+            foreach (var dataPoint in dataPoints)
+            {
+                var dataDate = DateOnly.FromDateTime(dataPoint.Timestamp);
+                var daysFromStart = dataDate.DayNumber - requestedStartDate.DayNumber;
+                var proportionalPosition = (float)daysFromStart / totalDays;
+                var x = area.Left + (proportionalPosition * area.Width);
+
+                canvas.DrawText("●", x, area.Bottom + 35, dataLabelPaint);
+            }
         }
     }
 

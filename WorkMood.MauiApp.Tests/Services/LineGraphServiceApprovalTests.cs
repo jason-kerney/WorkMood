@@ -17,6 +17,7 @@ namespace WorkMood.MauiApp.Tests.Services;
 public class LineGraphServiceApprovalTests
 {
     private readonly LineGraphService _lineGraphService;
+    private readonly SimpleLineGraphService _simpleLineGraphService;
     private readonly IDrawShimFactory _drawShimFactory;
     private readonly IFileShimFactory _fileShimFactory;
 
@@ -24,7 +25,9 @@ public class LineGraphServiceApprovalTests
     {
         _drawShimFactory = new DrawShimFactory();
         _fileShimFactory = new FileShimFactory();
-        _lineGraphService = new LineGraphService(_drawShimFactory, _fileShimFactory, lineGraphGenerator: new LineGraphGenerator());
+        var lineGraphGenerator = new LineGraphGenerator(_drawShimFactory, _fileShimFactory);
+        _lineGraphService = new LineGraphService(_drawShimFactory, _fileShimFactory, lineGraphGenerator: lineGraphGenerator);
+        _simpleLineGraphService = new SimpleLineGraphService(new GraphDataTransformer(), lineGraphGenerator);
     }
 
     #region Test Data Helpers
@@ -45,14 +48,13 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: false,
-            GraphMode.Impact, 
             StandardLineColor,
             width: 800,
             height: 600);
