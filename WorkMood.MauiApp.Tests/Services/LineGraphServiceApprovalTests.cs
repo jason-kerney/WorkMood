@@ -117,14 +117,13 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: false,
-            GraphMode.Impact, 
             StandardLineColor,
             width: 800, 
             height: 600);
