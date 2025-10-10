@@ -17,48 +17,30 @@ public class GraphDataTransformer : IGraphDataTransformer
     public IEnumerable<GraphDataPoint> TransformMoodEntries(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
     {
         var filteredEntries = FilterEntriesForGraphMode(moodEntries, graphMode);
-        
+
+        // Special handling for RawData mode - each entry produces two data points
+        if (graphMode == GraphMode.RawData)
+        {
+            return filteredEntries.SelectMany(entry =>
+            {
+                var startOfWork = entry.StartOfWork.GetValueOrDefault();
+                return new[]
+                {
+                    new GraphDataPoint(startOfWork, entry.CreatedAt),
+                    new GraphDataPoint(entry.EndOfWork.GetValueOrDefault(startOfWork), entry.LastModified)
+                };
+            }).OrderBy(point => point.Timestamp);
+        }
+
+        // Standard handling for Impact and Average modes - one data point per entry
         return filteredEntries
             .Select(entry => new GraphDataPoint(
-                GetValueForMode(entry, graphMode), 
+                GetValueForMode(entry, graphMode),
                 entry.Date.ToDateTime(TimeOnly.MinValue)
             ))
             .OrderBy(point => point.Timestamp);
     }
-
-    /// <summary>
-    /// Transforms raw mood data points into graph data points
-    /// Results are sorted by timestamp for proper graph rendering
-    /// </summary>
-    /// <param name="rawDataPoints">The raw mood data points to transform</param>
-    /// <returns>Collection of graph data points sorted by timestamp</returns>
-    public IEnumerable<GraphDataPoint> TransformRawDataPoints(IEnumerable<RawMoodDataPoint> rawDataPoints)
-    {
-        return rawDataPoints
-            .Select(point => new GraphDataPoint(point.MoodValue, point.Timestamp))
-            .OrderBy(point => point.Timestamp);
-    }
-
-    /// <summary>
-    /// Transforms mood entries into raw graph data points (equivalent to RawMoodDataPoint conversion)
-    /// Each MoodEntry produces two GraphDataPoints: one for StartOfWork and one for EndOfWork
-    /// Results are sorted by timestamp for proper graph rendering
-    /// </summary>
-    /// <param name="moodEntries">The mood entries to transform</param>
-    /// <returns>Collection of graph data points representing raw mood data, sorted by timestamp</returns>
-    public IEnumerable<GraphDataPoint> TransformRawDataPoints(IEnumerable<MoodEntry> moodEntries)
-    {
-        return moodEntries.SelectMany(entry =>
-        {
-            var startOfWork = entry.StartOfWork.GetValueOrDefault();
-            return new[]
-            {
-                new GraphDataPoint(startOfWork, entry.CreatedAt),
-                new GraphDataPoint(entry.EndOfWork.GetValueOrDefault(startOfWork), entry.LastModified)
-            };
-        }).OrderBy(point => point.Timestamp);
-    }
-
+    
     /// <summary>
     /// Filters mood entries based on the selected graph mode
     /// </summary>
@@ -68,6 +50,7 @@ public class GraphDataTransformer : IGraphDataTransformer
         {
             GraphMode.Impact => moodEntries.Where(e => e.Value.HasValue),
             GraphMode.Average => moodEntries.Where(e => e.GetAdjustedAverageMood().HasValue),
+            GraphMode.RawData => moodEntries.Where(e => e.StartOfWork.HasValue || e.EndOfWork.HasValue),
             _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, null)
         };
     }
@@ -81,6 +64,7 @@ public class GraphDataTransformer : IGraphDataTransformer
         {
             GraphMode.Impact => entry.Value ?? 0,
             GraphMode.Average => entry.GetAdjustedAverageMood() ?? 0,
+            GraphMode.RawData => entry.StartOfWork ?? 0, // For RawData, this method isn't used in the main transform but kept for compatibility
             _ => entry.Value ?? 0
         });
     }
