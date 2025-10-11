@@ -184,14 +184,13 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: false,
-            GraphMode.Impact, 
             Microsoft.Maui.Graphics.Colors.Red);
 
         // Assert
@@ -210,14 +209,13 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateAverageGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: false,
-            GraphMode.Average, 
             StandardLineColor);
 
         // Assert
@@ -232,14 +230,13 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateAverageGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: false,
-            GraphMode.Average, 
             StandardLineColor);
 
         // Assert
@@ -368,13 +365,13 @@ public class LineGraphServiceApprovalTests
 
         // Act
         var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
-            emptyEntries, 
-            dateRange, 
-            showDataPoints: true, 
-            showAxesAndGrid: true, 
-            showTitle: true, 
+            emptyEntries,
+            dateRange,
+            showDataPoints: true,
+            showAxesAndGrid: true,
+            showTitle: true,
             showTrendLine: false,
-            GraphMode.Impact, 
+            GraphMode.Impact,
             StandardLineColor);
 
         // Assert
@@ -389,14 +386,13 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             singleEntry, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: false,
-            GraphMode.Impact, 
             StandardLineColor);
 
         // Assert
@@ -432,14 +428,13 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: false,
-            GraphMode.Impact, 
             StandardLineColor);
 
         // Assert
@@ -458,14 +453,13 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: false,
-            GraphMode.Impact, 
             StandardLineColor,
             width: 1200, 
             height: 800);
@@ -482,14 +476,13 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: false,
-            GraphMode.Impact, 
             StandardLineColor,
             width: 400, 
             height: 300);
@@ -510,14 +503,13 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             extremeEntries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: false,
-            GraphMode.Impact, 
             StandardLineColor);
 
         // Assert
@@ -532,14 +524,13 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             extremeEntries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: false,
-            GraphMode.Impact, 
             StandardLineColor);
 
         // Assert
