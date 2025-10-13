@@ -274,17 +274,16 @@ public class LineGraphServiceSaveTests
         const bool showAxesAndGrid = true;
         const bool showTitle = true;
         const bool showTrendLine = true;
-        const GraphMode graphMode = GraphMode.Impact;
         var lineColor = Colors.Orange;
 
         // Act - Call the method twice
-        await _sut.SaveLineGraphAsync(
+        await _simpleLineGraphService.SaveImpactGraphAsync(
             moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, 
-            showTrendLine, expectedFilePath, graphMode, lineColor);
+            showTrendLine, expectedFilePath, lineColor);
         
-        await _sut.SaveLineGraphAsync(
+        await _simpleLineGraphService.SaveImpactGraphAsync(
             moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, 
-            showTrendLine, expectedFilePath, graphMode, lineColor);
+            showTrendLine, expectedFilePath, lineColor);
 
         // Assert
         _mockFileShimFactory.Verify(x => x.Create(), Times.AtLeast(2));
