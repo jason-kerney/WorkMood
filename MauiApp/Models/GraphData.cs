@@ -10,7 +10,7 @@ public class GraphData
     /// <summary>
     /// The data points to be plotted on the graph
     /// </summary>
-    public IEnumerable<GraphDataPoint> DataPoints { get; init; } = Enumerable.Empty<GraphDataPoint>();
+    public IEnumerable<FilledGraphDataPoint> DataPoints { get; init; } = Enumerable.Empty<FilledGraphDataPoint>();
 
     /// <summary>
     /// The title for the graph based on the graph mode

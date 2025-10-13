@@ -23,7 +23,7 @@ public class GraphDataTransformer : IGraphDataTransformer
 
         var filteredEntries = FilterEntriesForGraphMode(entriesInRange, graphMode);
 
-        IEnumerable<GraphDataPoint> dataPoints;
+        IEnumerable<FilledGraphDataPoint> dataPoints;
 
         // Special handling for RawData mode - each entry produces two data points
         if (graphMode == GraphMode.RawData)
@@ -33,8 +33,8 @@ public class GraphDataTransformer : IGraphDataTransformer
                 var startOfWork = entry.StartOfWork.GetValueOrDefault();
                 return new[]
                 {
-                    new GraphDataPoint(startOfWork, entry.CreatedAt),
-                    new GraphDataPoint(entry.EndOfWork.GetValueOrDefault(startOfWork), entry.LastModified)
+                    new FilledGraphDataPoint(entry.CreatedAt, startOfWork),
+                    new FilledGraphDataPoint(entry.LastModified, entry.EndOfWork.GetValueOrDefault(startOfWork))
                 };
             }).OrderBy(point => point.Timestamp);
         }
@@ -42,9 +42,9 @@ public class GraphDataTransformer : IGraphDataTransformer
         {
             // Standard handling for Impact and Average modes - one data point per entry
             dataPoints = filteredEntries
-                .Select(entry => new GraphDataPoint(
-                    GetValueForMode(entry, graphMode),
-                    entry.Date.ToDateTime(TimeOnly.MinValue)
+                .Select(entry => new FilledGraphDataPoint(
+                    entry.Date.ToDateTime(TimeOnly.MinValue),
+                    GetValueForMode(entry, graphMode)
                 ))
                 .OrderBy(point => point.Timestamp);
         }
@@ -93,7 +93,7 @@ public class GraphDataTransformer : IGraphDataTransformer
     /// <summary>
     /// Creates a GraphData object with appropriate metadata based on the graph mode and date range info
     /// </summary>
-    private static GraphData CreateGraphData(IEnumerable<GraphDataPoint> dataPoints, GraphMode graphMode, DateRangeInfo? dateRangeInfo)
+    private static GraphData CreateGraphData(IEnumerable<FilledGraphDataPoint> dataPoints, GraphMode graphMode, DateRangeInfo? dateRangeInfo)
     {
         var baseTitle = graphMode switch
         {

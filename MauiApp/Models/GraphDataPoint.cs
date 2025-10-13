@@ -5,4 +5,4 @@ namespace WorkMood.MauiApp.Models;
 /// </summary>
 /// <param name="Value">The numeric value to plot on the Y-axis</param>
 /// <param name="Timestamp">The timestamp for X-axis positioning</param>
-public record GraphDataPoint(float Value, DateTime Timestamp);
+public record FilledGraphDataPoint(DateTime Timestamp, float? Value);

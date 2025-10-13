@@ -113,9 +113,11 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
         var dataPoints = graphData.DataPoints.ToList();
 
-        // Calculate the full date range for proportional positioning
-        var requestedStartDate = dateRange.StartDate;
-        var requestedEndDate = dateRange.EndDate;
+        // Calculate the full datetime range for proportional positioning
+        var requestedStartDateTime = dateRange.StartDate.ToDateTime(TimeOnly.MinValue);
+        
+        // Determine the end time based on actual data
+        var requestedEndDateTime = CalculateEndDateTime(dateRange.EndDate, dataPoints);
 
         // Conditionally draw background for the entire canvas
         if (drawWhiteBackground)
@@ -148,24 +150,24 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         }
 
         // Draw data line and optionally points with proportional positioning
-        DrawDataLine(canvas, graphArea, dataPoints, requestedStartDate, requestedEndDate, lineColor, minY, maxY);
+        DrawDataLine(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY);
         
         if (showDataPoints)
         {
-            DrawDataPoints(canvas, graphArea, dataPoints, requestedStartDate, requestedEndDate, lineColor, minY, maxY);
+            DrawDataPoints(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY);
         }
 
         // Draw trend line if requested
         if (showTrendLine)
         {
-            DrawTrendLine(canvas, graphArea, dataPoints, requestedStartDate, requestedEndDate, lineColor, minY, maxY, drawWhiteBackground);
+            DrawTrendLine(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY, drawWhiteBackground);
         }
 
         // Draw axes labels
         if (showAxesAndGrid)
         {
             DrawYAxisLabels(canvas, graphArea, minY, maxY, graphData.YAxisLabelStep);
-            DrawXAxisLabels(canvas, graphArea, dataPoints, requestedStartDate, requestedEndDate, showDataPoints, lineColor);
+            DrawXAxisLabels(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, showDataPoints, lineColor);
         }
 
         // Draw title
@@ -263,7 +265,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         canvas.DrawText("No data available for the selected range", centerX, centerY, textPaint);
     }
 
-    private void DrawDataLine(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, int minY, int maxY)
+    private void DrawDataLine(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, Color lineColor, int minY, int maxY)
     {
         if (dataPoints.Count < 2) return;
 
@@ -277,18 +279,17 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
 
         using var path = new SKPath();
 
-        // Calculate total days in the requested range
-        var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
+        // Calculate total time span in the requested range
+        var totalTimeSpan = requestedEndDateTime - requestedStartDateTime;
 
         for (int i = 0; i < dataPoints.Count; i++)
         {
             var dataPoint = dataPoints[i];
-            var entryDate = DateOnly.FromDateTime(dataPoint.Timestamp);
-            var daysFromStart = entryDate.DayNumber - requestedStartDate.DayNumber;
-            var proportionalPosition = (float)daysFromStart / totalDays;
+            var timeFromStart = dataPoint.Timestamp - requestedStartDateTime;
+            var proportionalPosition = (float)(timeFromStart.TotalMilliseconds / totalTimeSpan.TotalMilliseconds);
             var x = area.Left + (proportionalPosition * area.Width);
 
-            var value = dataPoint.Value;
+            var value = dataPoint.Value ?? 0; // Use 0 if null (shouldn't happen for filled data points)
             var y = (float)(area.Bottom - ((value - minY) * area.Height / (maxY - minY)));
 
             if (i == 0)
@@ -300,7 +301,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         canvas.DrawPath(path, linePaint);
     }
 
-    private void DrawDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, int minY, int maxY)
+    private void DrawDataPoints(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, Color lineColor, int minY, int maxY)
     {
         using var pointPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
@@ -309,38 +310,37 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
             IsAntialias = true
         });
 
-        // Calculate total days in the requested range
-        var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
+        // Calculate total time span in the requested range
+        var totalTimeSpan = requestedEndDateTime - requestedStartDateTime;
 
         for (int i = 0; i < dataPoints.Count; i++)
         {
             var dataPoint = dataPoints[i];
-            var entryDate = DateOnly.FromDateTime(dataPoint.Timestamp);
-            var daysFromStart = entryDate.DayNumber - requestedStartDate.DayNumber;
-            var proportionalPosition = (float)daysFromStart / totalDays;
+            var timeFromStart = dataPoint.Timestamp - requestedStartDateTime;
+            var proportionalPosition = (float)(timeFromStart.TotalMilliseconds / totalTimeSpan.TotalMilliseconds);
             var x = area.Left + (proportionalPosition * area.Width);
 
-            var value = dataPoint.Value;
+            var value = dataPoint.Value ?? 0; // Use 0 if null (shouldn't happen for filled data points)
             var y = (float)(area.Bottom - ((value - minY) * area.Height / (maxY - minY)));
 
             canvas.DrawCircle(x, y, 4, pointPaint);
         }
     }
 
-    private void DrawTrendLine(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, int minY, int maxY, bool drawWhiteBackground)
+    private void DrawTrendLine(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, Color lineColor, int minY, int maxY, bool drawWhiteBackground)
     {
         if (dataPoints.Count < 2) return;
 
         // Calculate linear regression
         var regressionPoints = new List<(double x, double y)>();
-        var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
+        var totalTimeSpan = requestedEndDateTime - requestedStartDateTime;
         
         foreach (var dataPoint in dataPoints)
         {
-            var entryDate = DateOnly.FromDateTime(dataPoint.Timestamp);
-            var dayOffset = entryDate.DayNumber - requestedStartDate.DayNumber;
-            var normalizedX = (double)dayOffset / totalDays; // Normalize to 0-1
-            regressionPoints.Add((normalizedX, dataPoint.Value));
+            if (!dataPoint.Value.HasValue) continue;
+            var timeFromStart = dataPoint.Timestamp - requestedStartDateTime;
+            var normalizedX = timeFromStart.TotalMilliseconds / totalTimeSpan.TotalMilliseconds; // Normalize to 0-1
+            regressionPoints.Add((normalizedX, dataPoint.Value.GetValueOrDefault()));
         }
 
         // Calculate linear regression coefficients (y = mx + b)
@@ -398,7 +398,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         }
     }
 
-    private void DrawXAxisLabels(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor)
+    private void DrawXAxisLabels(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, bool showDataPoints, Color lineColor)
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
@@ -409,15 +409,16 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         });
 
         // Show labels for the requested date range
-        var totalDays = requestedEndDate.DayNumber - requestedStartDate.DayNumber;
+        var totalTimeSpan = requestedEndDateTime - requestedStartDateTime;
+        var totalDays = (int)totalTimeSpan.TotalDays;
         var labelCount = Math.Min(8, Math.Max(2, totalDays / 30)); // At least 2 labels, roughly monthly intervals
 
         for (int i = 0; i <= labelCount; i++)
         {
             var proportion = (float)i / labelCount;
             var x = area.Left + (proportion * area.Width);
-            var date = requestedStartDate.AddDays((int)(proportion * totalDays));
-            canvas.DrawText(date.ToString("MM/dd"), x, area.Bottom + 20, labelPaint);
+            var dateTime = requestedStartDateTime.AddMilliseconds(proportion * totalTimeSpan.TotalMilliseconds);
+            canvas.DrawText(DateOnly.FromDateTime(dateTime).ToString("MM/dd"), x, area.Bottom + 20, labelPaint);
         }
 
         // Show data point dots on the X-axis if showDataPoints is true
@@ -433,9 +434,8 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
 
             foreach (var dataPoint in dataPoints)
             {
-                var dataDate = DateOnly.FromDateTime(dataPoint.Timestamp);
-                var daysFromStart = dataDate.DayNumber - requestedStartDate.DayNumber;
-                var proportionalPosition = (float)daysFromStart / totalDays;
+                var timeFromStart = dataPoint.Timestamp - requestedStartDateTime;
+                var proportionalPosition = (float)(timeFromStart.TotalMilliseconds / totalTimeSpan.TotalMilliseconds);
                 var x = area.Left + (proportionalPosition * area.Width);
 
                 canvas.DrawText("●", x, area.Bottom + 35, dataLabelPaint);
@@ -514,5 +514,38 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         }
 
         return trendColor;
+    }
+
+    /// <summary>
+    /// Calculates the appropriate end DateTime based on the requested end date and actual data points.
+    /// If the last data point is on the same day as the end date, use that time.
+    /// Otherwise, use the beginning of the end date (TimeOnly.MinValue).
+    /// </summary>
+    private DateTime CalculateEndDateTime(DateOnly endDate, List<FilledGraphDataPoint> dataPoints)
+    {
+        if (dataPoints == null || dataPoints.Count == 0)
+        {
+            return endDate.ToDateTime(TimeOnly.MinValue);
+        }
+
+        // Find the last data point chronologically
+        var lastDataPoint = dataPoints.OrderBy(dp => dp.Timestamp).LastOrDefault();
+        
+        if (lastDataPoint == null)
+        {
+            return endDate.ToDateTime(TimeOnly.MinValue);
+        }
+
+        var lastDataPointDate = DateOnly.FromDateTime(lastDataPoint.Timestamp);
+        
+        // If the last data point is on the same day as the requested end date, 
+        // use the time from that data point
+        if (lastDataPointDate == endDate)
+        {
+            return lastDataPoint.Timestamp;
+        }
+        
+        // Otherwise, use the beginning of the end date
+        return endDate.ToDateTime(TimeOnly.MinValue);
     }
 }

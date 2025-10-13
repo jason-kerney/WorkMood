@@ -182,7 +182,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         canvas.DrawRect(area, backgroundPaint);
     }
 
-    private void DrawXAxisLabelsFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor)
+    private void DrawXAxisLabelsFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, bool showDataPoints, Color lineColor)
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
@@ -259,14 +259,14 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <param name="moodEntries">The mood entries to transform</param>
     /// <param name="graphMode">The mode determining how to extract values (Impact or Average)</param>
     /// <returns>Collection of graph data points sorted by timestamp</returns>
-    private IEnumerable<GraphDataPoint> TransformMoodEntries(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
+    private IEnumerable<FilledGraphDataPoint> TransformMoodEntries(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
     {
         var filteredEntries = FilterMoodEntriesForGraphMode(moodEntries, graphMode);
         
         return filteredEntries
-            .Select(entry => new GraphDataPoint(
-                GetValueForMode(entry, graphMode), 
-                entry.Date.ToDateTime(TimeOnly.MinValue)
+            .Select(entry => new FilledGraphDataPoint(
+                entry.Date.ToDateTime(TimeOnly.MinValue),
+                GetValueForMode(entry, graphMode)
             ))
             .OrderBy(point => point.Timestamp);
     }
@@ -277,10 +277,10 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// </summary>
     /// <param name="rawDataPoints">The raw mood data points to transform</param>
     /// <returns>Collection of graph data points sorted by timestamp</returns>
-    private IEnumerable<GraphDataPoint> TransformRawDataPoints(IEnumerable<RawMoodDataPoint> rawDataPoints)
+    private IEnumerable<FilledGraphDataPoint> TransformRawDataPoints(IEnumerable<RawMoodDataPoint> rawDataPoints)
     {
         return rawDataPoints
-            .Select(point => new GraphDataPoint(point.MoodValue, point.Timestamp))
+            .Select(point => new FilledGraphDataPoint(point.Timestamp, point.MoodValue))
             .OrderBy(point => point.Timestamp);
     }
 
@@ -291,15 +291,15 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// </summary>
     /// <param name="moodEntries">The mood entries to transform</param>
     /// <returns>Collection of graph data points representing raw mood data, sorted by timestamp</returns>
-    private IEnumerable<GraphDataPoint> TransformRawDataPointsFromMoodEntries(IEnumerable<MoodEntry> moodEntries)
+    private IEnumerable<FilledGraphDataPoint> TransformRawDataPointsFromMoodEntries(IEnumerable<MoodEntry> moodEntries)
     {
         return moodEntries.SelectMany(entry =>
         {
             var startOfWork = entry.StartOfWork.GetValueOrDefault();
             return new[]
             {
-                new GraphDataPoint(startOfWork, entry.CreatedAt),
-                new GraphDataPoint(entry.EndOfWork.GetValueOrDefault(startOfWork), entry.LastModified)
+                new FilledGraphDataPoint(entry.CreatedAt, entry.StartOfWork),
+                new FilledGraphDataPoint(entry.LastModified, entry.EndOfWork.GetValueOrDefault(startOfWork))
             };
         }).OrderBy(point => point.Timestamp);
     }
@@ -344,7 +344,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <summary>
     /// Draws graph with mode-specific logic for data extraction using GraphDataPoint format
     /// </summary>
-    private void DrawGraphForModeFromGraphDataPoints(ICanvasShim canvas, List<GraphDataPoint> dataPoints, List<MoodEntry> originalEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color lineColor, GraphMode graphMode, bool drawWhiteBackground = true)
+    private void DrawGraphForModeFromGraphDataPoints(ICanvasShim canvas, List<FilledGraphDataPoint> dataPoints, List<MoodEntry> originalEntries, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color lineColor, GraphMode graphMode, bool drawWhiteBackground = true)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
 
@@ -433,7 +433,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <summary>
     /// Draws data line using unified GraphDataPoint objects (refactored version)
     /// </summary>
-    private void DrawDataLineFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
+    private void DrawDataLineFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
     {
         if (dataPoints.Count < 2) return;
 
@@ -474,7 +474,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <summary>
     /// Draws data points using unified GraphDataPoint objects (refactored version)
     /// </summary>
-    private void DrawDataPointsFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
+    private void DrawDataPointsFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode)
     {
         using var pointPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
@@ -558,7 +558,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <summary>
     /// Draws trend line using unified GraphDataPoint objects (refactored version)
     /// </summary>
-    private void DrawTrendLineFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode, bool drawWhiteBackground)
+    private void DrawTrendLineFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateOnly requestedStartDate, DateOnly requestedEndDate, Color lineColor, GraphMode graphMode, bool drawWhiteBackground)
     {
         if (dataPoints.Count < 2) return;
 
@@ -568,10 +568,12 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         
         foreach (var dataPoint in dataPoints)
         {
+            if (!dataPoint.Value.HasValue) continue;
+
             var entryDate = DateOnly.FromDateTime(dataPoint.Timestamp);
             var dayOffset = entryDate.DayNumber - requestedStartDate.DayNumber;
             var normalizedX = (double)dayOffset / totalDays; // Normalize to 0-1
-            regressionPoints.Add((normalizedX, dataPoint.Value));
+            regressionPoints.Add((normalizedX, dataPoint.Value.GetValueOrDefault()));
         }
 
         // Calculate linear regression coefficients (y = mx + b)
@@ -690,7 +692,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <summary>
     /// Draws a scatter plot graph for raw mood data points using GraphDataPoint format
     /// </summary>
-    private void DrawRawDataGraphFromGraphDataPoints(ICanvasShim canvas, List<GraphDataPoint> dataPoints, List<RawMoodDataPoint> originalDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color pointColor, bool drawWhiteBackground = true)
+    private void DrawRawDataGraphFromGraphDataPoints(ICanvasShim canvas, List<FilledGraphDataPoint> dataPoints, List<RawMoodDataPoint> originalDataPoints, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color pointColor, bool drawWhiteBackground = true)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
 
@@ -786,7 +788,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
     /// <summary>
     /// Draws raw data lines using unified GraphDataPoint objects (refactored version)
     /// </summary>
-    private void DrawRawDataLinesFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color lineColor)
+    private void DrawRawDataLinesFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color lineColor)
     {
         if (dataPoints.Count < 2)
             return;
@@ -833,7 +835,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         canvas.DrawPath(path, linePaint);
     }
 
-    private void DrawRawDataPointsFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, List<RawMoodDataPoint> originalDataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
+    private void DrawRawDataPointsFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, List<RawMoodDataPoint> originalDataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
     {
         // Create different paints for start and end of work
         using var startPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
@@ -904,7 +906,7 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         }
     }
 
-    private void DrawRawDataXAxisLabelsFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
+    private void DrawRawDataXAxisLabelsFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor)
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
@@ -945,13 +947,13 @@ public class LineGraphService(IDrawShimFactory drawShimFactory, IFileShimFactory
         canvas.DrawText("Raw Mood Data Over Time", width / 2, 30, titlePaint);
     }
 
-    private void DrawRawDataTrendLineFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<GraphDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor, bool drawWhiteBackground)
+    private void DrawRawDataTrendLineFromGraphDataPoints(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime startDateTime, DateTime endDateTime, Color pointColor, bool drawWhiteBackground)
     {
         if (dataPoints.Count < 2) return;
 
         // Filter and sort points within the date range
         var filteredPoints = dataPoints
-            .Where(point => point.Timestamp >= startDateTime && point.Timestamp <= endDateTime)
+            .Where(point => point.Timestamp >= startDateTime && point.Timestamp <= endDateTime && point.Value.HasValue)
             .OrderBy(point => point.Timestamp)
             .ToList();
 
