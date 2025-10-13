@@ -82,21 +82,19 @@ public class LineGraphServiceTrendLineTests
     public async Task GenerateLineGraphAsync_WithTrendLineAndAverageMode_ReturnsValidImageData()
     {
         // Arrange
-        var service = new LineGraphService();
         var startDate = new DateOnly(1905, 08, 02);
         var (today, entries) = MoodDataTestHelper.GetRandomFakeData(startDate, seed: 9732, count: 7);
         
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var result = await service.GenerateLineGraphAsync(
+        var result = await _simpleLineGraphService.GenerateAverageGraphAsync(
             entries, 
             dateRange, 
             showDataPoints: false, 
             showAxesAndGrid: false, 
             showTitle: false, 
             showTrendLine: true,
-            GraphMode.Average, // This should use average mood values
             Colors.Green);
 
         // Assert
