@@ -217,11 +217,10 @@ public class LineGraphServiceSaveTests
         const bool showAxesAndGrid = true;
         const bool showTitle = true;
         const bool showTrendLine = true;
-        const GraphMode graphMode = GraphMode.Impact;
         var lineColor = Colors.Blue;
 
         // Act
-        await _sut.SaveLineGraphAsync(
+        await _simpleLineGraphService.SaveImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints, 
@@ -229,7 +228,6 @@ public class LineGraphServiceSaveTests
             showTitle, 
             showTrendLine, 
             string.Empty, 
-            graphMode, 
             lineColor);
 
         // Assert - Verify file shim is called with empty path (implementation doesn't validate)
