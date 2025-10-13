@@ -59,21 +59,19 @@ public class LineGraphServiceTrendLineTests
     public async Task GenerateLineGraphAsync_WithTrendLineAndSingleEntry_ReturnsValidImageData()
     {
         // Arrange
-        var service = new LineGraphService();
         var startDate = new DateOnly(1857, 7, 2);
         var (today, entries) = MoodDataTestHelper.GetFakeData(startDate, (5, 7));
         
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var result = await service.GenerateLineGraphAsync(
+        var result = await _simpleLineGraphService.GenerateImpactGraphAsync(
             entries,
             dateRange,
             showDataPoints: true,
             showAxesAndGrid: false,
             showTitle: false,
             showTrendLine: true, // Even with trend line enabled
-            GraphMode.Impact,
             Colors.Blue);
 
         // Assert
