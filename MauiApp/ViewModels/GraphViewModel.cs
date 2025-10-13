@@ -13,7 +13,7 @@ namespace WorkMood.MauiApp.ViewModels;
 public class GraphViewModel : ViewModelBase
 {
     private readonly IMoodDataService _moodDataService;
-    private readonly ISimpleLineGraphService _simpleLineGraphService;
+    private readonly ILineGraphService _lineGraphService;
     private readonly IDateShim _dateShim;
 
     // Backing fields
@@ -39,12 +39,12 @@ public class GraphViewModel : ViewModelBase
     private double _availableContainerWidth = 800; // Default fallback
     private double _availableContainerHeight = 400; // Default fallback
     
-    public GraphViewModel(IMoodDataService moodDataService, ISimpleLineGraphService simpleLineGraphService) : this(moodDataService, simpleLineGraphService, new DateShim()) { }
+    public GraphViewModel(IMoodDataService moodDataService, ILineGraphService lineGraphService) : this(moodDataService, lineGraphService, new DateShim()) { }
     
-    public GraphViewModel(IMoodDataService moodDataService, ISimpleLineGraphService simpleLineGraphService, IDateShim dateShim)
+    public GraphViewModel(IMoodDataService moodDataService, ILineGraphService lineGraphService, IDateShim dateShim)
     {
         _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
-        _simpleLineGraphService = simpleLineGraphService ?? throw new ArgumentNullException(nameof(simpleLineGraphService));
+        _lineGraphService = lineGraphService ?? throw new ArgumentNullException(nameof(lineGraphService));
         _dateShim = dateShim ?? throw new ArgumentNullException(nameof(dateShim));
         DateRanges = new ObservableCollection<DateRangeItem>();
         InitializeDateRanges();
@@ -554,11 +554,11 @@ public class GraphViewModel : ViewModelBase
                 
                 if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
                 {
-                    imageData = await _simpleLineGraphService.GenerateRawGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                    imageData = await _lineGraphService.GenerateRawGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
                 }
                 else
                 {
-                    imageData = await _simpleLineGraphService.GenerateRawGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                    imageData = await _lineGraphService.GenerateRawGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
                 }
             }
             else
@@ -567,14 +567,14 @@ public class GraphViewModel : ViewModelBase
                 if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
                 {
                     imageData = SelectedGraphMode == GraphMode.Impact 
-                        ? await _simpleLineGraphService.GenerateImpactGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight)
-                        : await _simpleLineGraphService.GenerateAverageGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                        ? await _lineGraphService.GenerateImpactGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight)
+                        : await _lineGraphService.GenerateAverageGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
                 }
                 else
                 {
                     imageData = SelectedGraphMode == GraphMode.Impact 
-                        ? await _simpleLineGraphService.GenerateImpactGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight)
-                        : await _simpleLineGraphService.GenerateAverageGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                        ? await _lineGraphService.GenerateImpactGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight)
+                        : await _lineGraphService.GenerateAverageGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
                 }
             }
             
@@ -624,11 +624,11 @@ public class GraphViewModel : ViewModelBase
                 // SimpleLineGraphService handles raw data extraction internally from MoodEntries
                 if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
                 {
-                    await _simpleLineGraphService.SaveRawGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                    await _lineGraphService.SaveRawGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
                 }
                 else
                 {
-                    await _simpleLineGraphService.SaveRawGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
+                    await _lineGraphService.SaveRawGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
                 }
             }
             else
@@ -638,22 +638,22 @@ public class GraphViewModel : ViewModelBase
                 {
                     if (SelectedGraphMode == GraphMode.Impact)
                     {
-                        await _simpleLineGraphService.SaveImpactGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                        await _lineGraphService.SaveImpactGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
                     }
                     else
                     {
-                        await _simpleLineGraphService.SaveAverageGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                        await _lineGraphService.SaveAverageGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
                     }
                 }
                 else
                 {
                     if (SelectedGraphMode == GraphMode.Impact)
                     {
-                        await _simpleLineGraphService.SaveImpactGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
+                        await _lineGraphService.SaveImpactGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
                     }
                     else
                     {
-                        await _simpleLineGraphService.SaveAverageGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
+                        await _lineGraphService.SaveAverageGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
                     }
                 }
             }
@@ -694,11 +694,11 @@ public class GraphViewModel : ViewModelBase
                 // SimpleLineGraphService handles raw data extraction internally from MoodEntries
                 if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
                 {
-                    await _simpleLineGraphService.SaveRawGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                    await _lineGraphService.SaveRawGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
                 }
                 else
                 {
-                    await _simpleLineGraphService.SaveRawGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
+                    await _lineGraphService.SaveRawGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
                 }
             }
             else
@@ -708,22 +708,22 @@ public class GraphViewModel : ViewModelBase
                 {
                     if (SelectedGraphMode == GraphMode.Impact)
                     {
-                        await _simpleLineGraphService.SaveImpactGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                        await _lineGraphService.SaveImpactGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
                     }
                     else
                     {
-                        await _simpleLineGraphService.SaveAverageGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                        await _lineGraphService.SaveAverageGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
                     }
                 }
                 else
                 {
                     if (SelectedGraphMode == GraphMode.Impact)
                     {
-                        await _simpleLineGraphService.SaveImpactGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
+                        await _lineGraphService.SaveImpactGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
                     }
                     else
                     {
-                        await _simpleLineGraphService.SaveAverageGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
+                        await _lineGraphService.SaveAverageGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
                     }
                 }
             }

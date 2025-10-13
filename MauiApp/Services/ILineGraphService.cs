@@ -3,11 +3,11 @@ using WorkMood.MauiApp.Models;
 namespace WorkMood.MauiApp.Services;
 
 /// <summary>
-/// Interface for simple line graph service that generates graphs from MoodEntry data
+/// Interface for line graph service that generates graphs from MoodEntry data
 /// using GraphDataTransformer and LineGraphGenerator components.
 /// Provides distinct methods for Impact, Average, and Raw graph modes with optional background images.
 /// </summary>
-public interface ISimpleLineGraphService
+public interface ILineGraphService
 {
     // Impact Graph Methods
 

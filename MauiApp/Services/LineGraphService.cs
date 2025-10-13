@@ -3,16 +3,16 @@ using WorkMood.MauiApp.Models;
 namespace WorkMood.MauiApp.Services;
 
 /// <summary>
-/// Simple line graph service that uses GraphDataTransformer and LineGraphGenerator
+/// Line graph service that uses GraphDataTransformer and LineGraphGenerator
 /// to provide clean methods for generating graphs from MoodEntry data.
 /// Focuses on Impact, Average, and Raw modes without RawMoodDataPoint usage.
 /// </summary>
-public class SimpleLineGraphService(IGraphDataTransformer graphDataTransformer, ILineGraphGenerator lineGraphGenerator) : ISimpleLineGraphService
+public class LineGraphService(IGraphDataTransformer graphDataTransformer, ILineGraphGenerator lineGraphGenerator) : ILineGraphService
 {
     /// <summary>
     /// Initializes a new instance with default implementations.
     /// </summary>
-    public SimpleLineGraphService() : this(new GraphDataTransformer(), new LineGraphGenerator()) { }
+    public LineGraphService() : this(new GraphDataTransformer(), new LineGraphGenerator()) { }
 
     // Impact Graph Methods
 

@@ -18,7 +18,7 @@ namespace WorkMood.MauiApp.Tests.Services;
 [UseApprovalSubdirectory("ApprovalFiles/TrendLines")]
 public class LineGraphServiceTrendLineTests
 {
-    private readonly SimpleLineGraphService _simpleLineGraphService;
+    private readonly LineGraphService _lineGraphService;
 
     public LineGraphServiceTrendLineTests()
     {
@@ -28,7 +28,7 @@ public class LineGraphServiceTrendLineTests
         var drawShimFactory = new DrawShimFactory();
         var fileShimFactory = new FileShimFactory();
         var lineGraphGenerator = new LineGraphGenerator(drawShimFactory, fileShimFactory);
-        _simpleLineGraphService = new SimpleLineGraphService(new GraphDataTransformer(), lineGraphGenerator);
+        _lineGraphService = new LineGraphService(new GraphDataTransformer(), lineGraphGenerator);
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public class LineGraphServiceTrendLineTests
         var lineColor = Colors.Blue;
 
         // Act
-        var result = await _simpleLineGraphService.GenerateImpactGraphAsync(
+        var result = await _lineGraphService.GenerateImpactGraphAsync(
             entries, 
             dateRange, 
             showDataPoints: true, 
@@ -65,7 +65,7 @@ public class LineGraphServiceTrendLineTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var result = await _simpleLineGraphService.GenerateImpactGraphAsync(
+        var result = await _lineGraphService.GenerateImpactGraphAsync(
             entries,
             dateRange,
             showDataPoints: true,
@@ -88,7 +88,7 @@ public class LineGraphServiceTrendLineTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var result = await _simpleLineGraphService.GenerateAverageGraphAsync(
+        var result = await _lineGraphService.GenerateAverageGraphAsync(
             entries, 
             dateRange, 
             showDataPoints: false, 
@@ -109,7 +109,7 @@ public class LineGraphServiceTrendLineTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(new DateOnly(2025, 1, 8)));
 
         // Act
-        var result = await _simpleLineGraphService.GenerateImpactGraphAsync(
+        var result = await _lineGraphService.GenerateImpactGraphAsync(
             entries, 
             dateRange, 
             showDataPoints: true, 
@@ -134,7 +134,7 @@ public class LineGraphServiceTrendLineTests
         var lineColor = Colors.Red;
 
         // Act
-        var resultWithTrendLine = await _simpleLineGraphService.GenerateImpactGraphAsync(
+        var resultWithTrendLine = await _lineGraphService.GenerateImpactGraphAsync(
             entries, dateRange, false, false, false, true, lineColor);
 
         // Assert
@@ -161,7 +161,7 @@ public class LineGraphServiceTrendLineTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var result = await _simpleLineGraphService.GenerateImpactGraphAsync(
+        var result = await _lineGraphService.GenerateImpactGraphAsync(
             entries,
             dateRange,
             showDataPoints: true,
@@ -184,7 +184,7 @@ public class LineGraphServiceTrendLineTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var result = await _simpleLineGraphService.GenerateAverageGraphAsync(
+        var result = await _lineGraphService.GenerateAverageGraphAsync(
             entries,
             dateRange,
             showDataPoints: true,
@@ -207,7 +207,7 @@ public class LineGraphServiceTrendLineTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var result = await _simpleLineGraphService.GenerateAverageGraphAsync(
+        var result = await _lineGraphService.GenerateAverageGraphAsync(
             entries,
             dateRange,
             showDataPoints: true,
@@ -238,7 +238,7 @@ public class LineGraphServiceTrendLineTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var result = await _simpleLineGraphService.GenerateImpactGraphAsync(
+        var result = await _lineGraphService.GenerateImpactGraphAsync(
             entries,
             dateRange,
             showDataPoints: true,
@@ -269,7 +269,7 @@ public class LineGraphServiceTrendLineTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var result = await _simpleLineGraphService.GenerateImpactGraphAsync(
+        var result = await _lineGraphService.GenerateImpactGraphAsync(
             entries,
             dateRange,
             showDataPoints: true,
@@ -300,7 +300,7 @@ public class LineGraphServiceTrendLineTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var result = await _simpleLineGraphService.GenerateRawGraphAsync(
+        var result = await _lineGraphService.GenerateRawGraphAsync(
             rawDataPoints,
             dateRange,
             showDataPoints: true,
@@ -326,10 +326,10 @@ public class LineGraphServiceTrendLineTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var resultWithTrendLine = await _simpleLineGraphService.GenerateImpactGraphAsync(
+        var resultWithTrendLine = await _lineGraphService.GenerateImpactGraphAsync(
             entries, dateRange, true, true, true, true, Colors.Blue);
         
-        var resultWithoutTrendLine = await _simpleLineGraphService.GenerateImpactGraphAsync(
+        var resultWithoutTrendLine = await _lineGraphService.GenerateImpactGraphAsync(
             entries, dateRange, true, true, true, false, Colors.Blue);
 
         // Assert
@@ -354,7 +354,7 @@ public class LineGraphServiceTrendLineTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(new DateOnly(2025, 1, 4)));
 
         // Act
-        var resultWithTrendLine = await _simpleLineGraphService.GenerateRawGraphAsync(
+        var resultWithTrendLine = await _lineGraphService.GenerateRawGraphAsync(
             rawData, dateRange, true, true, true, true, Colors.Orange);
 
         // Assert

@@ -18,7 +18,7 @@ namespace WorkMood.MauiApp.Tests.Services;
 [UseApprovalSubdirectory("ApprovalFiles/Backgrounds")]
 public class LineGraphServiceBackgroundTests
 {
-    private readonly SimpleLineGraphService _simpleLineGraphService;
+    private readonly LineGraphService _lineGraphService;
     private readonly IDrawShimFactory _drawShimFactory;
     private readonly IFileShimFactory _fileShimFactory;
     private readonly string _testImagesPath;
@@ -28,7 +28,7 @@ public class LineGraphServiceBackgroundTests
         _drawShimFactory = new DrawShimFactory();
         _fileShimFactory = new FileShimFactory();
         var lineGraphGenerator = new LineGraphGenerator(_drawShimFactory, _fileShimFactory);
-        _simpleLineGraphService = new SimpleLineGraphService(new GraphDataTransformer(), lineGraphGenerator);
+        _lineGraphService = new LineGraphService(new GraphDataTransformer(), lineGraphGenerator);
 
         // Create test images directory
         _testImagesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestImages");
@@ -137,7 +137,7 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "blue_background.png");
 
         // Act
-        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
+        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
@@ -160,7 +160,7 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "gradient_background.png");
 
         // Act
-        var imageBytes = await _simpleLineGraphService.GenerateAverageGraphAsync(
+        var imageBytes = await _lineGraphService.GenerateAverageGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
@@ -183,7 +183,7 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "pattern_background.png");
 
         // Act
-        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
+        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
@@ -206,7 +206,7 @@ public class LineGraphServiceBackgroundTests
         var nonExistentPath = Path.Combine(_testImagesPath, "non_existent.png");
 
         // Act
-        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
+        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
@@ -233,7 +233,7 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "blue_background.png");
 
         // Act
-        var imageBytes = await _simpleLineGraphService.GenerateRawGraphAsync(
+        var imageBytes = await _lineGraphService.GenerateRawGraphAsync(
             data,
             dateRange, 
             showDataPoints: true, 
@@ -256,7 +256,7 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "gradient_background.png");
 
         // Act
-        var imageBytes = await _simpleLineGraphService.GenerateRawGraphAsync(
+        var imageBytes = await _lineGraphService.GenerateRawGraphAsync(
             data,
             dateRange, 
             showDataPoints: true, 
@@ -279,7 +279,7 @@ public class LineGraphServiceBackgroundTests
         var nonExistentPath = Path.Combine(_testImagesPath, "missing_file.png");
 
         // Act
-        var imageBytes = await _simpleLineGraphService.GenerateRawGraphAsync(
+        var imageBytes = await _lineGraphService.GenerateRawGraphAsync(
             data,
             dateRange, 
             showDataPoints: true, 
@@ -307,7 +307,7 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "dark_background.png");
 
         // Act
-        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
+        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
@@ -331,7 +331,7 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "light_background.png");
 
         // Act
-        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
+        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
@@ -359,7 +359,7 @@ public class LineGraphServiceBackgroundTests
         var backgroundImagePath = Path.Combine(_testImagesPath, "light_background.png");
 
         // Act
-        var result = await _simpleLineGraphService.GenerateImpactGraphAsync(
+        var result = await _lineGraphService.GenerateImpactGraphAsync(
             entries, 
             dateRange, 
             showDataPoints: true, 
