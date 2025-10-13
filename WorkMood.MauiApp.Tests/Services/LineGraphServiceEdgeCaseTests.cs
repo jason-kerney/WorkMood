@@ -211,14 +211,13 @@ public class LineGraphServiceEdgeCaseTests
         var limitedRange = new DateRangeInfo(DateRange.LastMonth, new FakeDateShim(today.AddDays(-30)));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             outsideRangeEntries,
             limitedRange,
             showDataPoints: true,
             showAxesAndGrid: true,
             showTitle: true,
             showTrendLine: false,
-            GraphMode.Impact,
             Microsoft.Maui.Graphics.Colors.Brown);
 
         // Assert
