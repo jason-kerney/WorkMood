@@ -309,14 +309,13 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "dark_background.png");
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: false,
-            GraphMode.Impact, 
             backgroundPath,
             Microsoft.Maui.Graphics.Colors.Yellow);
 
