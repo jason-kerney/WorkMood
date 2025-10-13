@@ -351,7 +351,6 @@ public class LineGraphServiceBackgroundTests
     public async Task GenerateLineGraphAsync_WithBackgroundImageAndTrendLine_ReturnsValidImageData()
     {
         // Arrange
-        var service = new LineGraphService();
         var startDate = new DateOnly(1937, 7, 19);
         var (today, entries) = MoodDataTestHelper.GetRandomFakeData(startDate, seed: 2795, count: 10);
         
@@ -360,14 +359,13 @@ public class LineGraphServiceBackgroundTests
         var backgroundImagePath = Path.Combine(_testImagesPath, "light_background.png");
 
         // Act
-        var result = await service.GenerateLineGraphAsync(
+        var result = await _simpleLineGraphService.GenerateImpactGraphAsync(
             entries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: true, // Test the newly added parameter
-            GraphMode.Impact, 
             backgroundImagePath,
             lineColor);
 
