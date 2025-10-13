@@ -304,13 +304,12 @@ public class LineGraphServiceSaveTests
         const bool showAxesAndGrid = true;
         const bool showTitle = true;
         const bool showTrendLine = true;
-        const GraphMode graphMode = GraphMode.Impact;
         var lineColor = Colors.Blue;
 
         // Act
-        await _sut.SaveLineGraphAsync(
+        await _simpleLineGraphService.SaveImpactGraphAsync(
             moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, 
-            showTrendLine, filePath, graphMode, lineColor);
+            showTrendLine, filePath, lineColor);
 
         // Assert
         _mockFileShim.Verify(x => x.WriteAllBytesAsync(filePath, It.IsAny<byte[]>()), Times.Once);
