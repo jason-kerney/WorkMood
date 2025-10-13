@@ -365,14 +365,13 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(new DateOnly(1925, 1, 15)));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             emptyEntries,
             dateRange,
             showDataPoints: true,
             showAxesAndGrid: true,
             showTitle: true,
             showTrendLine: false,
-            GraphMode.Impact,
             StandardLineColor);
 
         // Assert
@@ -404,12 +403,11 @@ public class LineGraphServiceApprovalTests
     public async Task GenerateRawDataGraph_EmptyData_ShouldMatchApproval()
     {
         // Arrange
-        var emptyData = new List<RawMoodDataPoint>();
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(new DateOnly(1999, 12, 9)));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
-            emptyData, 
+        var imageBytes = await _simpleLineGraphService.GenerateRawGraphAsync(
+            [], 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
