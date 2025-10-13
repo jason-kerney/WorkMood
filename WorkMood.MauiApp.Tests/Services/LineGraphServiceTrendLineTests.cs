@@ -105,19 +105,17 @@ public class LineGraphServiceTrendLineTests
     public async Task GenerateLineGraphAsync_WithTrendLineAndEmptyEntries_ReturnsValidImageData()
     {
         // Arrange
-        var service = new LineGraphService();
         var entries = Array.Empty<MoodEntry>();
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(new DateOnly(2025, 1, 8)));
 
         // Act
-        var result = await service.GenerateLineGraphAsync(
+        var result = await _simpleLineGraphService.GenerateImpactGraphAsync(
             entries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: false, 
             showTitle: false, 
             showTrendLine: true,
-            GraphMode.Impact, 
             Colors.Purple);
 
         // Assert
