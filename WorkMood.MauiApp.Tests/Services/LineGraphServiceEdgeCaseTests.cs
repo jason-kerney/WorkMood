@@ -303,14 +303,13 @@ public class LineGraphServiceEdgeCaseTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             zeroImpactEntries,
             dateRange,
             showDataPoints: true,
             showAxesAndGrid: true,
             showTitle: true,
             showTrendLine: true, // Trend line should be flat
-            GraphMode.Impact,
             Microsoft.Maui.Graphics.Colors.Green);
 
         // Assert - Should show a flat line at y=0
