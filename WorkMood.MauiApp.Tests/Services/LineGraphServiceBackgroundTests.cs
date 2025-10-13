@@ -258,8 +258,8 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "gradient_background.png");
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
-            MoodDataTestHelper.ConvertToRawMoodDataPoints(data), 
+        var imageBytes = await _simpleLineGraphService.GenerateRawGraphAsync(
+            data,
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
