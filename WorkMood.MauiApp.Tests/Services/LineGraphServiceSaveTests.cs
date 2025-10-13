@@ -386,7 +386,7 @@ public class LineGraphServiceSaveTests
         // Arrange
         const string expectedFilePath = @"C:\test\raw_output_with_background.png";
         const string backgroundImagePath = @"C:\test\background.png";
-        var rawDataPoints = CreateTestRawDataPoints();
+        var moodEntries = CreateTestMoodEntries();
         var dateRange = CreateTestDateRange();
         const bool showDataPoints = true;
         const bool showAxesAndGrid = true;
@@ -401,8 +401,8 @@ public class LineGraphServiceSaveTests
         _mockDrawShimFactory.Setup(x => x.DecodeBitmapFromFile(backgroundImagePath)).Returns(_mockBitmap.Object);
 
         // Act
-        await _sut.SaveRawDataGraphAsync(
-            rawDataPoints,
+        await _simpleLineGraphService.SaveRawGraphAsync(
+            moodEntries,
             dateRange,
             showDataPoints,
             showAxesAndGrid,
