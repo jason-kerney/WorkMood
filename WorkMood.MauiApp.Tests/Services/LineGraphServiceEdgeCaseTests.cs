@@ -86,14 +86,13 @@ public class LineGraphServiceEdgeCaseTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateAverageGraphAsync(
             minMoodEntries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true,
             showTrendLine: false,
-            GraphMode.Average, 
             Microsoft.Maui.Graphics.Colors.Red);
 
         // Assert
