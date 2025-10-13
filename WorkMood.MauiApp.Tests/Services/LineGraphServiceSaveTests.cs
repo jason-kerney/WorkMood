@@ -22,7 +22,6 @@ public class LineGraphServiceSaveTests
     private readonly Mock<IBitmapShim> _mockBitmap;
     private readonly Mock<IImageShim> _mockImage;
     private readonly Mock<IDrawDataShim> _mockData;
-    private readonly LineGraphService _sut;
     private readonly SimpleLineGraphService _simpleLineGraphService;
 
     public LineGraphServiceSaveTests()
@@ -100,7 +99,6 @@ public class LineGraphServiceSaveTests
         _mockCanvas.Setup(x => x.DrawPath(It.IsAny<SkiaSharp.SKPath>(), It.IsAny<IPaintShim>()));
         _mockCanvas.Setup(x => x.DrawRect(It.IsAny<SkiaSharp.SKRect>(), It.IsAny<IPaintShim>()));
 
-        _sut = new LineGraphService(_mockDrawShimFactory.Object, _mockFileShimFactory.Object, lineGraphGenerator: new LineGraphGenerator(_mockDrawShimFactory.Object, _mockFileShimFactory.Object));
         _simpleLineGraphService = new SimpleLineGraphService(new GraphDataTransformer(), new LineGraphGenerator(_mockDrawShimFactory.Object, _mockFileShimFactory.Object));
     }
 
@@ -448,26 +446,6 @@ public class LineGraphServiceSaveTests
 
         // Assert
         _mockFileShim.Verify(x => x.WriteAllBytesAsync(filePath, It.IsAny<byte[]>()), Times.Once);
-    }
-
-    /// <summary>
-    /// Creates test raw data points for testing purposes
-    /// </summary>
-    private static IEnumerable<RawMoodDataPoint> CreateTestRawDataPoints()
-    {
-        var today = new DateOnly(2025, 10, 8);
-        var baseDateTime = today.ToDateTime(TimeOnly.MinValue);
-        
-        return new[]
-        {
-            new RawMoodDataPoint(baseDateTime.AddDays(-6), 3, MoodType.StartOfWork, today.AddDays(-6)),
-            new RawMoodDataPoint(baseDateTime.AddDays(-5), 5, MoodType.EndOfWork, today.AddDays(-5)),
-            new RawMoodDataPoint(baseDateTime.AddDays(-4), 7, MoodType.StartOfWork, today.AddDays(-4)),
-            new RawMoodDataPoint(baseDateTime.AddDays(-3), 4, MoodType.EndOfWork, today.AddDays(-3)),
-            new RawMoodDataPoint(baseDateTime.AddDays(-2), 6, MoodType.StartOfWork, today.AddDays(-2)),
-            new RawMoodDataPoint(baseDateTime.AddDays(-1), 8, MoodType.EndOfWork, today.AddDays(-1)),
-            new RawMoodDataPoint(baseDateTime, 5, MoodType.StartOfWork, today)
-        };
     }
 
     /// <summary>
