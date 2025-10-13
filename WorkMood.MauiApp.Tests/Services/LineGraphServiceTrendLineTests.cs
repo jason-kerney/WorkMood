@@ -255,7 +255,6 @@ public class LineGraphServiceTrendLineTests
     public async Task GenerateLineGraphAsync_WithTrendLine_FlatData_ShouldShowHorizontalTrendLine()
     {
         // Arrange - Data with no clear trend (flat)
-        var service = new LineGraphService();
         var startDate = new DateOnly(1999, 6, 30);
         var (today, entries) = MoodDataTestHelper.GetFakeData(startDate,
             (5, 6), // Impact: 1
@@ -270,14 +269,13 @@ public class LineGraphServiceTrendLineTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var result = await service.GenerateLineGraphAsync(
+        var result = await _simpleLineGraphService.GenerateImpactGraphAsync(
             entries,
             dateRange,
             showDataPoints: true,
             showAxesAndGrid: true,
             showTitle: true,
             showTrendLine: true, // Trend line enabled
-            GraphMode.Impact,
             Colors.Purple);
 
         // Assert - Should show flat/horizontal trend line
