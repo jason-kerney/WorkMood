@@ -19,6 +19,7 @@ namespace WorkMood.MauiApp.Tests.Services;
 public class LineGraphServiceBackgroundTests
 {
     private readonly LineGraphService _lineGraphService;
+    private readonly SimpleLineGraphService _simpleLineGraphService;
     private readonly IDrawShimFactory _drawShimFactory;
     private readonly IFileShimFactory _fileShimFactory;
     private readonly string _testImagesPath;
@@ -27,7 +28,9 @@ public class LineGraphServiceBackgroundTests
     {
         _drawShimFactory = new DrawShimFactory();
         _fileShimFactory = new FileShimFactory();
-        _lineGraphService = new LineGraphService(_drawShimFactory, _fileShimFactory, lineGraphGenerator: new LineGraphGenerator());
+        var lineGraphGenerator = new LineGraphGenerator(_drawShimFactory, _fileShimFactory);
+        _lineGraphService = new LineGraphService(_drawShimFactory, _fileShimFactory, lineGraphGenerator: lineGraphGenerator);
+        _simpleLineGraphService = new SimpleLineGraphService(new GraphDataTransformer(), lineGraphGenerator);
 
         // Create test images directory
         _testImagesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestImages");
@@ -136,14 +139,13 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "blue_background.png");
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: false,
-            GraphMode.Impact, 
             backgroundPath,
             Microsoft.Maui.Graphics.Colors.Yellow);
 
