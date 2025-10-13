@@ -352,7 +352,7 @@ public class LineGraphServiceSaveTests
     {
         // Arrange
         const string expectedFilePath = @"C:\test\raw_output_no_trend.png";
-        var rawDataPoints = CreateTestRawDataPoints();
+        var moodEntries = CreateTestMoodEntries();
         var dateRange = CreateTestDateRange();
         const bool showDataPoints = false;
         const bool showAxesAndGrid = false;
@@ -363,8 +363,8 @@ public class LineGraphServiceSaveTests
         const int height = 768;
 
         // Act
-        await _sut.SaveRawDataGraphAsync(
-            rawDataPoints,
+        await _simpleLineGraphService.SaveRawGraphAsync(
+            moodEntries,
             dateRange,
             showDataPoints,
             showAxesAndGrid,
