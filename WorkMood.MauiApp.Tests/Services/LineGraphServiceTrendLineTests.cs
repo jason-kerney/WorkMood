@@ -178,21 +178,19 @@ public class LineGraphServiceTrendLineTests
     public async Task GenerateLineGraphAsync_WithTrendLineEnabled_AverageMode_ShouldShowTrendLine()
     {
         // Arrange - Data with clear trend in averages
-        var service = new LineGraphService();
         var startDate = new DateOnly(1875, 4, 14);
         var (today, entries) = MoodDataTestHelper.GetRandomFakeData(startDate, seed: 5038, count: 17);
         
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var result = await service.GenerateLineGraphAsync(
+        var result = await _simpleLineGraphService.GenerateAverageGraphAsync(
             entries,
             dateRange,
             showDataPoints: true,
             showAxesAndGrid: true,
             showTitle: true,
             showTrendLine: true, // Trend line enabled
-            GraphMode.Average,
             Colors.Green);
 
         // Assert - Should show upward trending line for averages
