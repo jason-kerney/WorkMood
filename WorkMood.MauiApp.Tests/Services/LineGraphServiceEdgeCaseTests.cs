@@ -190,14 +190,13 @@ public class LineGraphServiceEdgeCaseTests
         var singleDayRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             singleDayEntries, 
             singleDayRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true,
             showTrendLine: false,
-            GraphMode.Impact, 
             Microsoft.Maui.Graphics.Colors.Teal);
 
         // Assert
