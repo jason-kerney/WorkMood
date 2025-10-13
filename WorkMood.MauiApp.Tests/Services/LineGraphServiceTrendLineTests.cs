@@ -322,17 +322,16 @@ public class LineGraphServiceTrendLineTests
     public async Task GenerateLineGraphAsync_WithTrendLine_ReturnsNonEmptyImageData()
     {
         // Arrange
-        var service = new LineGraphService();
         var startDate = new DateOnly(2025, 1, 1);
         var (today, entries) = MoodDataTestHelper.GetFakeData(startDate, (1, 5), (2, 6), (3, 7));
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var resultWithTrendLine = await service.GenerateLineGraphAsync(
-            entries, dateRange, true, true, true, true, GraphMode.Impact, Colors.Blue);
+        var resultWithTrendLine = await _simpleLineGraphService.GenerateImpactGraphAsync(
+            entries, dateRange, true, true, true, true, Colors.Blue);
         
-        var resultWithoutTrendLine = await service.GenerateLineGraphAsync(
-            entries, dateRange, true, true, true, false, GraphMode.Impact, Colors.Blue);
+        var resultWithoutTrendLine = await _simpleLineGraphService.GenerateImpactGraphAsync(
+            entries, dateRange, true, true, true, false, Colors.Blue);
 
         // Assert
         Assert.True(resultWithTrendLine.Length > 0, "Image with trend line should have data");
