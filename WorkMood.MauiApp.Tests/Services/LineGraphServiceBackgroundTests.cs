@@ -18,7 +18,6 @@ namespace WorkMood.MauiApp.Tests.Services;
 [UseApprovalSubdirectory("ApprovalFiles/Backgrounds")]
 public class LineGraphServiceBackgroundTests
 {
-    private readonly LineGraphService _lineGraphService;
     private readonly SimpleLineGraphService _simpleLineGraphService;
     private readonly IDrawShimFactory _drawShimFactory;
     private readonly IFileShimFactory _fileShimFactory;
@@ -29,7 +28,6 @@ public class LineGraphServiceBackgroundTests
         _drawShimFactory = new DrawShimFactory();
         _fileShimFactory = new FileShimFactory();
         var lineGraphGenerator = new LineGraphGenerator(_drawShimFactory, _fileShimFactory);
-        _lineGraphService = new LineGraphService(_drawShimFactory, _fileShimFactory, lineGraphGenerator: lineGraphGenerator);
         _simpleLineGraphService = new SimpleLineGraphService(new GraphDataTransformer(), lineGraphGenerator);
 
         // Create test images directory
