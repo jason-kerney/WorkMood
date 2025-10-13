@@ -153,17 +153,15 @@ public class LineGraphServiceEdgeCaseTests
     public async Task GenerateRawDataGraph_MidnightTimestamps_ShouldMatchApproval()
     {
         // Arrange - Entries at edge times (midnight)
-        var midnightEntries = new List<RawMoodDataPoint>
+        var midnightEntries = new List<MoodEntry>
         {
-            new(new DateTime(2025, 1, 1, 0, 0, 0), 5, MoodType.StartOfWork, new DateOnly(2025, 1, 1)),
-            new(new DateTime(2025, 1, 1, 23, 59, 59), 7, MoodType.EndOfWork, new DateOnly(2025, 1, 1)),
-            new(new DateTime(2025, 1, 2, 0, 0, 1), 6, MoodType.StartOfWork, new DateOnly(2025, 1, 2)),
-            new(new DateTime(2025, 1, 2, 23, 58, 0), 4, MoodType.EndOfWork, new DateOnly(2025, 1, 2))
+            new MoodEntry{ CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0), StartOfWork = 5, Date = new DateOnly(2025, 1, 1), EndOfWork = 7, LastModified = new DateTime(2025, 1, 1, 23, 59, 59) },
+            new MoodEntry{ CreatedAt = new DateTime(2025, 1, 2, 0, 0, 1), StartOfWork = 6, Date = new DateOnly(2025, 1, 2), EndOfWork = 4, LastModified = new DateTime(2025, 1, 2, 23, 58, 0) }
         };
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(new DateOnly(2025, 1, 4)));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateRawGraphAsync(
             midnightEntries, 
             dateRange, 
             showDataPoints: true, 
