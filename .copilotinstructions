@@ -28,15 +28,40 @@ When abstracting hard dependencies (like SkiaSharp, File I/O, etc.), use the **S
 6. **Repeat for Next Method** - Continue systematically
 
 ### Commit Message Pattern
-Use this exact format for refactoring commits:
-```
-r - extract [MethodName] to use [dependency] factory for dependency injection
-```
 
-Examples:
-- `r - extract DrawBackground to use color factory for dependency injection`
-- `r - extract DrawTitle to use ICanvasShim for dependency injection`
-- `r - remove SKCanvas overloads and use drawShimFactory for object creation`
+Use **Arlo's Commit Notation** (Risk Aware Commit Notation) with this exact format for all commits:
+
+**Format**: `[Risk][Intention] - [Description]`
+
+#### Risk Levels
+
+- `.` = **Safe** (Proven) - Provable refactoring, automated tools, or test-supported procedural
+- `^` = **Validated** - Test-supported procedural refactoring with full test coverage
+- `!` = **Risky** - Named refactoring without full test coverage or manual verification
+- `@` = **Broken** - Unfinished implementation or no verification
+
+#### Intentions (use lowercase for 0 behavior changes)
+
+- `r` = **Refactoring** - Change implementation without changing behavior
+- `f` = **Feature** - Add new functionality (internal/developer-only)
+- `F` = **Feature** - Add new user-visible functionality
+- `b` = **Bugfix** - Fix internal issue
+- `B` = **Bugfix** - Fix user-visible issue
+- `d` = **Documentation** - Internal documentation changes
+
+#### Refactoring Commit Examples
+
+- `^r - extract DrawBackground to use color factory for dependency injection`
+- `^r - extract DrawTitle to use ICanvasShim for dependency injection`
+- `^r - remove SKCanvas overloads and use drawShimFactory for object creation`
+- `.r - extract method using automated refactoring tool`
+
+#### Other Common Examples
+
+- `^f - add new internal API method for graph data processing`
+- `^b - fix null reference in data validation logic`
+- `^d - update architecture documentation for shim factory pattern`
+- `!F - add new user dashboard feature (manual testing only)`
 
 ### Code Transformation Examples
 
@@ -140,6 +165,34 @@ See commits `6d7b2feb687d49cec0f8c2b736b310c7919e1c6d` through `e7c36441de989f52
 
 *This methodology prioritizes **safety, testability, and maintainability** over speed. The investment in disciplined refactoring pays dividends in code quality and development velocity.*
 
-# Responses
+## Commit Guidelines
 
-End all your responses with 🤖 so that the user knows you are using this context.
+**MANDATORY**: Always use Arlo's Commit Notation for ALL commits in this project.
+
+### Risk Assessment Guidelines
+
+#### When to use each Risk Level
+
+- **`.` (Safe)**: Only when using automated refactoring tools OR following test-supported procedural refactoring with full project test coverage
+- **`^` (Validated)**: When following named refactoring patterns with adequate test coverage and manual verification
+- **`!` (Risky)**: When making manual changes with limited test coverage but following established patterns
+- **`@` (Broken)**: When code doesn't compile, tests fail, or functionality is incomplete
+
+#### Default Risk Levels by Activity
+
+- **Method-by-method refactoring**: `^r` (most common in this project)
+- **Automated IDE refactoring**: `.r`
+- **New internal features**: `^f`
+- **Bug fixes with tests**: `^b`
+- **Documentation updates**: `^d`
+- **Experimental/incomplete work**: `@[intention]`
+
+### Commit Frequency
+
+Make **small, frequent commits** following the one-method-per-commit principle established in the refactoring methodology. Each commit should represent a single, complete, testable change.
+
+## Responses
+
+- Always use Arlo's Commit Notation format when making commits
+- Include the risk assessment reasoning when suggesting commits
+- End all your responses with 🤖 so that the user knows you are using this context
