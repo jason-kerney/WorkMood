@@ -224,7 +224,6 @@ public class LineGraphServiceTrendLineTests
     public async Task GenerateLineGraphAsync_WithTrendLine_DownwardTrend_ShouldShowDecreasingTrendLine()
     {
         // Arrange - Data with clear downward trend
-        var service = new LineGraphService();
         var startDate = new DateOnly(1654, 12, 25);
         var (today, entries) = MoodDataTestHelper.GetFakeData(startDate,
             (10, 8), // Impact: -2
@@ -239,14 +238,13 @@ public class LineGraphServiceTrendLineTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var result = await service.GenerateLineGraphAsync(
+        var result = await _simpleLineGraphService.GenerateImpactGraphAsync(
             entries,
             dateRange,
             showDataPoints: true,
             showAxesAndGrid: true,
             showTitle: true,
             showTrendLine: true, // Trend line enabled
-            GraphMode.Impact,
             Colors.Red);
 
         // Assert - Should show downward trending line
