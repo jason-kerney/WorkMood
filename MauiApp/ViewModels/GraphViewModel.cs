@@ -693,20 +693,14 @@ public class GraphViewModel : ViewModelBase
             
             if (SelectedGraphMode == GraphMode.RawData)
             {
-                // Extract raw data points for sharing
-                var rawDataPoints = filteredEntries
-                    .SelectMany(entry => entry.GetRawDataPoints())
-                    .Where(point => point.Timestamp >= _selectedDateRange.DateRange.StartDate.ToDateTime(TimeOnly.MinValue) && 
-                                   point.Timestamp <= _selectedDateRange.DateRange.EndDate.ToDateTime(TimeOnly.MaxValue))
-                    .ToList();
-                
+                // SimpleLineGraphService handles raw data extraction internally from MoodEntries
                 if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
                 {
-                    await _lineGraphService.SaveRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, false, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                    await _simpleLineGraphService.SaveRawGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
                 }
                 else
                 {
-                    await _lineGraphService.SaveRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, false, filePath, SelectedLineColor, exportWidth, exportHeight);
+                    await _simpleLineGraphService.SaveRawGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
                 }
             }
             else
