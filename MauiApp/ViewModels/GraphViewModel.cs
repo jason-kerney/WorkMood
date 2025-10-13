@@ -13,7 +13,6 @@ namespace WorkMood.MauiApp.ViewModels;
 public class GraphViewModel : ViewModelBase
 {
     private readonly IMoodDataService _moodDataService;
-    private readonly ILineGraphService _lineGraphService;
     private readonly ISimpleLineGraphService _simpleLineGraphService;
     private readonly IDateShim _dateShim;
 
@@ -40,12 +39,11 @@ public class GraphViewModel : ViewModelBase
     private double _availableContainerWidth = 800; // Default fallback
     private double _availableContainerHeight = 400; // Default fallback
     
-    public GraphViewModel(IMoodDataService moodDataService, ILineGraphService lineGraphService, ISimpleLineGraphService simpleLineGraphService) : this(moodDataService, lineGraphService, simpleLineGraphService, new DateShim()) { }
+    public GraphViewModel(IMoodDataService moodDataService, ISimpleLineGraphService simpleLineGraphService) : this(moodDataService, simpleLineGraphService, new DateShim()) { }
     
-    public GraphViewModel(IMoodDataService moodDataService, ILineGraphService lineGraphService, ISimpleLineGraphService simpleLineGraphService, IDateShim dateShim)
+    public GraphViewModel(IMoodDataService moodDataService, ISimpleLineGraphService simpleLineGraphService, IDateShim dateShim)
     {
         _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
-        _lineGraphService = lineGraphService ?? throw new ArgumentNullException(nameof(lineGraphService));
         _simpleLineGraphService = simpleLineGraphService ?? throw new ArgumentNullException(nameof(simpleLineGraphService));
         _dateShim = dateShim ?? throw new ArgumentNullException(nameof(dateShim));
         DateRanges = new ObservableCollection<DateRangeItem>();
