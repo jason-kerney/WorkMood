@@ -427,7 +427,7 @@ public class LineGraphServiceSaveTests
     public async Task SaveRawDataGraphAsync_WithVariousFilePaths_CallsFileShimWithExactPath(string filePath)
     {
         // Arrange
-        var rawDataPoints = CreateTestRawDataPoints();
+        var moodEntries = CreateTestMoodEntries();
         var dateRange = CreateTestDateRange();
         const bool showDataPoints = true;
         const bool showAxesAndGrid = true;
@@ -436,8 +436,8 @@ public class LineGraphServiceSaveTests
         var lineColor = Colors.Blue;
 
         // Act
-        await _sut.SaveRawDataGraphAsync(
-            rawDataPoints,
+        await _simpleLineGraphService.SaveRawGraphAsync(
+            moodEntries,
             dateRange,
             showDataPoints,
             showAxesAndGrid,
