@@ -580,7 +580,9 @@ public class GraphViewModel : ViewModelBase
                 }
                 else
                 {
-                    imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedGraphMode, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                    imageData = SelectedGraphMode == GraphMode.Impact 
+                        ? await _simpleLineGraphService.GenerateImpactGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight)
+                        : await _simpleLineGraphService.GenerateAverageGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
                 }
             }
             
