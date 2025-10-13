@@ -38,6 +38,7 @@ public static class MauiProgram
 		
 		// Register graph-related services
 		builder.Services.AddSingleton<ILineGraphService, LineGraphService>();
+		builder.Services.AddSingleton<ISimpleLineGraphService, SimpleLineGraphService>();
 		
 		// Register version retriever service
 		builder.Services.AddSingleton<IVersionRetriever>((serviceProvider) => 

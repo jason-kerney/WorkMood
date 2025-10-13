@@ -14,6 +14,7 @@ public class GraphViewModel : ViewModelBase
 {
     private readonly IMoodDataService _moodDataService;
     private readonly ILineGraphService _lineGraphService;
+    private readonly ISimpleLineGraphService _simpleLineGraphService;
     private readonly IDateShim _dateShim;
 
     // Backing fields
@@ -39,12 +40,13 @@ public class GraphViewModel : ViewModelBase
     private double _availableContainerWidth = 800; // Default fallback
     private double _availableContainerHeight = 400; // Default fallback
     
-    public GraphViewModel(IMoodDataService moodDataService, ILineGraphService lineGraphService) : this(moodDataService, lineGraphService, new DateShim()) { }
+    public GraphViewModel(IMoodDataService moodDataService, ILineGraphService lineGraphService, ISimpleLineGraphService simpleLineGraphService) : this(moodDataService, lineGraphService, simpleLineGraphService, new DateShim()) { }
     
-    public GraphViewModel(IMoodDataService moodDataService, ILineGraphService lineGraphService, IDateShim dateShim)
+    public GraphViewModel(IMoodDataService moodDataService, ILineGraphService lineGraphService, ISimpleLineGraphService simpleLineGraphService, IDateShim dateShim)
     {
         _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
         _lineGraphService = lineGraphService ?? throw new ArgumentNullException(nameof(lineGraphService));
+        _simpleLineGraphService = simpleLineGraphService ?? throw new ArgumentNullException(nameof(simpleLineGraphService));
         _dateShim = dateShim ?? throw new ArgumentNullException(nameof(dateShim));
         DateRanges = new ObservableCollection<DateRangeItem>();
         InitializeDateRanges();
@@ -572,7 +574,9 @@ public class GraphViewModel : ViewModelBase
                 // Use existing logic for Impact and Average modes
                 if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
                 {
-                    imageData = await _lineGraphService.GenerateLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedGraphMode, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                    imageData = SelectedGraphMode == GraphMode.Impact 
+                        ? await _simpleLineGraphService.GenerateImpactGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight)
+                        : await _simpleLineGraphService.GenerateAverageGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
                 }
                 else
                 {
