@@ -162,14 +162,13 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "gradient_background.png");
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateAverageGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: false,
-            GraphMode.Average, 
             backgroundPath,
             Microsoft.Maui.Graphics.Colors.DarkRed);
 
