@@ -126,7 +126,6 @@ public class LineGraphServiceTrendLineTests
     public async Task GenerateLineGraphAsync_TrendLineImagesDiffer_BetweenEnabledAndDisabled()
     {
         // Arrange
-        var service = new LineGraphService();
         var startDate = new DateOnly(2025, 1, 1);
         var (today, entries) = MoodDataTestHelper.GetFakeData(startDate, 
             (0, 0), (0, 1), (0, 3), (0, 6), (0, 8), (0, 9), (0, 9), (0, 10)); // Progressive mood improvement
@@ -135,8 +134,8 @@ public class LineGraphServiceTrendLineTests
         var lineColor = Colors.Red;
 
         // Act
-        var resultWithTrendLine = await service.GenerateLineGraphAsync(
-            entries, dateRange, false, false, false, true, GraphMode.Impact, lineColor);
+        var resultWithTrendLine = await _simpleLineGraphService.GenerateImpactGraphAsync(
+            entries, dateRange, false, false, false, true, lineColor);
 
         // Assert
         Approvals.VerifyBinaryFile(resultWithTrendLine, "png");
