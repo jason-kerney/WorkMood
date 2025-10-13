@@ -180,7 +180,6 @@ public class LineGraphServiceSaveTests
         const bool showDataPoints = true;
         const bool showAxesAndGrid = true;
         const bool showTitle = true;
-        const GraphMode graphMode = GraphMode.Impact;
         var lineColor = Colors.Green;
         const int width = 800;
         const int height = 600;
@@ -190,7 +189,7 @@ public class LineGraphServiceSaveTests
         _mockDrawShimFactory.Setup(x => x.DecodeBitmapFromFile(backgroundImagePath)).Returns(_mockBitmap.Object);
 
         // Act
-        await _sut.SaveLineGraphAsync(
+        await _simpleLineGraphService.SaveImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints, 
@@ -198,7 +197,6 @@ public class LineGraphServiceSaveTests
             showTitle, 
             false, // showTrendLine
             expectedFilePath, 
-            graphMode, 
             backgroundImagePath, 
             lineColor, 
             width, 
