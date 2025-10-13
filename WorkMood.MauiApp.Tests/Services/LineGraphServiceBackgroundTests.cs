@@ -185,14 +185,13 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "pattern_background.png");
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: false, 
             showTitle: false, 
             showTrendLine: false,
-            GraphMode.Impact, 
             backgroundPath,
             Microsoft.Maui.Graphics.Colors.Purple);
 
@@ -209,14 +208,13 @@ public class LineGraphServiceBackgroundTests
         var nonExistentPath = Path.Combine(_testImagesPath, "non_existent.png");
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: false,
-            GraphMode.Impact, 
             nonExistentPath,
             Microsoft.Maui.Graphics.Colors.Blue);
 
