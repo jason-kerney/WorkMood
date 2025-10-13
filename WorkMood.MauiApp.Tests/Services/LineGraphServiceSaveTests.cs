@@ -245,11 +245,10 @@ public class LineGraphServiceSaveTests
         const bool showAxesAndGrid = true;
         const bool showTitle = true;
         const bool showTrendLine = true;
-        const GraphMode graphMode = GraphMode.Impact;
         var lineColor = Colors.Purple;
 
         // Act - Using default width and height (800x600)
-        await _sut.SaveLineGraphAsync(
+        await _simpleLineGraphService.SaveImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints, 
@@ -257,7 +256,6 @@ public class LineGraphServiceSaveTests
             showTitle, 
             showTrendLine, 
             expectedFilePath, 
-            graphMode, 
             lineColor);
 
         // Assert
