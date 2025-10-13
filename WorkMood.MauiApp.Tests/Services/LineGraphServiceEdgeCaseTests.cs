@@ -16,7 +16,6 @@ namespace WorkMood.MauiApp.Tests.Services;
 [UseApprovalSubdirectory("ApprovalFiles/EdgeCases")]
 public class LineGraphServiceEdgeCaseTests
 {
-    private readonly LineGraphService _lineGraphService;
     private readonly SimpleLineGraphService _simpleLineGraphService;
 
     public LineGraphServiceEdgeCaseTests()
@@ -24,7 +23,6 @@ public class LineGraphServiceEdgeCaseTests
         var drawShimFactory = new DrawShimFactory();
         var fileShimFactory = new FileShimFactory();
         var lineGraphGenerator = new LineGraphGenerator(drawShimFactory, fileShimFactory);
-        _lineGraphService = new LineGraphService(drawShimFactory, fileShimFactory, lineGraphGenerator: lineGraphGenerator);
         _simpleLineGraphService = new SimpleLineGraphService(new GraphDataTransformer(), lineGraphGenerator);
         
         ApprovalTestConfiguration.Initialize();
