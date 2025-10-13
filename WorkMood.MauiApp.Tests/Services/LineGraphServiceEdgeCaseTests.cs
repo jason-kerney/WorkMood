@@ -61,14 +61,13 @@ public class LineGraphServiceEdgeCaseTests
         var dateRange = new DateRangeInfo(DateRange.LastMonth, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             denseMoodEntries, 
             dateRange, 
             showDataPoints: false, // Hide individual points due to density
             showAxesAndGrid: true, 
             showTitle: true,
             showTrendLine: false,
-            GraphMode.Impact, 
             Microsoft.Maui.Graphics.Colors.Purple);
 
         // Assert
