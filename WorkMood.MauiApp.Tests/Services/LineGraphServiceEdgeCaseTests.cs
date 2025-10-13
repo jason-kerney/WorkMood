@@ -267,14 +267,13 @@ public class LineGraphServiceEdgeCaseTests
         var yearRange = new DateRangeInfo(DateRange.LastYear, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateLineGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateImpactGraphAsync(
             largeMoodEntries,
             yearRange,
             showDataPoints: false, // Too many points to show individually
             showAxesAndGrid: true,
             showTitle: true,
             showTrendLine: false,
-            GraphMode.Impact,
             Microsoft.Maui.Graphics.Colors.DarkGreen,
             width: 1600, // Larger canvas to accommodate more data
             height: 800);
