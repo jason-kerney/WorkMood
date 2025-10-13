@@ -128,17 +128,15 @@ public class LineGraphServiceEdgeCaseTests
     public async Task GenerateRawDataGraph_SameTimestampEntries_ShouldMatchApproval()
     {
         // Arrange - Multiple entries with identical timestamps (edge case)
-        var sameTimeEntries = new List<RawMoodDataPoint>
+        var sameTimeEntries = new List<MoodEntry>
         {
-            new(new DateTime(2025, 1, 1, 8, 0, 0), 5, MoodType.StartOfWork, new DateOnly(2025, 1, 1)),
-            new(new DateTime(2025, 1, 1, 8, 0, 0), 7, MoodType.EndOfWork, new DateOnly(2025, 1, 1)), // Same timestamp
-            new(new DateTime(2025, 1, 1, 17, 0, 0), 6, MoodType.StartOfWork, new DateOnly(2025, 1, 1)),
-            new(new DateTime(2025, 1, 1, 17, 0, 0), 4, MoodType.EndOfWork, new DateOnly(2025, 1, 1)) // Same timestamp
+            new MoodEntry{ CreatedAt = new DateTime(2025, 1, 1, 8, 0, 0), StartOfWork = 5, Date = new DateOnly(2025, 1, 1), EndOfWork = 7, LastModified = new DateTime(2025, 1, 1, 8, 0, 0) },
+            new MoodEntry{ CreatedAt = new DateTime(2025, 1, 1, 17, 0, 0), StartOfWork = 6, Date = new DateOnly(2025, 1, 1), EndOfWork = 4, LastModified = new DateTime(2025, 1, 1, 17, 0, 0) }
         };
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(new DateOnly(2025, 1, 2)));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
+        var imageBytes = await _simpleLineGraphService.GenerateRawGraphAsync(
             sameTimeEntries, 
             dateRange, 
             showDataPoints: true, 
