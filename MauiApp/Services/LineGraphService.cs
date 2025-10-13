@@ -5,7 +5,7 @@ namespace WorkMood.MauiApp.Services;
 /// <summary>
 /// Line graph service that uses GraphDataTransformer and LineGraphGenerator
 /// to provide clean methods for generating graphs from MoodEntry data.
-/// Focuses on Impact, Average, and Raw modes without RawMoodDataPoint usage.
+/// Supports Impact, Average, and Raw graph modes.
 /// </summary>
 public class LineGraphService(IGraphDataTransformer graphDataTransformer, ILineGraphGenerator lineGraphGenerator) : ILineGraphService
 {

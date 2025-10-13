@@ -157,42 +157,7 @@ public class MoodEntry
         return $"{Date:yyyy-MM-dd}: Start of Work {startOfWork}, End of Work {endOfWork}";
     }
 
-    /// <summary>
-    /// Extracts raw mood data points based on timestamps for Raw Data graph mode
-    /// </summary>
-    /// <returns>List of raw mood data points with calculated timestamps</returns>
-    public List<RawMoodDataPoint> GetRawDataPoints()
-    {
-        var dataPoints = new List<RawMoodDataPoint>();
 
-        if (!StartOfWork.HasValue)
-            return dataPoints; // No data to extract
-
-        // Calculate timestamps based on business rules
-        var startTimestamp = CreatedAt;
-        DateTime endTimestamp;
-
-        if (CreatedAt.Date == LastModified.Date && 
-            Math.Abs((LastModified - CreatedAt).TotalMinutes) < 1) // Essentially the same time (within 1 minute)
-        {
-            // If created and modified are the same, assume 8 hours between start and end
-            endTimestamp = CreatedAt.AddHours(8);
-        }
-        else
-        {
-            // Use LastModified as end timestamp
-            endTimestamp = LastModified;
-        }
-
-        // Add start of work data point
-        dataPoints.Add(new RawMoodDataPoint(startTimestamp, StartOfWork.Value, MoodType.StartOfWork, Date));
-
-        // Add end of work data point
-        var endOfWorkValue = EndOfWork ?? StartOfWork.Value; // Use StartOfWork if EndOfWork is not recorded
-        dataPoints.Add(new RawMoodDataPoint(endTimestamp, endOfWorkValue, MoodType.EndOfWork, Date));
-
-        return dataPoints;
-    }
 
 
 }
