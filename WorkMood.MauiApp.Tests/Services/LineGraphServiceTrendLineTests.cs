@@ -147,7 +147,6 @@ public class LineGraphServiceTrendLineTests
     public async Task GenerateLineGraphAsync_WithTrendLineEnabled_ImpactMode_ShouldShowTrendLine()
     {
         // Arrange - Data with clear upward trend
-        var service = new LineGraphService();
         var startDate = new DateOnly(1895, 3, 15);
         var (today, entries) = MoodDataTestHelper.GetFakeData(startDate,
             (3, 1), // Impact: -2
@@ -162,14 +161,13 @@ public class LineGraphServiceTrendLineTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var result = await service.GenerateLineGraphAsync(
+        var result = await _simpleLineGraphService.GenerateImpactGraphAsync(
             entries,
             dateRange,
             showDataPoints: true,
             showAxesAndGrid: true,
             showTitle: true,
             showTrendLine: true, // Trend line enabled
-            GraphMode.Impact,
             Colors.Blue);
 
         // Assert - Should show upward trending line
