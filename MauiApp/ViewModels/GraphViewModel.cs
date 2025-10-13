@@ -545,14 +545,8 @@ public class GraphViewModel : ViewModelBase
             
             if (SelectedGraphMode == GraphMode.RawData)
             {
-                // Extract raw data points from filtered entries
-                var rawDataPoints = filteredEntries
-                    .SelectMany(entry => entry.GetRawDataPoints())
-                    .Where(point => point.Timestamp >= _selectedDateRange.DateRange.StartDate.ToDateTime(TimeOnly.MinValue) && 
-                                   point.Timestamp <= _selectedDateRange.DateRange.EndDate.ToDateTime(TimeOnly.MaxValue))
-                    .ToList();
-                
-                if (!rawDataPoints.Any())
+                // SimpleLineGraphService handles raw data extraction internally from MoodEntries
+                if (!filteredEntries.Any())
                 {
                     HasGraphData = false;
                     HasNoData = true;
@@ -562,11 +556,11 @@ public class GraphViewModel : ViewModelBase
                 
                 if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
                 {
-                    imageData = await _lineGraphService.GenerateRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, false, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                    imageData = await _simpleLineGraphService.GenerateRawGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
                 }
                 else
                 {
-                    imageData = await _lineGraphService.GenerateRawDataGraphAsync(rawDataPoints, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, false, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                    imageData = await _simpleLineGraphService.GenerateRawGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
                 }
             }
             else
