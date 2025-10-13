@@ -726,11 +726,25 @@ public class GraphViewModel : ViewModelBase
                 // Use existing logic for Impact and Average modes
                 if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
                 {
-                    await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedGraphMode, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                    if (SelectedGraphMode == GraphMode.Impact)
+                    {
+                        await _simpleLineGraphService.SaveImpactGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                    }
+                    else
+                    {
+                        await _simpleLineGraphService.SaveAverageGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                    }
                 }
                 else
                 {
-                    await _lineGraphService.SaveLineGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, false, filePath, SelectedGraphMode, SelectedLineColor, exportWidth, exportHeight);
+                    if (SelectedGraphMode == GraphMode.Impact)
+                    {
+                        await _simpleLineGraphService.SaveImpactGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
+                    }
+                    else
+                    {
+                        await _simpleLineGraphService.SaveAverageGraphAsync(filteredEntries, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
+                    }
                 }
             }
             
