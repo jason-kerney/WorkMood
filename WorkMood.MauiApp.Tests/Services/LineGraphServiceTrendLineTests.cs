@@ -18,18 +18,23 @@ namespace WorkMood.MauiApp.Tests.Services;
 [UseApprovalSubdirectory("ApprovalFiles/TrendLines")]
 public class LineGraphServiceTrendLineTests
 {
+    private readonly SimpleLineGraphService _simpleLineGraphService;
 
     public LineGraphServiceTrendLineTests()
     {
         // Configure ApprovalTests to use a specific directory for storing approved files
         ApprovalTestConfiguration.Initialize();
+        
+        var drawShimFactory = new DrawShimFactory();
+        var fileShimFactory = new FileShimFactory();
+        var lineGraphGenerator = new LineGraphGenerator(drawShimFactory, fileShimFactory);
+        _simpleLineGraphService = new SimpleLineGraphService(new GraphDataTransformer(), lineGraphGenerator);
     }
 
     [Fact]
     public async Task GenerateLineGraphAsync_WithShowTrendLineTrue_ReturnsValidImageData()
     {
         // Arrange
-        var service = new LineGraphService();
         var startDate = new DateOnly(1832, 9, 20);
         var (today, entries) = MoodDataTestHelper.GetRandomFakeData(startDate, seed: 9426, count: 7);
         
@@ -37,14 +42,13 @@ public class LineGraphServiceTrendLineTests
         var lineColor = Colors.Blue;
 
         // Act
-        var result = await service.GenerateLineGraphAsync(
+        var result = await _simpleLineGraphService.GenerateImpactGraphAsync(
             entries, 
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
             showTrendLine: true, // This is the key parameter we're testing
-            GraphMode.Impact, 
             lineColor);
 
         // Assert
