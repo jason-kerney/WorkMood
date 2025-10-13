@@ -23,6 +23,7 @@ public class LineGraphServiceSaveTests
     private readonly Mock<IImageShim> _mockImage;
     private readonly Mock<IDrawDataShim> _mockData;
     private readonly LineGraphService _sut;
+    private readonly SimpleLineGraphService _simpleLineGraphService;
 
     public LineGraphServiceSaveTests()
     {
@@ -100,6 +101,7 @@ public class LineGraphServiceSaveTests
         _mockCanvas.Setup(x => x.DrawRect(It.IsAny<SkiaSharp.SKRect>(), It.IsAny<IPaintShim>()));
 
         _sut = new LineGraphService(_mockDrawShimFactory.Object, _mockFileShimFactory.Object, lineGraphGenerator: new LineGraphGenerator(_mockDrawShimFactory.Object, _mockFileShimFactory.Object));
+        _simpleLineGraphService = new SimpleLineGraphService(new GraphDataTransformer(), new LineGraphGenerator(_mockDrawShimFactory.Object, _mockFileShimFactory.Object));
     }
 
     [Fact]
@@ -113,13 +115,12 @@ public class LineGraphServiceSaveTests
         const bool showAxesAndGrid = true;
         const bool showTitle = true;
         const bool showTrendLine = true;
-        const GraphMode graphMode = GraphMode.Impact;
         var lineColor = Colors.Blue;
         const int width = 800;
         const int height = 600;
 
         // Act
-        await _sut.SaveLineGraphAsync(
+        await _simpleLineGraphService.SaveImpactGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints, 
@@ -127,7 +128,6 @@ public class LineGraphServiceSaveTests
             showTitle, 
             showTrendLine, 
             expectedFilePath, 
-            graphMode, 
             lineColor, 
             width, 
             height);
