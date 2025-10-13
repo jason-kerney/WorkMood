@@ -147,13 +147,12 @@ public class LineGraphServiceSaveTests
         const bool showAxesAndGrid = false;
         const bool showTitle = false;
         const bool showTrendLine = false;
-        const GraphMode graphMode = GraphMode.Average;
         var lineColor = Colors.Red;
         const int width = 1024;
         const int height = 768;
 
         // Act
-        await _sut.SaveLineGraphAsync(
+        await _simpleLineGraphService.SaveAverageGraphAsync(
             moodEntries, 
             dateRange, 
             showDataPoints, 
@@ -161,7 +160,6 @@ public class LineGraphServiceSaveTests
             showTitle, 
             showTrendLine, 
             expectedFilePath, 
-            graphMode, 
             lineColor, 
             width, 
             height);
