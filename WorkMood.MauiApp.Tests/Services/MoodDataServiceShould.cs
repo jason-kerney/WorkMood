@@ -235,6 +235,32 @@ public class MoodDataServiceShould
         _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json"), Times.Once);
     }
 
+    [Fact]
+    public void ClearCache_DoesNotThrow_WhenCalled()
+    {
+        // Arrange
+        var sut = CreateMoodDataService();
+
+        // Act
+        var act = () => sut.ClearCache();
+
+        // Assert
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void GetDataFilePath_ReturnCorrectPath_WhenCalled()
+    {
+        // Arrange
+        var sut = CreateMoodDataService();
+
+        // Act
+        var result = sut.GetDataFilePath();
+
+        // Assert
+        result.Should().Be("C:\\TestApp\\mood_data.json");
+    }
+
     private MoodDataService CreateMoodDataService()
     {
         return new MoodDataService(
