@@ -149,4 +149,65 @@ public class DataArchiveServiceShould
     }
 
     #endregion
+
+    #region ShouldArchive Tests
+
+    [Fact]
+    public void ShouldArchive_ReturnFalse_WhenCollectionIsEmpty()
+    {
+        // Arrange
+        var emptyCollection = new MoodCollection(new List<MoodEntry>());
+
+        // Act
+        var result = _sut.ShouldArchive(emptyCollection, thresholdYears: 3);
+
+        // Assert
+        result.Should().BeFalse("because empty collections should not trigger archiving");
+    }
+
+    [Fact]
+    public void ShouldArchive_ReturnTrue_WhenOldestEntryExceedsThreshold()
+    {
+        // Arrange
+        var currentDate = new DateOnly(2024, 12, 1);
+        _mockDateShim.Setup(d => d.GetTodayDate())
+            .Returns(currentDate);
+
+        var entries = new List<MoodEntry>
+        {
+            new() { Date = new DateOnly(2020, 1, 1), StartOfWork = 8 }, // ~5 years old
+            new() { Date = new DateOnly(2023, 6, 1), EndOfWork = 7 }    // ~1.5 years old
+        };
+        var collection = new MoodCollection(entries);
+
+        // Act
+        var result = _sut.ShouldArchive(collection, thresholdYears: 3);
+
+        // Assert
+        result.Should().BeTrue("because oldest entry (5 years) exceeds threshold (3 years)");
+    }
+
+    [Fact]
+    public void ShouldArchive_ReturnFalse_WhenOldestEntryWithinThreshold()
+    {
+        // Arrange
+        var currentDate = new DateOnly(2024, 12, 1);
+        _mockDateShim.Setup(d => d.GetTodayDate())
+            .Returns(currentDate);
+
+        var entries = new List<MoodEntry>
+        {
+            new() { Date = new DateOnly(2022, 6, 1), StartOfWork = 7 }, // ~2.5 years old
+            new() { Date = new DateOnly(2024, 1, 1), EndOfWork = 8 }    // ~11 months old
+        };
+        var collection = new MoodCollection(entries);
+
+        // Act
+        var result = _sut.ShouldArchive(collection, thresholdYears: 3);
+
+        // Assert
+        result.Should().BeFalse("because oldest entry (2.5 years) is within threshold (3 years)");
+    }
+
+    #endregion
 }
