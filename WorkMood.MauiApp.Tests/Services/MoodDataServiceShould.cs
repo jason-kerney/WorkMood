@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Moq;
 using WorkMood.MauiApp.Models;
@@ -74,6 +75,40 @@ public class MoodDataServiceShould
         result.Entries.Should().BeEmpty();
         _mockFileShim.Verify(x => x.Exists("C:\\TestApp\\mood_data.json"), Times.Once);
         _mockFileShim.Verify(x => x.ReadAllTextAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task LoadMoodDataAsync_ReturnMoodCollection_WhenFileContainsValidJson()
+    {
+        // Arrange
+        var sut = CreateMoodDataService();
+        var testDate = new DateOnly(2024, 10, 15);
+        var expectedEntries = new List<MoodEntry>
+        {
+            new MoodEntry { Date = testDate, StartOfWork = 4, EndOfWork = 3 }
+        };
+        
+        var jsonContent = """[{"date":"2024-10-15","startOfWork":4,"endOfWork":3}]""";
+        
+        _mockFileShim.Setup(x => x.Exists("C:\\TestApp\\mood_data.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json")).ReturnsAsync(jsonContent);
+        _mockJsonSerializerShim.Setup(x => x.Deserialize<List<MoodEntry>>(jsonContent, It.IsAny<JsonSerializerOptions>()))
+                               .Returns(expectedEntries);
+
+        // Act
+        var result = await sut.LoadMoodDataAsync();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Count.Should().Be(1);
+        result.Entries.Should().HaveCount(1);
+        result.Entries.First().Date.Should().Be(testDate);
+        result.Entries.First().StartOfWork.Should().Be(4);
+        result.Entries.First().EndOfWork.Should().Be(3);
+        
+        _mockFileShim.Verify(x => x.Exists("C:\\TestApp\\mood_data.json"), Times.Once);
+        _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json"), Times.Once);
+        _mockJsonSerializerShim.Verify(x => x.Deserialize<List<MoodEntry>>(jsonContent, It.IsAny<JsonSerializerOptions>()), Times.Once);
     }
 
     private MoodDataService CreateMoodDataService()
