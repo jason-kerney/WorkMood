@@ -61,6 +61,70 @@ public class MoodDataServiceShould
     }
 
     [Fact]
+    public void ThrowArgumentNullException_WhenFolderShimIsNull()
+    {
+        // Act
+        var act = () => new MoodDataService(
+            _mockArchiveService.Object,
+            null!,
+            _mockDateShim.Object,
+            _mockFileShim.Object,
+            _mockJsonSerializerShim.Object);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("folderShim");
+    }
+
+    [Fact]
+    public void ThrowArgumentNullException_WhenDateShimIsNull()
+    {
+        // Act
+        var act = () => new MoodDataService(
+            _mockArchiveService.Object,
+            _mockFolderShim.Object,
+            null!,
+            _mockFileShim.Object,
+            _mockJsonSerializerShim.Object);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("dateShim");
+    }
+
+    [Fact]
+    public void ThrowArgumentNullException_WhenFileShimIsNull()
+    {
+        // Act
+        var act = () => new MoodDataService(
+            _mockArchiveService.Object,
+            _mockFolderShim.Object,
+            _mockDateShim.Object,
+            null!,
+            _mockJsonSerializerShim.Object);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("fileShim");
+    }
+
+    [Fact]
+    public void ThrowArgumentNullException_WhenJsonSerializerShimIsNull()
+    {
+        // Act
+        var act = () => new MoodDataService(
+            _mockArchiveService.Object,
+            _mockFolderShim.Object,
+            _mockDateShim.Object,
+            _mockFileShim.Object,
+            null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("jsonSerializerShim");
+    }
+
+    [Fact]
     public async Task LoadMoodDataAsync_ReturnEmptyCollection_WhenFileDoesNotExist()
     {
         // Arrange
