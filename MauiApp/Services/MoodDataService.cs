@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using WorkMood.MauiApp.Models;
+using WorkMood.MauiApp.Shims;
 
 namespace WorkMood.MauiApp.Services;
 
@@ -12,26 +13,42 @@ public class MoodDataService : IMoodDataService
     private readonly string _dataFilePath;
     private readonly JsonSerializerOptions _jsonOptions;
     private readonly IDataArchiveService _archiveService;
+    private readonly IFolderShim _folderShim;
+    private readonly IDateShim _dateShim;
+    private readonly IFileShim _fileShim;
+    private readonly IJsonSerializerShim _jsonSerializerShim;
     private MoodCollection? _cachedCollection;
 
     /// <summary>
     /// Creates a new mood data service
     /// </summary>
     /// <param name="archiveService">Service for handling data archiving</param>
-    public MoodDataService(IDataArchiveService archiveService)
+    /// <param name="folderShim">Shim for folder operations</param>
+    /// <param name="dateShim">Shim for date operations</param>
+    /// <param name="fileShim">Shim for file operations</param>
+    /// <param name="jsonSerializerShim">Shim for JSON serialization</param>
+    public MoodDataService(
+        IDataArchiveService archiveService,
+        IFolderShim folderShim,
+        IDateShim dateShim,
+        IFileShim fileShim,
+        IJsonSerializerShim jsonSerializerShim)
     {
         _archiveService = archiveService ?? throw new ArgumentNullException(nameof(archiveService));
+        _folderShim = folderShim ?? throw new ArgumentNullException(nameof(folderShim));
+        _dateShim = dateShim ?? throw new ArgumentNullException(nameof(dateShim));
+        _fileShim = fileShim ?? throw new ArgumentNullException(nameof(fileShim));
+        _jsonSerializerShim = jsonSerializerShim ?? throw new ArgumentNullException(nameof(jsonSerializerShim));
         
         Log("MoodDataService: Constructor starting");
         
         // Store data in the app's local data directory
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var appFolder = Path.Combine(appDataPath, "WorkMood");
-        Directory.CreateDirectory(appFolder);
+        var appFolder = _folderShim.GetApplicationFolder();
+        _folderShim.CreateDirectory(appFolder);
         
         Log($"MoodDataService: Created app folder at {appFolder}");
         
-        _dataFilePath = Path.Combine(appFolder, "mood_data.json");
+        _dataFilePath = _folderShim.CombinePaths(appFolder, "mood_data.json");
 
         Log($"MoodDataService: Data file path: {_dataFilePath}");
 
@@ -46,9 +63,14 @@ public class MoodDataService : IMoodDataService
     }
 
     /// <summary>
-    /// Creates a new mood data service with default archive service (for backwards compatibility)
+    /// Creates a new mood data service with default shims (for backwards compatibility)
     /// </summary>
-    public MoodDataService() : this(new DataArchiveService(new Shims.FolderShim(), new Shims.DateShim(), new Shims.FileShim(), new Shims.JsonSerializerShim()))
+    public MoodDataService() : this(
+        new DataArchiveService(new Shims.FolderShim(), new Shims.DateShim(), new Shims.FileShim(), new Shims.JsonSerializerShim()),
+        new Shims.FolderShim(),
+        new Shims.DateShim(),
+        new Shims.FileShim(),
+        new Shims.JsonSerializerShim())
     {
     }
 
@@ -56,11 +78,11 @@ public class MoodDataService : IMoodDataService
     {
         try
         {
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            var timestamp = _dateShim.Now().ToString("yyyy-MM-dd HH:mm:ss.fff");
             var logEntry = $"[{timestamp}] {message}";
-            var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            var logPath = Path.Combine(desktopPath, "WorkMood_Debug.log");
-            File.AppendAllText(logPath, logEntry + Environment.NewLine);
+            var desktopPath = _folderShim.GetDesktopFolder();
+            var logPath = _folderShim.CombinePaths(desktopPath, "WorkMood_Debug.log");
+            _fileShim.AppendAllText(logPath, logEntry + Environment.NewLine);
         }
         catch { } // Ignore logging errors
     }
@@ -83,7 +105,7 @@ public class MoodDataService : IMoodDataService
         {
             Log($"LoadMoodDataAsync: Checking if file exists: {_dataFilePath}");
             
-            if (!File.Exists(_dataFilePath))
+            if (!_fileShim.Exists(_dataFilePath))
             {
                 Log("LoadMoodDataAsync: File doesn't exist, creating new collection");
                 _cachedCollection = new MoodCollection();
@@ -91,7 +113,7 @@ public class MoodDataService : IMoodDataService
             }
 
             Log("LoadMoodDataAsync: Reading file");
-            var json = await File.ReadAllTextAsync(_dataFilePath);
+            var json = await _fileShim.ReadAllTextAsync(_dataFilePath);
             Log($"LoadMoodDataAsync: File read, content length: {json.Length} characters");
             
             if (string.IsNullOrWhiteSpace(json))
@@ -102,7 +124,7 @@ public class MoodDataService : IMoodDataService
             }
 
             Log("LoadMoodDataAsync: Starting JSON deserialization");
-            var entries = JsonSerializer.Deserialize<List<MoodEntry>>(json, _jsonOptions);
+            var entries = _jsonSerializerShim.Deserialize<List<MoodEntry>>(json, _jsonOptions);
             Log($"LoadMoodDataAsync: Deserialization successful, got {entries?.Count ?? 0} entries");
             
             if (entries != null)
@@ -155,8 +177,8 @@ public class MoodDataService : IMoodDataService
             var archivedCollection = await _archiveService.ArchiveOldDataAsync(collection);
             
             // Save the current (non-archived) data
-            var json = JsonSerializer.Serialize(archivedCollection.Entries, _jsonOptions);
-            await File.WriteAllTextAsync(_dataFilePath, json);
+            var json = _jsonSerializerShim.Serialize(archivedCollection.Entries, _jsonOptions);
+            await _fileShim.WriteAllTextAsync(_dataFilePath, json);
             
             // Update cached collection with the archived collection
             _cachedCollection = archivedCollection;
@@ -250,7 +272,7 @@ public class MoodDataService : IMoodDataService
             Log($"GetRecentMoodEntriesWithArchiveAsync: Need {needed} more entries from archives");
             
             // Define search range - look back from the oldest active entry or current date
-            var today = DateOnly.FromDateTime(DateTime.Today);
+            var today = _dateShim.GetTodayDate();
             var oldestActiveDate = activeEntries.Any() ? activeEntries.Min(e => e.Date) : today;
             
             // Search in a reasonable range around the year transition
@@ -301,12 +323,13 @@ public class MoodDataService : IMoodDataService
         var collection = await LoadMoodDataAsync();
         
         var overallAverage = collection.GetOverallAverageMood();
+        var today = _dateShim.GetTodayDate();
         var last7DaysAverage = collection.GetAverageMoodForPeriod(
-            DateOnly.FromDateTime(DateTime.Today.AddDays(-7)), 
-            DateOnly.FromDateTime(DateTime.Today));
+            today.AddDays(-7), 
+            today);
         var last30DaysAverage = collection.GetAverageMoodForPeriod(
-            DateOnly.FromDateTime(DateTime.Today.AddDays(-30)), 
-            DateOnly.FromDateTime(DateTime.Today));
+            today.AddDays(-30), 
+            today);
         
         return new MoodStatistics
         {

@@ -7,6 +7,11 @@ public class FileShim : IFileShim
         return File.WriteAllTextAsync(path, contents);
     }
 
+    public Task<string> ReadAllTextAsync(string path)
+    {
+        return File.ReadAllTextAsync(path);
+    }
+
     public void AppendAllText(string path, string contents)
     {
         File.AppendAllText(path, contents);
