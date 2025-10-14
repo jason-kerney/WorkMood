@@ -156,8 +156,4 @@ public class MoodEntry
         var endOfWork = EndOfWork?.ToString() ?? "Not recorded";
         return $"{Date:yyyy-MM-dd}: Start of Work {startOfWork}, End of Work {endOfWork}";
     }
-
-
-
-
 }
