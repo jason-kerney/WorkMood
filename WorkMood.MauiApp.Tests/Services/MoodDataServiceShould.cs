@@ -174,6 +174,38 @@ public class MoodDataServiceShould
         _mockFileShim.Verify(x => x.WriteAllTextAsync("C:\\TestApp\\mood_data.json", expectedJson), Times.Once);
     }
 
+    [Fact]
+    public async Task GetMoodEntryAsync_ReturnMoodEntry_WhenDateExists()
+    {
+        // Arrange
+        var sut = CreateMoodDataService();
+        var testDate = new DateOnly(2024, 10, 15);
+        var expectedEntries = new List<MoodEntry>
+        {
+            new MoodEntry { Date = testDate, StartOfWork = 4, EndOfWork = 3 },
+            new MoodEntry { Date = new DateOnly(2024, 10, 14), StartOfWork = 3, EndOfWork = 4 }
+        };
+        
+        var jsonContent = """[{"date":"2024-10-15","startOfWork":4,"endOfWork":3},{"date":"2024-10-14","startOfWork":3,"endOfWork":4}]""";
+        
+        _mockFileShim.Setup(x => x.Exists("C:\\TestApp\\mood_data.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json")).ReturnsAsync(jsonContent);
+        _mockJsonSerializerShim.Setup(x => x.Deserialize<List<MoodEntry>>(jsonContent, It.IsAny<JsonSerializerOptions>()))
+                               .Returns(expectedEntries);
+
+        // Act
+        var result = await sut.GetMoodEntryAsync(testDate);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Date.Should().Be(testDate);
+        result.StartOfWork.Should().Be(4);
+        result.EndOfWork.Should().Be(3);
+        
+        _mockFileShim.Verify(x => x.Exists("C:\\TestApp\\mood_data.json"), Times.Once);
+        _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json"), Times.Once);
+    }
+
     private MoodDataService CreateMoodDataService()
     {
         return new MoodDataService(
