@@ -41,6 +41,22 @@ public class MoodDataServiceShould
         _mockFolderShim.Verify(x => x.CreateDirectory("C:\\TestApp"), Times.Once);
     }
 
+    [Fact]
+    public void ThrowArgumentNullException_WhenArchiveServiceIsNull()
+    {
+        // Act
+        var act = () => new MoodDataService(
+            null!,
+            _mockFolderShim.Object,
+            _mockDateShim.Object,
+            _mockFileShim.Object,
+            _mockJsonSerializerShim.Object);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("archiveService");
+    }
+
     private MoodDataService CreateMoodDataService()
     {
         return new MoodDataService(
