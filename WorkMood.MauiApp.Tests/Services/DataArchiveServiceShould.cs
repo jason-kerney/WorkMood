@@ -106,4 +106,47 @@ public class DataArchiveServiceShould
     }
 
     #endregion
+
+    #region GetOldestEntryAge Tests
+
+    [Fact]
+    public void GetOldestEntryAge_ReturnNull_WhenCollectionIsEmpty()
+    {
+        // Arrange
+        var emptyCollection = new MoodCollection(new List<MoodEntry>());
+
+        // Act
+        var result = _sut.GetOldestEntryAge(emptyCollection);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetOldestEntryAge_CalculateCorrectAge_WhenCollectionHasEntries()
+    {
+        // Arrange
+        var today = new DateOnly(2025, 10, 14);
+        var threeYearsAgo = new DateOnly(2022, 10, 14);
+        var oneYearAgo = new DateOnly(2024, 10, 14);
+        
+        _mockDateShim.Setup(x => x.GetTodayDate()).Returns(today);
+
+        var entries = new List<MoodEntry>
+        {
+            new MoodEntry { Date = oneYearAgo, StartOfWork = 5 },
+            new MoodEntry { Date = threeYearsAgo, StartOfWork = 7 }, // This is oldest
+            new MoodEntry { Date = today, StartOfWork = 6 }
+        };
+        var collection = new MoodCollection(entries);
+
+        // Act
+        var result = _sut.GetOldestEntryAge(collection);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeApproximately(3.0, 0.1, "because the oldest entry is approximately 3 years old");
+    }
+
+    #endregion
 }
