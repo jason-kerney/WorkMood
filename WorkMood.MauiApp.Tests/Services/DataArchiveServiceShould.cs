@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Moq;
+using System.Text.Json;
 using WorkMood.MauiApp.Models;
 using WorkMood.MauiApp.Services;
 using WorkMood.MauiApp.Shims;
@@ -343,6 +344,173 @@ public class DataArchiveServiceShould
 
         // Assert
         result.Should().BeTrue("because January 25th is within 30-day threshold");
+    }
+
+    #endregion
+
+    #region ArchiveOldDataAsync Tests
+
+    [Fact]
+    public async Task ArchiveOldDataAsync_ReturnOriginalCollection_WhenShouldArchiveReturnsFalse()
+    {
+        // Arrange
+        var currentDate = new DateOnly(2024, 12, 1);
+        _mockDateShim.Setup(d => d.GetTodayDate())
+            .Returns(currentDate);
+
+        var entries = new List<MoodEntry>
+        {
+            new() { Date = new DateOnly(2024, 6, 1), StartOfWork = 7 } // Recent entry
+        };
+        var collection = new MoodCollection(entries);
+
+        // Act
+        var result = await _sut.ArchiveOldDataAsync(collection, thresholdYears: 3);
+
+        // Assert
+        result.Should().BeSameAs(collection, "because no archiving should occur when ShouldArchive returns false");
+        result.Entries.Should().HaveCount(1);
+        result.Entries.Should().Contain(entries[0]);
+    }
+
+    [Fact]
+    public async Task ArchiveOldDataAsync_CreateArchiveAndReturnFilteredCollection_WhenArchivingNeeded()
+    {
+        // Arrange
+        var currentDate = new DateOnly(2024, 12, 1);
+        _mockDateShim.Setup(d => d.GetTodayDate())
+            .Returns(currentDate);
+        _mockDateShim.Setup(d => d.GetDate(-3))
+            .Returns(new DateOnly(2021, 12, 1)); // 3 years ago
+
+        var oldEntries = new List<MoodEntry>
+        {
+            new() { Date = new DateOnly(2020, 1, 1), StartOfWork = 5 }, // Very old
+            new() { Date = new DateOnly(2021, 6, 1), StartOfWork = 6 }  // Old
+        };
+        var recentEntries = new List<MoodEntry>
+        {
+            new() { Date = new DateOnly(2022, 1, 1), StartOfWork = 7 }, // Recent
+            new() { Date = new DateOnly(2024, 6, 1), EndOfWork = 8 }    // Very recent
+        };
+
+        var allEntries = oldEntries.Concat(recentEntries).ToList();
+        var collection = new MoodCollection(allEntries);
+
+        // Mock file system operations
+        _mockFolderShim.Setup(f => f.CombinePaths(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns("archive/mood_data_archive_2020-01-01_to_2021-06-01_20241201_120000.json");
+
+        var serializedJson = "[{\"date\":\"2020-01-01\",\"startOfWork\":5}]";
+        _mockJsonSerializerShim.Setup(j => j.Serialize(It.IsAny<List<MoodEntry>>(), It.IsAny<JsonSerializerOptions>()))
+            .Returns(serializedJson);
+
+        // Act
+        var result = await _sut.ArchiveOldDataAsync(collection, thresholdYears: 3);
+
+        // Assert
+        result.Should().NotBeSameAs(collection, "because a new collection should be returned");
+        result.Entries.Should().HaveCount(2, "because only recent entries should remain");
+        result.Entries.Should().OnlyContain(e => e.Date >= new DateOnly(2021, 12, 1));
+
+        // Verify archive file was created
+        _mockFileShim.Verify(f => f.WriteAllTextAsync(
+            "archive/mood_data_archive_2020-01-01_to_2021-06-01_20241201_120000.json",
+            serializedJson), Times.Once);
+
+        // Verify serialization was called with old entries
+        _mockJsonSerializerShim.Verify(j => j.Serialize(
+            It.Is<List<MoodEntry>>(list => list.Count == 2 && list.All(e => e.Date < new DateOnly(2021, 12, 1))),
+            It.IsAny<JsonSerializerOptions>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ArchiveOldDataAsync_ReturnOriginalCollection_WhenNoEntriesNeedArchiving()
+    {
+        // Arrange
+        var currentDate = new DateOnly(2024, 12, 1);
+        _mockDateShim.Setup(d => d.GetTodayDate())
+            .Returns(currentDate);
+        _mockDateShim.Setup(d => d.GetDate(-3))
+            .Returns(new DateOnly(2021, 12, 1)); // 3 years ago
+
+        // All entries are recent (after cutoff)
+        var entries = new List<MoodEntry>
+        {
+            new() { Date = new DateOnly(2022, 1, 1), StartOfWork = 7 },
+            new() { Date = new DateOnly(2024, 6, 1), EndOfWork = 8 }
+        };
+        var collection = new MoodCollection(entries);
+
+        // Act
+        var result = await _sut.ArchiveOldDataAsync(collection, thresholdYears: 3);
+
+        // Assert
+        result.Should().BeSameAs(collection, "because no entries needed archiving");
+
+        // Verify no file operations occurred
+        _mockFileShim.Verify(f => f.WriteAllTextAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _mockJsonSerializerShim.Verify(j => j.Serialize(It.IsAny<object>(), It.IsAny<JsonSerializerOptions>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ArchiveOldDataAsync_ReturnOriginalCollection_WhenExceptionOccurs()
+    {
+        // Arrange
+        var currentDate = new DateOnly(2024, 12, 1);
+        _mockDateShim.Setup(d => d.GetTodayDate())
+            .Returns(currentDate);
+        _mockDateShim.Setup(d => d.GetDate(-3))
+            .Returns(new DateOnly(2021, 12, 1));
+
+        var entries = new List<MoodEntry>
+        {
+            new() { Date = new DateOnly(2020, 1, 1), StartOfWork = 5 } // Old entry that should trigger archiving
+        };
+        var collection = new MoodCollection(entries);
+
+        // Mock file system to throw exception
+        _mockFolderShim.Setup(f => f.CombinePaths(It.IsAny<string>(), It.IsAny<string>()))
+            .Throws(new IOException("Disk full"));
+
+        // Act
+        var result = await _sut.ArchiveOldDataAsync(collection, thresholdYears: 3);
+
+        // Assert
+        result.Should().BeSameAs(collection, "because original collection should be returned on error to prevent data loss");
+    }
+
+    [Fact]
+    public async Task ArchiveOldDataAsync_HandleJsonSerializationError_ReturnOriginalCollection()
+    {
+        // Arrange
+        var currentDate = new DateOnly(2024, 12, 1);
+        _mockDateShim.Setup(d => d.GetTodayDate())
+            .Returns(currentDate);
+        _mockDateShim.Setup(d => d.GetDate(-3))
+            .Returns(new DateOnly(2021, 12, 1));
+
+        var entries = new List<MoodEntry>
+        {
+            new() { Date = new DateOnly(2020, 1, 1), StartOfWork = 5 }
+        };
+        var collection = new MoodCollection(entries);
+
+        _mockFolderShim.Setup(f => f.CombinePaths(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns("archive/test.json");
+
+        // Mock serialization to throw exception
+        _mockJsonSerializerShim.Setup(j => j.Serialize(It.IsAny<List<MoodEntry>>(), It.IsAny<JsonSerializerOptions>()))
+            .Throws(new JsonException("Serialization failed"));
+
+        // Act
+        var result = await _sut.ArchiveOldDataAsync(collection, thresholdYears: 3);
+
+        // Assert
+        result.Should().BeSameAs(collection, "because original collection should be returned on serialization error");
+
+        // Verify file write was never called due to serialization failure
+        _mockFileShim.Verify(f => f.WriteAllTextAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 
     #endregion
