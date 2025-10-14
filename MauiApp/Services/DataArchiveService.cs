@@ -22,6 +22,12 @@ public class DataArchiveService : IDataArchiveService
     /// </summary>
     public DataArchiveService(IFolderShim folderShim, IDateShim dateShim, IFileShim fileShim, IJsonSerializerShim jsonSerializerShim)
     {
+        // Validate parameters
+        ArgumentNullException.ThrowIfNull(folderShim);
+        ArgumentNullException.ThrowIfNull(dateShim);
+        ArgumentNullException.ThrowIfNull(fileShim);
+        ArgumentNullException.ThrowIfNull(jsonSerializerShim);
+
         // Store archives in the same directory as the main data file
         _archiveDirectory = folderShim.GetArchiveFolder();
 
