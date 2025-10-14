@@ -106,6 +106,16 @@ public class DataArchiveServiceShould
         act.Should().NotThrow();
     }
 
+    [Fact]
+    public void ParameterlessConstructor_ShouldCreateInstance_WithDefaultShims()
+    {
+        // Act
+        var service = new DataArchiveService();
+
+        // Assert
+        service.Should().NotBeNull("because parameterless constructor should create valid instance");
+    }
+
     #endregion
 
     #region GetOldestEntryAge Tests
@@ -814,6 +824,356 @@ public class DataArchiveServiceShould
                 File.Delete(tempFilePath);
             }
         }
+    }
+
+    [Fact]
+    public async Task LoadFromArchiveFileAsync_ReturnEmptyList_WhenFileContainsOnlyWhitespace()
+    {
+        // Arrange - Create a temporary file with only whitespace
+        var tempFilePath = Path.GetTempFileName();
+        await File.WriteAllTextAsync(tempFilePath, "   \n\t\r\n   ");
+
+        _mockFolderShim.Setup(f => f.GetFileName(It.IsAny<string>()))
+            .Returns("whitespace_archive.json");
+
+        try
+        {
+            // Act
+            var result = await _sut.LoadFromArchiveFileAsync(tempFilePath);
+
+            // Assert
+            result.Should().BeEmpty("because whitespace-only files should return empty list");
+            
+            // Verify JSON deserialization was not called for whitespace-only files
+            _mockJsonSerializerShim.Verify(j => j.Deserialize<List<MoodEntry>>(It.IsAny<string>(), It.IsAny<JsonSerializerOptions>()), Times.Never);
+        }
+        finally
+        {
+            // Cleanup
+            if (File.Exists(tempFilePath))
+            {
+                File.Delete(tempFilePath);
+            }
+        }
+    }
+
+    #endregion
+
+    #region GetArchivedEntriesInRangeAsync Tests
+
+    [Fact]
+    public async Task GetArchivedEntriesInRangeAsync_ReturnEmptyList_WhenNoArchiveFiles()
+    {
+        // Arrange
+        var startDate = new DateOnly(2020, 1, 1);
+        var endDate = new DateOnly(2020, 12, 31);
+
+        _mockFolderShim.Setup(f => f.DirectoryExists(It.IsAny<string>()))
+            .Returns(false);
+
+        // Act
+        var result = await _sut.GetArchivedEntriesInRangeAsync(startDate, endDate);
+
+        // Assert
+        result.Should().BeEmpty("because no archive files exist");
+    }
+
+    [Fact]
+    public async Task GetArchivedEntriesInRangeAsync_ReturnFilteredEntries_WhenArchiveFilesExist()
+    {
+        // Arrange
+        var startDate = new DateOnly(2020, 6, 1);
+        var endDate = new DateOnly(2020, 8, 31);
+
+        var archiveFiles = new[]
+        {
+            "archive/file1.json",
+            "archive/file2.json"
+        };
+
+        // Mock GetArchiveFiles to return files
+        _mockFolderShim.Setup(f => f.DirectoryExists(It.IsAny<string>()))
+            .Returns(true);
+        _mockFolderShim.Setup(f => f.GetFiles(It.IsAny<string>(), "mood_data_archive_*.json"))
+            .Returns(archiveFiles);
+
+        // Create test entries - some in range, some out of range
+        var entriesFromFile1 = new List<MoodEntry>
+        {
+            new() { Date = new DateOnly(2020, 5, 15), StartOfWork = 6 }, // Before range
+            new() { Date = new DateOnly(2020, 7, 1), StartOfWork = 7 },  // In range
+            new() { Date = new DateOnly(2020, 9, 15), EndOfWork = 5 }    // After range
+        };
+
+        var entriesFromFile2 = new List<MoodEntry>
+        {
+            new() { Date = new DateOnly(2020, 6, 15), EndOfWork = 8 },   // In range
+            new() { Date = new DateOnly(2020, 8, 1), StartOfWork = 9 }   // In range
+        };
+
+        // Setup temporary files for LoadFromArchiveFileAsync
+        var tempFile1 = Path.GetTempFileName();
+        var tempFile2 = Path.GetTempFileName();
+
+        await File.WriteAllTextAsync(tempFile1, "[]");
+        await File.WriteAllTextAsync(tempFile2, "[]");
+
+        try
+        {
+            // Update archive files to use temp files
+            archiveFiles[0] = tempFile1;
+            archiveFiles[1] = tempFile2;
+
+            _mockFolderShim.Setup(f => f.GetFiles(It.IsAny<string>(), "mood_data_archive_*.json"))
+                .Returns(archiveFiles);
+
+            // Mock LoadFromArchiveFileAsync calls
+            _mockJsonSerializerShim.SetupSequence(j => j.Deserialize<List<MoodEntry>>(It.IsAny<string>(), It.IsAny<JsonSerializerOptions>()))
+                .Returns(entriesFromFile1)
+                .Returns(entriesFromFile2);
+
+            _mockFolderShim.Setup(f => f.GetFileName(It.IsAny<string>()))
+                .Returns<string>(path => Path.GetFileName(path));
+
+            // Act
+            var result = await _sut.GetArchivedEntriesInRangeAsync(startDate, endDate);
+
+            // Assert
+            var resultList = result.ToList();
+            resultList.Should().HaveCount(3, "because 3 entries are within the date range");
+            
+            // Verify entries are sorted by date
+            resultList.Should().BeInAscendingOrder(e => e.Date);
+            
+            // Verify correct entries are included
+            resultList.Should().Contain(e => e.Date == new DateOnly(2020, 6, 15));
+            resultList.Should().Contain(e => e.Date == new DateOnly(2020, 7, 1));
+            resultList.Should().Contain(e => e.Date == new DateOnly(2020, 8, 1));
+            
+            // Verify out-of-range entries are excluded
+            resultList.Should().NotContain(e => e.Date == new DateOnly(2020, 5, 15));
+            resultList.Should().NotContain(e => e.Date == new DateOnly(2020, 9, 15));
+        }
+        finally
+        {
+            // Cleanup
+            File.Delete(tempFile1);
+            File.Delete(tempFile2);
+        }
+    }
+
+    [Fact]
+    public async Task GetArchivedEntriesInRangeAsync_ReturnEmptyList_WhenExceptionOccurs()
+    {
+        // Arrange
+        var startDate = new DateOnly(2020, 1, 1);
+        var endDate = new DateOnly(2020, 12, 31);
+
+        // Make GetArchiveFiles throw an exception
+        _mockFolderShim.Setup(f => f.DirectoryExists(It.IsAny<string>()))
+            .Throws(new UnauthorizedAccessException("Access denied"));
+
+        // Act
+        var result = await _sut.GetArchivedEntriesInRangeAsync(startDate, endDate);
+
+        // Assert
+        result.Should().BeEmpty("because exceptions should return empty list to prevent crashes");
+    }
+
+    [Fact]
+    public async Task GetArchivedEntriesInRangeAsync_HandleEmptyArchiveFiles()
+    {
+        // Arrange
+        var startDate = new DateOnly(2020, 1, 1);
+        var endDate = new DateOnly(2020, 12, 31);
+
+        _mockFolderShim.Setup(f => f.DirectoryExists(It.IsAny<string>()))
+            .Returns(true);
+        _mockFolderShim.Setup(f => f.GetFiles(It.IsAny<string>(), "mood_data_archive_*.json"))
+            .Returns(Array.Empty<string>());
+
+        // Act
+        var result = await _sut.GetArchivedEntriesInRangeAsync(startDate, endDate);
+
+        // Assert
+        result.Should().BeEmpty("because no archive files exist to load from");
+    }
+
+    #endregion
+
+    #region Log Method Tests (Indirect Coverage)
+
+    [Fact]
+    public void LogMethod_CoverageTest_WhenCalledThroughPublicMethods()
+    {
+        // Arrange - Setup mocks for logging infrastructure
+        _mockDateShim.Setup(d => d.Now())
+            .Returns(new DateTime(2024, 12, 1, 10, 30, 45, 123));
+        _mockFolderShim.Setup(f => f.GetDesktopFolder())
+            .Returns("C:\\Users\\Test\\Desktop");
+        _mockFolderShim.Setup(f => f.CombinePaths(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns("C:\\Users\\Test\\Desktop\\WorkMood_Debug.log");
+
+        // Act - Call a method that triggers logging (ShouldArchive calls Log)
+        var collection = new MoodCollection(new List<MoodEntry>());
+        _sut.ShouldArchive(collection, 3);
+
+        // Assert - Verify logging infrastructure was called
+        _mockDateShim.Verify(d => d.Now(), Times.AtLeastOnce);
+        _mockFolderShim.Verify(f => f.GetDesktopFolder(), Times.AtLeastOnce);
+        _mockFolderShim.Verify(f => f.CombinePaths(It.IsAny<string>(), "WorkMood_Debug.log"), Times.AtLeastOnce);
+        _mockFileShim.Verify(f => f.AppendAllText(It.IsAny<string>(), It.IsAny<string>()), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public void LogMethod_HandleExceptions_WhenLoggingFails()
+    {
+        // Arrange - Make logging operations fail
+        _mockDateShim.Setup(d => d.Now())
+            .Throws(new InvalidOperationException("Date system failure"));
+
+        // Act & Assert - Should not throw even when logging fails
+        var collection = new MoodCollection(new List<MoodEntry>());
+        var act = () => _sut.ShouldArchive(collection, 3);
+        
+        act.Should().NotThrow("because logging exceptions should be silently ignored");
+    }
+
+    [Fact]
+    public void LogMethod_HandleFileOperationExceptions_WhenFileOperationsFail()
+    {
+        // Arrange - Make file operations fail during logging
+        _mockDateShim.Setup(d => d.Now())
+            .Returns(new DateTime(2024, 12, 1, 10, 30, 45, 123));
+        _mockFolderShim.Setup(f => f.GetDesktopFolder())
+            .Returns("C:\\Users\\Test\\Desktop");
+        _mockFolderShim.Setup(f => f.CombinePaths(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns("C:\\Users\\Test\\Desktop\\WorkMood_Debug.log");
+        _mockFileShim.Setup(f => f.AppendAllText(It.IsAny<string>(), It.IsAny<string>()))
+            .Throws(new UnauthorizedAccessException("Access denied to log file"));
+
+        // Act & Assert - Should not throw even when file operations fail during logging
+        var collection = new MoodCollection(new List<MoodEntry>());
+        var act = () => _sut.ShouldArchive(collection, 3);
+        
+        act.Should().NotThrow("because logging file operation exceptions should be silently ignored");
+        
+        // Verify the logging attempt was made
+        _mockFileShim.Verify(f => f.AppendAllText(It.IsAny<string>(), It.IsAny<string>()), Times.AtLeastOnce);
+    }
+
+    #endregion
+
+    #region Additional Edge Cases and Coverage Improvements
+
+    [Fact]
+    public async Task ArchiveOldDataAsync_CoverLogMethodPath_WhenArchivingSucceeds()
+    {
+        // This test helps cover more logging paths in ArchiveOldDataAsync
+        // Arrange
+        var currentDate = new DateOnly(2024, 12, 1);
+        _mockDateShim.Setup(d => d.GetTodayDate()).Returns(currentDate);
+        _mockDateShim.Setup(d => d.GetDate(-3)).Returns(new DateOnly(2021, 12, 1));
+        _mockDateShim.Setup(d => d.Now()).Returns(new DateTime(2024, 12, 1, 10, 0, 0));
+
+        var oldEntry = new MoodEntry { Date = new DateOnly(2020, 1, 1), StartOfWork = 5 };
+        var collection = new MoodCollection(new List<MoodEntry> { oldEntry });
+
+        // Setup file operations
+        _mockFolderShim.Setup(f => f.CombinePaths(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns("archive/test.json");
+        _mockFolderShim.Setup(f => f.GetDesktopFolder()).Returns("C:\\Desktop");
+        _mockJsonSerializerShim.Setup(j => j.Serialize(It.IsAny<List<MoodEntry>>(), It.IsAny<JsonSerializerOptions>()))
+            .Returns("{\"entries\":[]}");
+
+        // Act
+        await _sut.ArchiveOldDataAsync(collection, 3);
+
+        // Assert - Verify enhanced logging coverage
+        _mockDateShim.Verify(d => d.Now(), Times.AtLeastOnce, "because logging should occur during archiving");
+    }
+
+    [Fact]
+    public async Task ArchiveOldDataAsync_ReturnOriginalCollection_WhenFileOperationFails()
+    {
+        // This test covers the exception handling path in ArchiveOldDataAsync
+        // Arrange
+        var currentDate = new DateOnly(2024, 12, 1);
+        _mockDateShim.Setup(d => d.GetTodayDate()).Returns(currentDate);
+        _mockDateShim.Setup(d => d.GetDate(-3)).Returns(new DateOnly(2021, 12, 1));
+
+        var oldEntry = new MoodEntry { Date = new DateOnly(2020, 1, 1), StartOfWork = 5 };
+        var collection = new MoodCollection(new List<MoodEntry> { oldEntry });
+
+        // Force an exception during archiving by making CombinePaths fail
+        _mockFolderShim.Setup(f => f.CombinePaths(It.IsAny<string>(), It.IsAny<string>()))
+            .Throws(new UnauthorizedAccessException("Access denied to archive directory"));
+
+        // Setup logging to handle the exception
+        _mockDateShim.Setup(d => d.Now()).Returns(new DateTime(2024, 12, 1, 10, 0, 0));
+        _mockFolderShim.Setup(f => f.GetDesktopFolder()).Returns("C:\\Desktop");
+
+        // Act
+        var result = await _sut.ArchiveOldDataAsync(collection, 3);
+
+        // Assert
+        result.Should().BeSameAs(collection, "because original collection should be returned when archiving fails to prevent data loss");
+        
+        // Verify logging occurred during exception handling
+        _mockDateShim.Verify(d => d.Now(), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task ArchiveOldDataAsync_ReturnOriginalCollection_WhenNoEntriesToArchive()
+    {
+        // This test covers the "No entries found to archive" path
+        // Arrange
+        var currentDate = new DateOnly(2024, 12, 1);
+        _mockDateShim.Setup(d => d.GetTodayDate()).Returns(currentDate);
+        _mockDateShim.Setup(d => d.GetDate(-3)).Returns(new DateOnly(2021, 12, 1));
+
+        // Create collection with only recent entries (no old entries to archive)
+        var recentEntry = new MoodEntry { Date = new DateOnly(2024, 11, 1), StartOfWork = 5 };
+        var collection = new MoodCollection(new List<MoodEntry> { recentEntry });
+
+        // Setup logging
+        _mockDateShim.Setup(d => d.Now()).Returns(new DateTime(2024, 12, 1, 10, 0, 0));
+        _mockFolderShim.Setup(f => f.GetDesktopFolder()).Returns("C:\\Desktop");
+        _mockFolderShim.Setup(f => f.CombinePaths(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns("C:\\Desktop\\WorkMood_Debug.log");
+
+        // Act
+        var result = await _sut.ArchiveOldDataAsync(collection, 3);
+
+        // Assert
+        result.Should().BeSameAs(collection, "because original collection should be returned when no entries need archiving");
+        
+        // Verify logging occurred for "no entries found" path
+        _mockDateShim.Verify(d => d.Now(), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public void CreateArchiveFileName_CoverLogMethodPath()
+    {
+        // Arrange
+        var oldestDate = new DateOnly(2020, 1, 1);
+        var newestDate = new DateOnly(2020, 12, 31);
+        
+        _mockDateShim.Setup(d => d.Now())
+            .Returns(new DateTime(2024, 12, 1, 15, 30, 45));
+        _mockFolderShim.Setup(f => f.GetDesktopFolder())
+            .Returns("C:\\Desktop");
+        _mockFolderShim.Setup(f => f.CombinePaths(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns("C:\\Desktop\\WorkMood_Debug.log");
+
+        // Act
+        var result = _sut.CreateArchiveFileName(oldestDate, newestDate);
+
+        // Assert
+        result.Should().Contain("mood_data_archive_2020-01-01_to_2020-12-31");
+        
+        // Verify logging occurred
+        _mockDateShim.Verify(d => d.Now(), Times.AtLeastOnce);
     }
 
     #endregion
