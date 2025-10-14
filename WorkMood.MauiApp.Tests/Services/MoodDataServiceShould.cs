@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text.Json;
 using FluentAssertions;
 using Moq;
@@ -136,6 +137,38 @@ public class MoodDataServiceShould
         await sut.SaveMoodDataAsync(moodCollection);
 
         // Assert
+        _mockArchiveService.Verify(x => x.ArchiveOldDataAsync(moodCollection, 3), Times.Once);
+        _mockJsonSerializerShim.Verify(x => x.Serialize(archivedCollection.Entries, It.IsAny<JsonSerializerOptions>()), Times.Once);
+        _mockFileShim.Verify(x => x.WriteAllTextAsync("C:\\TestApp\\mood_data.json", expectedJson), Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveMoodDataAsync_ThrowInvalidOperationException_WhenFileWriteFails()
+    {
+        // Arrange
+        var sut = CreateMoodDataService();
+        var moodCollection = new MoodCollection(new List<MoodEntry>
+        {
+            new MoodEntry { Date = new DateOnly(2024, 10, 15), StartOfWork = 4, EndOfWork = 3 }
+        });
+        
+        var archivedCollection = new MoodCollection(moodCollection.Entries);
+        var expectedJson = """[{"date":"2024-10-15","startOfWork":4,"endOfWork":3}]""";
+        
+        _mockArchiveService.Setup(x => x.ArchiveOldDataAsync(moodCollection, 3))
+                          .ReturnsAsync(archivedCollection);
+        _mockJsonSerializerShim.Setup(x => x.Serialize(archivedCollection.Entries, It.IsAny<JsonSerializerOptions>()))
+                               .Returns(expectedJson);
+        _mockFileShim.Setup(x => x.WriteAllTextAsync("C:\\TestApp\\mood_data.json", expectedJson))
+                     .ThrowsAsync(new IOException("Disk full"));
+
+        // Act & Assert
+        var act = async () => await sut.SaveMoodDataAsync(moodCollection);
+        
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to save mood data");
+        exception.WithInnerException<IOException>();
+        
         _mockArchiveService.Verify(x => x.ArchiveOldDataAsync(moodCollection, 3), Times.Once);
         _mockJsonSerializerShim.Verify(x => x.Serialize(archivedCollection.Entries, It.IsAny<JsonSerializerOptions>()), Times.Once);
         _mockFileShim.Verify(x => x.WriteAllTextAsync("C:\\TestApp\\mood_data.json", expectedJson), Times.Once);
