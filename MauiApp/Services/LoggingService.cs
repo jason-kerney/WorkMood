@@ -1,3 +1,5 @@
+using WorkMood.MauiApp.Shims;
+
 namespace WorkMood.MauiApp.Services;
 
 /// <summary>
@@ -7,11 +9,23 @@ public class LoggingService : ILoggingService
 {
     private readonly string _logFilePath;
     private readonly object _lockObject = new object();
+    private readonly IFileShim _fileShim;
+    private readonly IDateShim _dateShim;
 
-    public LoggingService()
+    public LoggingService(IFileShim fileShim, IDateShim dateShim, IFolderShim folderShim)
     {
-        var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        _logFilePath = Path.Combine(desktopPath, "WorkMood_Debug.log");
+        _fileShim = fileShim ?? throw new ArgumentNullException(nameof(fileShim));
+        _dateShim = dateShim ?? throw new ArgumentNullException(nameof(dateShim));
+        
+        var desktopPath = folderShim?.GetDesktopFolder() ?? throw new ArgumentNullException(nameof(folderShim));
+        _logFilePath = folderShim.CombinePaths(desktopPath, "WorkMood_Debug.log");
+    }
+
+    /// <summary>
+    /// Creates a new logging service with default shims (for backwards compatibility)
+    /// </summary>
+    public LoggingService() : this(new FileShim(), new DateShim(), new FolderShim())
+    {
     }
 
     /// <summary>
@@ -35,13 +49,13 @@ public class LoggingService : ILoggingService
 
         try
         {
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            var timestamp = _dateShim.Now().ToString("yyyy-MM-dd HH:mm:ss.fff");
             var levelString = level.ToString().ToUpper().PadRight(7);
             var logEntry = $"[{timestamp}] [{levelString}] {message}";
 
             lock (_lockObject)
             {
-                File.AppendAllText(_logFilePath, logEntry + Environment.NewLine);
+                _fileShim.AppendAllText(_logFilePath, logEntry + Environment.NewLine);
             }
         }
         catch
