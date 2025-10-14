@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Moq;
+using WorkMood.MauiApp.Models;
 using WorkMood.MauiApp.Services;
 using WorkMood.MauiApp.Shims;
 using Xunit;
@@ -55,6 +56,24 @@ public class MoodDataServiceShould
         // Assert
         act.Should().Throw<ArgumentNullException>()
            .WithParameterName("archiveService");
+    }
+
+    [Fact]
+    public async Task LoadMoodDataAsync_ReturnEmptyCollection_WhenFileDoesNotExist()
+    {
+        // Arrange
+        var sut = CreateMoodDataService();
+        _mockFileShim.Setup(x => x.Exists("C:\\TestApp\\mood_data.json")).Returns(false);
+
+        // Act
+        var result = await sut.LoadMoodDataAsync();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Count.Should().Be(0);
+        result.Entries.Should().BeEmpty();
+        _mockFileShim.Verify(x => x.Exists("C:\\TestApp\\mood_data.json"), Times.Once);
+        _mockFileShim.Verify(x => x.ReadAllTextAsync(It.IsAny<string>()), Times.Never);
     }
 
     private MoodDataService CreateMoodDataService()

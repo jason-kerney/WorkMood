@@ -1,25 +1,25 @@
 Summary
-  Generated on: 10/14/2025 - 2:10:10 PM
-  Coverage date: 10/14/2025 - 2:10:09 PM
+  Generated on: 10/14/2025 - 2:15:21 PM
+  Coverage date: 10/14/2025 - 2:15:20 PM
   Parser: Cobertura
   Assemblies: 1
   Classes: 111
   Files: 72
-  Line coverage: 17.7%
-  Covered lines: 1106
-  Uncovered lines: 5133
+  Line coverage: 17.9%
+  Covered lines: 1122
+  Uncovered lines: 5117
   Coverable lines: 6239
   Total lines: 12027
-  Branch coverage: 12.8% (213 of 1659)
-  Covered branches: 213
+  Branch coverage: 13% (216 of 1659)
+  Covered branches: 216
   Total branches: 1659
-  Method coverage: 18.7% (190 of 1015)
-  Full method coverage: 17.2% (175 of 1015)
-  Covered methods: 190
-  Fully covered methods: 175
+  Method coverage: 19% (193 of 1015)
+  Full method coverage: 17.4% (177 of 1015)
+  Covered methods: 193
+  Fully covered methods: 177
   Total methods: 1015
 
-WorkMood.MauiApp                                                        17.7%
+WorkMood.MauiApp                                                        17.9%
   WorkMood.MauiApp.Adapters.VisualizationDataAdapter                       0%
   WorkMood.MauiApp.App                                                     0%
   WorkMood.MauiApp.AppShell                                                0%
@@ -48,7 +48,7 @@ WorkMood.MauiApp                                                        17.7%
   WorkMood.MauiApp.Models.FilledGraphDataPoint                           100%
   WorkMood.MauiApp.Models.GraphData                                      100%
   WorkMood.MauiApp.Models.GraphDisplayOptions                              0%
-  WorkMood.MauiApp.Models.MoodCollection                                10.4%
+  WorkMood.MauiApp.Models.MoodCollection                                16.2%
   WorkMood.MauiApp.Models.MoodEntry                                     49.1%
   WorkMood.MauiApp.Models.ScheduleConfig                                43.4%
   WorkMood.MauiApp.Models.ScheduleOverride                              66.6%
@@ -78,7 +78,7 @@ WorkMood.MauiApp                                                        17.7%
   WorkMood.MauiApp.Services.LineGraphService                            87.5%
   WorkMood.MauiApp.Services.LoggingService                                 0%
   WorkMood.MauiApp.Services.LoggingServiceExtensions                       0%
-  WorkMood.MauiApp.Services.MoodDataService                             18.1%
+  WorkMood.MauiApp.Services.MoodDataService                             23.8%
   WorkMood.MauiApp.Services.MoodDispatcherService                          0%
   WorkMood.MauiApp.Services.MoodEntryViewFactory                           0%
   WorkMood.MauiApp.Services.MoodStatistics                                 0%
