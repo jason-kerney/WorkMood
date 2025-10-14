@@ -210,4 +210,61 @@ public class DataArchiveServiceShould
     }
 
     #endregion
+
+    #region CreateArchiveFileName Tests
+
+    [Fact]
+    public void CreateArchiveFileName_GenerateCorrectFormat_WhenGivenDateRange()
+    {
+        // Arrange
+        var timestamp = new DateTime(2024, 12, 15, 14, 30, 45);
+        _mockDateShim.Setup(d => d.Now())
+            .Returns(timestamp);
+
+        var oldestDate = new DateOnly(2023, 1, 1);
+        var newestDate = new DateOnly(2023, 12, 31);
+
+        // Act
+        var result = _sut.CreateArchiveFileName(oldestDate, newestDate);
+
+        // Assert
+        result.Should().Be("mood_data_archive_2023-01-01_to_2023-12-31_20241215_143045.json");
+    }
+
+    [Fact]
+    public void CreateArchiveFileName_HandleSingleDayRange_WhenOldestAndNewestSame()
+    {
+        // Arrange
+        var timestamp = new DateTime(2024, 3, 20, 9, 15, 30);
+        _mockDateShim.Setup(d => d.Now())
+            .Returns(timestamp);
+
+        var sameDate = new DateOnly(2024, 2, 14);
+
+        // Act
+        var result = _sut.CreateArchiveFileName(sameDate, sameDate);
+
+        // Assert
+        result.Should().Be("mood_data_archive_2024-02-14_to_2024-02-14_20240320_091530.json");
+    }
+
+    [Fact]
+    public void CreateArchiveFileName_HandleDifferentYears_WhenRangeSpansMultipleYears()
+    {
+        // Arrange
+        var timestamp = new DateTime(2025, 1, 1, 0, 0, 0);
+        _mockDateShim.Setup(d => d.Now())
+            .Returns(timestamp);
+
+        var oldestDate = new DateOnly(2022, 6, 15);
+        var newestDate = new DateOnly(2024, 8, 25);
+
+        // Act
+        var result = _sut.CreateArchiveFileName(oldestDate, newestDate);
+
+        // Assert
+        result.Should().Be("mood_data_archive_2022-06-15_to_2024-08-25_20250101_000000.json");
+    }
+
+    #endregion
 }
