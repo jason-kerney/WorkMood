@@ -137,9 +137,7 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "blue_background.png");
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -160,9 +158,7 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "gradient_background.png");
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateAverageGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Average, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -183,9 +179,7 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "pattern_background.png");
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: false, 
             showTitle: false, 
@@ -206,9 +200,7 @@ public class LineGraphServiceBackgroundTests
         var nonExistentPath = Path.Combine(_testImagesPath, "non_existent.png");
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -233,9 +225,7 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "blue_background.png");
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateRawGraphAsync(
-            data,
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(data, GraphMode.RawData, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -256,9 +246,7 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "gradient_background.png");
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateRawGraphAsync(
-            data,
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(data, GraphMode.RawData, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -279,9 +267,7 @@ public class LineGraphServiceBackgroundTests
         var nonExistentPath = Path.Combine(_testImagesPath, "missing_file.png");
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateRawGraphAsync(
-            data,
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(data, GraphMode.RawData, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -307,9 +293,7 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "dark_background.png");
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -331,9 +315,7 @@ public class LineGraphServiceBackgroundTests
         var backgroundPath = Path.Combine(_testImagesPath, "light_background.png");
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -359,9 +341,7 @@ public class LineGraphServiceBackgroundTests
         var backgroundImagePath = Path.Combine(_testImagesPath, "light_background.png");
 
         // Act
-        var result = await _lineGraphService.GenerateImpactGraphAsync(
-            entries, 
-            dateRange, 
+        var result = await _lineGraphService.GenerateGraphAsync(entries, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -373,3 +353,4 @@ public class LineGraphServiceBackgroundTests
         Approvals.VerifyBinaryFile(result, "png");
     }
 }
+

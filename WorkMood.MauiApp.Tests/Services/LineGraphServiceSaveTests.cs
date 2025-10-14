@@ -118,9 +118,7 @@ public class LineGraphServiceSaveTests
         const int height = 600;
 
         // Act
-        await _lineGraphService.SaveImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        await _lineGraphService.SaveGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints, 
             showAxesAndGrid, 
             showTitle, 
@@ -150,9 +148,7 @@ public class LineGraphServiceSaveTests
         const int height = 768;
 
         // Act
-        await _lineGraphService.SaveAverageGraphAsync(
-            moodEntries, 
-            dateRange, 
+        await _lineGraphService.SaveGraphAsync(moodEntries, GraphMode.Average, dateRange, 
             showDataPoints, 
             showAxesAndGrid, 
             showTitle, 
@@ -187,9 +183,7 @@ public class LineGraphServiceSaveTests
         _mockDrawShimFactory.Setup(x => x.DecodeBitmapFromFile(backgroundImagePath)).Returns(_mockBitmap.Object);
 
         // Act
-        await _lineGraphService.SaveImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        await _lineGraphService.SaveGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints, 
             showAxesAndGrid, 
             showTitle, 
@@ -218,9 +212,7 @@ public class LineGraphServiceSaveTests
         var lineColor = Colors.Blue;
 
         // Act
-        await _lineGraphService.SaveImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        await _lineGraphService.SaveGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints, 
             showAxesAndGrid, 
             showTitle, 
@@ -246,9 +238,7 @@ public class LineGraphServiceSaveTests
         var lineColor = Colors.Purple;
 
         // Act - Using default width and height (800x600)
-        await _lineGraphService.SaveImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        await _lineGraphService.SaveGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints, 
             showAxesAndGrid, 
             showTitle, 
@@ -275,12 +265,10 @@ public class LineGraphServiceSaveTests
         var lineColor = Colors.Orange;
 
         // Act - Call the method twice
-        await _lineGraphService.SaveImpactGraphAsync(
-            moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, 
+        await _lineGraphService.SaveGraphAsync(moodEntries, GraphMode.Impact, dateRange, showDataPoints, showAxesAndGrid, showTitle, 
             showTrendLine, expectedFilePath, lineColor);
         
-        await _lineGraphService.SaveImpactGraphAsync(
-            moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, 
+        await _lineGraphService.SaveGraphAsync(moodEntries, GraphMode.Impact, dateRange, showDataPoints, showAxesAndGrid, showTitle, 
             showTrendLine, expectedFilePath, lineColor);
 
         // Assert
@@ -305,8 +293,7 @@ public class LineGraphServiceSaveTests
         var lineColor = Colors.Blue;
 
         // Act
-        await _lineGraphService.SaveImpactGraphAsync(
-            moodEntries, dateRange, showDataPoints, showAxesAndGrid, showTitle, 
+        await _lineGraphService.SaveGraphAsync(moodEntries, GraphMode.Impact, dateRange, showDataPoints, showAxesAndGrid, showTitle, 
             showTrendLine, filePath, lineColor);
 
         // Assert
@@ -329,9 +316,7 @@ public class LineGraphServiceSaveTests
         const int height = 600;
 
         // Act
-        await _lineGraphService.SaveRawGraphAsync(
-            moodEntries,
-            dateRange,
+        await _lineGraphService.SaveGraphAsync(moodEntries, GraphMode.RawData, dateRange,
             showDataPoints,
             showAxesAndGrid,
             showTitle,
@@ -361,9 +346,7 @@ public class LineGraphServiceSaveTests
         const int height = 768;
 
         // Act
-        await _lineGraphService.SaveRawGraphAsync(
-            moodEntries,
-            dateRange,
+        await _lineGraphService.SaveGraphAsync(moodEntries, GraphMode.RawData, dateRange,
             showDataPoints,
             showAxesAndGrid,
             showTitle,
@@ -399,9 +382,7 @@ public class LineGraphServiceSaveTests
         _mockDrawShimFactory.Setup(x => x.DecodeBitmapFromFile(backgroundImagePath)).Returns(_mockBitmap.Object);
 
         // Act
-        await _lineGraphService.SaveRawGraphAsync(
-            moodEntries,
-            dateRange,
+        await _lineGraphService.SaveGraphAsync(moodEntries, GraphMode.RawData, dateRange,
             showDataPoints,
             showAxesAndGrid,
             showTitle,
@@ -434,9 +415,7 @@ public class LineGraphServiceSaveTests
         var lineColor = Colors.Blue;
 
         // Act
-        await _lineGraphService.SaveRawGraphAsync(
-            moodEntries,
-            dateRange,
+        await _lineGraphService.SaveGraphAsync(moodEntries, GraphMode.RawData, dateRange,
             showDataPoints,
             showAxesAndGrid,
             showTitle,
@@ -467,3 +446,4 @@ public class LineGraphServiceSaveTests
         return new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
     }
 }
+

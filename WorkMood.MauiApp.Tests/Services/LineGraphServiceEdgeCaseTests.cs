@@ -38,9 +38,7 @@ public class LineGraphServiceEdgeCaseTests
         var wideRange = new DateRangeInfo(DateRange.LastMonth, new FakeDateShim(today.AddDays(5)));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            sparseMoodEntries, 
-            wideRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(sparseMoodEntries, GraphMode.Impact, wideRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true,
@@ -59,9 +57,7 @@ public class LineGraphServiceEdgeCaseTests
         var dateRange = new DateRangeInfo(DateRange.LastMonth, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            denseMoodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(denseMoodEntries, GraphMode.Impact, dateRange, 
             showDataPoints: false, // Hide individual points due to density
             showAxesAndGrid: true, 
             showTitle: true,
@@ -84,9 +80,7 @@ public class LineGraphServiceEdgeCaseTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateAverageGraphAsync(
-            minMoodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(minMoodEntries, GraphMode.Average, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true,
@@ -105,9 +99,7 @@ public class LineGraphServiceEdgeCaseTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateAverageGraphAsync(
-            maxMoodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(maxMoodEntries, GraphMode.Average, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true,
@@ -134,9 +126,7 @@ public class LineGraphServiceEdgeCaseTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(new DateOnly(2025, 1, 2)));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateRawGraphAsync(
-            sameTimeEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(sameTimeEntries, GraphMode.RawData, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true,
@@ -159,9 +149,7 @@ public class LineGraphServiceEdgeCaseTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(new DateOnly(2025, 1, 4)));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateRawGraphAsync(
-            midnightEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(midnightEntries, GraphMode.RawData, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true,
@@ -184,9 +172,7 @@ public class LineGraphServiceEdgeCaseTests
         var singleDayRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            singleDayEntries, 
-            singleDayRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(singleDayEntries, GraphMode.Impact, singleDayRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true,
@@ -205,9 +191,7 @@ public class LineGraphServiceEdgeCaseTests
         var limitedRange = new DateRangeInfo(DateRange.LastMonth, new FakeDateShim(today.AddDays(-30)));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            outsideRangeEntries,
-            limitedRange,
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(outsideRangeEntries, GraphMode.Impact, limitedRange,
             showDataPoints: true,
             showAxesAndGrid: true,
             showTitle: true,
@@ -236,9 +220,7 @@ public class LineGraphServiceEdgeCaseTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            mixedNullEntries,
-            dateRange,
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(mixedNullEntries, GraphMode.Impact, dateRange,
             showDataPoints: true,
             showAxesAndGrid: true,
             showTitle: true,
@@ -261,9 +243,7 @@ public class LineGraphServiceEdgeCaseTests
         var yearRange = new DateRangeInfo(DateRange.LastYear, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            largeMoodEntries,
-            yearRange,
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(largeMoodEntries, GraphMode.Impact, yearRange,
             showDataPoints: false, // Too many points to show individually
             showAxesAndGrid: true,
             showTitle: true,
@@ -297,9 +277,7 @@ public class LineGraphServiceEdgeCaseTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            zeroImpactEntries,
-            dateRange,
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(zeroImpactEntries, GraphMode.Impact, dateRange,
             showDataPoints: true,
             showAxesAndGrid: true,
             showTitle: true,
@@ -312,3 +290,4 @@ public class LineGraphServiceEdgeCaseTests
 
     #endregion
 }
+

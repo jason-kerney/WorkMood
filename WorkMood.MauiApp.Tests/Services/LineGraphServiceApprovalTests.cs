@@ -46,8 +46,9 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(
             moodEntries, 
+            GraphMode.Impact,
             dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
@@ -69,9 +70,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -92,9 +91,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -115,9 +112,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -138,9 +133,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -161,9 +154,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints: false, 
             showAxesAndGrid: false, 
             showTitle: false, 
@@ -182,9 +173,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -207,9 +196,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateAverageGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Average, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -228,9 +215,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateAverageGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Average, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -254,9 +239,7 @@ public class LineGraphServiceApprovalTests
 
         // Act
         // var imageBytes = await _lineGraphService.GenerateRawDataGraphAsync(
-        var imageBytes = await _lineGraphService.GenerateRawGraphAsync(
-            data,
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(data, GraphMode.RawData, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true,
@@ -275,9 +258,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateRawGraphAsync(
-            data,
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(data, GraphMode.RawData, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true,
@@ -296,9 +277,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateRawGraphAsync(
-            data,
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(data, GraphMode.RawData, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true,
@@ -317,9 +296,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateRawGraphAsync(
-            data,
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(data, GraphMode.RawData, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true,
@@ -338,9 +315,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateRawGraphAsync(
-            data,
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(data, GraphMode.RawData, dateRange, 
             showDataPoints: false, 
             showAxesAndGrid: false, 
             showTitle: false,
@@ -363,9 +338,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(new DateOnly(1925, 1, 15)));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            emptyEntries,
-            dateRange,
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(emptyEntries, GraphMode.Impact, dateRange,
             showDataPoints: true,
             showAxesAndGrid: true,
             showTitle: true,
@@ -384,9 +357,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            singleEntry, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(singleEntry, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -404,9 +375,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(new DateOnly(1999, 12, 9)));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateRawGraphAsync(
-            [], 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync([], GraphMode.RawData, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true,
@@ -425,9 +394,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -450,9 +417,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -473,9 +438,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            moodEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -500,9 +463,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            extremeEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(extremeEntries, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -521,9 +482,7 @@ public class LineGraphServiceApprovalTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new FakeDateShim(today));
 
         // Act
-        var imageBytes = await _lineGraphService.GenerateImpactGraphAsync(
-            extremeEntries, 
-            dateRange, 
+        var imageBytes = await _lineGraphService.GenerateGraphAsync(extremeEntries, GraphMode.Impact, dateRange, 
             showDataPoints: true, 
             showAxesAndGrid: true, 
             showTitle: true, 
@@ -536,3 +495,4 @@ public class LineGraphServiceApprovalTests
 
     #endregion
 }
+
