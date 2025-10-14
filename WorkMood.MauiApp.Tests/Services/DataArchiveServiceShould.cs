@@ -267,4 +267,83 @@ public class DataArchiveServiceShould
     }
 
     #endregion
+
+    #region IsNearYearTransition Tests
+
+    [Fact]
+    public void IsNearYearTransition_ReturnTrue_WhenNearStartOfYear()
+    {
+        // Arrange - January 10th (10 days from start of year)
+        var currentDate = new DateTime(2024, 1, 10);
+        _mockDateShim.Setup(d => d.GetToday())
+            .Returns(currentDate);
+
+        // Act
+        var result = _sut.IsNearYearTransition(daysFromTransition: 14);
+
+        // Assert
+        result.Should().BeTrue("because January 10th is within 14 days of year start");
+    }
+
+    [Fact]
+    public void IsNearYearTransition_ReturnTrue_WhenNearEndOfYear()
+    {
+        // Arrange - December 25th (6 days from end of year)
+        var currentDate = new DateTime(2024, 12, 25);
+        _mockDateShim.Setup(d => d.GetToday())
+            .Returns(currentDate);
+
+        // Act
+        var result = _sut.IsNearYearTransition(daysFromTransition: 14);
+
+        // Assert
+        result.Should().BeTrue("because December 25th is within 14 days of year end");
+    }
+
+    [Fact]
+    public void IsNearYearTransition_ReturnFalse_WhenInMiddleOfYear()
+    {
+        // Arrange - July 15th (far from both transitions)
+        var currentDate = new DateTime(2024, 7, 15);
+        _mockDateShim.Setup(d => d.GetToday())
+            .Returns(currentDate);
+
+        // Act
+        var result = _sut.IsNearYearTransition(daysFromTransition: 14);
+
+        // Assert
+        result.Should().BeFalse("because July 15th is far from both year start and end");
+    }
+
+    [Fact]
+    public void IsNearYearTransition_ReturnFalse_WhenJustOutsideThreshold()
+    {
+        // Arrange - January 20th (19 days from start, outside 14-day threshold)
+        var currentDate = new DateTime(2024, 1, 20);
+        _mockDateShim.Setup(d => d.GetToday())
+            .Returns(currentDate);
+
+        // Act
+        var result = _sut.IsNearYearTransition(daysFromTransition: 14);
+
+        // Assert
+        result.Should().BeFalse("because January 20th is 19 days from start, outside 14-day threshold");
+    }
+
+    [Fact]
+    public void IsNearYearTransition_RespectCustomThreshold_WhenProvidedDifferentValue()
+    {
+        // Arrange - January 25th (24 days from start)
+        var currentDate = new DateTime(2024, 1, 25);
+        _mockDateShim.Setup(d => d.GetToday())
+            .Returns(currentDate);
+
+        // Act
+        var result = _sut.IsNearYearTransition(daysFromTransition: 30);
+
+        // Assert
+        result.Should().BeTrue("because January 25th is within 30-day threshold");
+    }
+
+    #endregion
 }
