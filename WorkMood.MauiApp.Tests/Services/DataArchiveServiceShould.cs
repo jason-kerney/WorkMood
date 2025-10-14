@@ -606,4 +606,215 @@ public class DataArchiveServiceShould
     }
 
     #endregion
+
+    #region LoadFromArchiveFileAsync Tests
+
+    [Fact]
+    public async Task LoadFromArchiveFileAsync_ReturnEmptyList_WhenFileDoesNotExist()
+    {
+        // Arrange
+        var nonExistentFilePath = "archive/definitely_does_not_exist_12345.json";
+        
+        // Note: The method uses File.Exists directly, so we test with a non-existent file path
+        // This tests the real file system behavior when file doesn't exist
+
+        // Act
+        var result = await _sut.LoadFromArchiveFileAsync(nonExistentFilePath);
+
+        // Assert
+        result.Should().BeEmpty("because non-existent files should return empty list");
+    }
+
+    [Fact]
+    public async Task LoadFromArchiveFileAsync_UseFolderShimForFileName_WhenFileExists()
+    {
+        // Arrange - Create a temporary file so the method will call GetFileName during logging
+        var tempFilePath = Path.GetTempFileName();
+        await File.WriteAllTextAsync(tempFilePath, "[]"); // Empty JSON array
+        
+        _mockFolderShim.Setup(f => f.GetFileName(It.IsAny<string>()))
+            .Returns("temp_file.json");
+        _mockJsonSerializerShim.Setup(j => j.Deserialize<List<MoodEntry>>(It.IsAny<string>(), It.IsAny<JsonSerializerOptions>()))
+            .Returns(new List<MoodEntry>());
+
+        try
+        {
+            // Act
+            await _sut.LoadFromArchiveFileAsync(tempFilePath);
+
+            // Assert - Verify that the method uses folderShim.GetFileName for logging when file exists
+            _mockFolderShim.Verify(f => f.GetFileName(It.IsAny<string>()), Times.AtLeastOnce);
+        }
+        finally
+        {
+            // Cleanup
+            if (File.Exists(tempFilePath))
+            {
+                File.Delete(tempFilePath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LoadFromArchiveFileAsync_ReturnMoodEntries_WhenFileContainsValidJson()
+    {
+        // Arrange - Create a temporary file with valid JSON
+        var tempFilePath = Path.GetTempFileName();
+        var validJson = @"[
+            {
+                ""date"": ""2020-01-01"",
+                ""startOfWork"": 7,
+                ""endOfWork"": null,
+                ""createdAt"": ""2020-01-01T08:00:00Z""
+            },
+            {
+                ""date"": ""2020-01-02"",
+                ""startOfWork"": null,
+                ""endOfWork"": 6,
+                ""createdAt"": ""2020-01-02T17:00:00Z""
+            }
+        ]";
+
+        await File.WriteAllTextAsync(tempFilePath, validJson);
+
+        var expectedEntries = new List<MoodEntry>
+        {
+            new() { 
+                Date = new DateOnly(2020, 1, 1), 
+                StartOfWork = 7, 
+                EndOfWork = null,
+                CreatedAt = new DateTime(2020, 1, 1, 8, 0, 0, DateTimeKind.Utc)
+            },
+            new() { 
+                Date = new DateOnly(2020, 1, 2), 
+                StartOfWork = null, 
+                EndOfWork = 6,
+                CreatedAt = new DateTime(2020, 1, 2, 17, 0, 0, DateTimeKind.Utc)
+            }
+        };
+
+        // Mock the JSON deserialization to return expected results
+        _mockJsonSerializerShim.Setup(j => j.Deserialize<List<MoodEntry>>(It.IsAny<string>(), It.IsAny<JsonSerializerOptions>()))
+            .Returns(expectedEntries);
+        _mockFolderShim.Setup(f => f.GetFileName(It.IsAny<string>()))
+            .Returns("temp_archive.json");
+
+        try
+        {
+            // Act
+            var result = await _sut.LoadFromArchiveFileAsync(tempFilePath);
+
+            // Assert
+            result.Should().BeEquivalentTo(expectedEntries);
+            result.Should().HaveCount(2);
+            
+            // Verify the JSON deserialization was called
+            _mockJsonSerializerShim.Verify(j => j.Deserialize<List<MoodEntry>>(It.IsAny<string>(), It.IsAny<JsonSerializerOptions>()), Times.Once);
+        }
+        finally
+        {
+            // Cleanup
+            if (File.Exists(tempFilePath))
+            {
+                File.Delete(tempFilePath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LoadFromArchiveFileAsync_ReturnEmptyList_WhenFileIsEmpty()
+    {
+        // Arrange - Create a temporary empty file
+        var tempFilePath = Path.GetTempFileName();
+        await File.WriteAllTextAsync(tempFilePath, "");
+
+        _mockFolderShim.Setup(f => f.GetFileName(It.IsAny<string>()))
+            .Returns("empty_archive.json");
+
+        try
+        {
+            // Act
+            var result = await _sut.LoadFromArchiveFileAsync(tempFilePath);
+
+            // Assert
+            result.Should().BeEmpty("because empty files should return empty list");
+            
+            // Verify JSON deserialization was not called for empty files
+            _mockJsonSerializerShim.Verify(j => j.Deserialize<List<MoodEntry>>(It.IsAny<string>(), It.IsAny<JsonSerializerOptions>()), Times.Never);
+        }
+        finally
+        {
+            // Cleanup
+            if (File.Exists(tempFilePath))
+            {
+                File.Delete(tempFilePath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LoadFromArchiveFileAsync_ReturnEmptyList_WhenJsonDeserializationThrowsException()
+    {
+        // Arrange - Create a temporary file with valid JSON but mock deserialization to throw
+        var tempFilePath = Path.GetTempFileName();
+        await File.WriteAllTextAsync(tempFilePath, @"[{""date"": ""2020-01-01""}]");
+
+        _mockJsonSerializerShim.Setup(j => j.Deserialize<List<MoodEntry>>(It.IsAny<string>(), It.IsAny<JsonSerializerOptions>()))
+            .Throws(new JsonException("Invalid JSON format"));
+        _mockFolderShim.Setup(f => f.GetFileName(It.IsAny<string>()))
+            .Returns("invalid_json.json");
+
+        try
+        {
+            // Act
+            var result = await _sut.LoadFromArchiveFileAsync(tempFilePath);
+
+            // Assert
+            result.Should().BeEmpty("because JSON deserialization errors should return empty list to prevent crashes");
+            
+            // Verify deserialization was attempted
+            _mockJsonSerializerShim.Verify(j => j.Deserialize<List<MoodEntry>>(It.IsAny<string>(), It.IsAny<JsonSerializerOptions>()), Times.Once);
+        }
+        finally
+        {
+            // Cleanup
+            if (File.Exists(tempFilePath))
+            {
+                File.Delete(tempFilePath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LoadFromArchiveFileAsync_ReturnEmptyList_WhenJsonDeserializationReturnsNull()
+    {
+        // Arrange - Create a temporary file and mock deserialization to return null
+        var tempFilePath = Path.GetTempFileName();
+        await File.WriteAllTextAsync(tempFilePath, "null");
+
+        _mockJsonSerializerShim.Setup(j => j.Deserialize<List<MoodEntry>>(It.IsAny<string>(), It.IsAny<JsonSerializerOptions>()))
+            .Returns((List<MoodEntry>)null!);
+        _mockFolderShim.Setup(f => f.GetFileName(It.IsAny<string>()))
+            .Returns("null_result.json");
+
+        try
+        {
+            // Act
+            var result = await _sut.LoadFromArchiveFileAsync(tempFilePath);
+
+            // Assert
+            result.Should().BeEmpty("because null deserialization should return empty list");
+            result.Should().NotBeNull("because the method should never return null");
+        }
+        finally
+        {
+            // Cleanup
+            if (File.Exists(tempFilePath))
+            {
+                File.Delete(tempFilePath);
+            }
+        }
+    }
+
+    #endregion
 }
