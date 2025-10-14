@@ -111,6 +111,36 @@ public class MoodDataServiceShould
         _mockJsonSerializerShim.Verify(x => x.Deserialize<List<MoodEntry>>(jsonContent, It.IsAny<JsonSerializerOptions>()), Times.Once);
     }
 
+    [Fact]
+    public async Task SaveMoodDataAsync_SaveDataSuccessfully_WhenValidCollectionProvided()
+    {
+        // Arrange
+        var sut = CreateMoodDataService();
+        var testDate = new DateOnly(2024, 10, 15);
+        var moodCollection = new MoodCollection(new List<MoodEntry>
+        {
+            new MoodEntry { Date = testDate, StartOfWork = 4, EndOfWork = 3 }
+        });
+        
+        var archivedCollection = new MoodCollection(moodCollection.Entries); // Same data for this test
+        var expectedJson = """[{"date":"2024-10-15","startOfWork":4,"endOfWork":3}]""";
+        
+        _mockArchiveService.Setup(x => x.ArchiveOldDataAsync(moodCollection, 3))
+                          .ReturnsAsync(archivedCollection);
+        _mockJsonSerializerShim.Setup(x => x.Serialize(archivedCollection.Entries, It.IsAny<JsonSerializerOptions>()))
+                               .Returns(expectedJson);
+        _mockFileShim.Setup(x => x.WriteAllTextAsync("C:\\TestApp\\mood_data.json", expectedJson))
+                     .Returns(Task.CompletedTask);
+
+        // Act
+        await sut.SaveMoodDataAsync(moodCollection);
+
+        // Assert
+        _mockArchiveService.Verify(x => x.ArchiveOldDataAsync(moodCollection, 3), Times.Once);
+        _mockJsonSerializerShim.Verify(x => x.Serialize(archivedCollection.Entries, It.IsAny<JsonSerializerOptions>()), Times.Once);
+        _mockFileShim.Verify(x => x.WriteAllTextAsync("C:\\TestApp\\mood_data.json", expectedJson), Times.Once);
+    }
+
     private MoodDataService CreateMoodDataService()
     {
         return new MoodDataService(
