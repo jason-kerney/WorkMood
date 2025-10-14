@@ -514,4 +514,96 @@ public class DataArchiveServiceShould
     }
 
     #endregion
+
+    #region GetArchiveFiles Tests
+
+    [Fact]
+    public void GetArchiveFiles_ReturnEmptyList_WhenArchiveDirectoryDoesNotExist()
+    {
+        // Arrange
+        _mockFolderShim.Setup(f => f.DirectoryExists(It.IsAny<string>()))
+            .Returns(false);
+
+        // Act
+        var result = _sut.GetArchiveFiles();
+
+        // Assert
+        result.Should().BeEmpty("because archive directory does not exist");
+        
+        // Verify directory existence was checked
+        _mockFolderShim.Verify(f => f.DirectoryExists(It.IsAny<string>()), Times.Once);
+        
+        // Verify GetFiles was never called since directory doesn't exist
+        _mockFolderShim.Verify(f => f.GetFiles(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public void GetArchiveFiles_ReturnArchiveFilesList_WhenDirectoryExistsWithFiles()
+    {
+        // Arrange
+        var expectedFiles = new[]
+        {
+            "archive/mood_data_archive_2020-01-01_to_2020-12-31_20241201_120000.json",
+            "archive/mood_data_archive_2021-01-01_to_2021-12-31_20241201_130000.json",
+            "archive/mood_data_archive_2022-06-01_to_2022-12-31_20241201_140000.json"
+        };
+
+        _mockFolderShim.Setup(f => f.DirectoryExists(It.IsAny<string>()))
+            .Returns(true);
+        _mockFolderShim.Setup(f => f.GetFiles(It.IsAny<string>(), "mood_data_archive_*.json"))
+            .Returns(expectedFiles);
+
+        // Act
+        var result = _sut.GetArchiveFiles();
+
+        // Assert
+        result.Should().BeEquivalentTo(expectedFiles, "because all archive files should be returned");
+        result.Should().HaveCount(3);
+        
+        // Verify correct directory operations were called
+        _mockFolderShim.Verify(f => f.DirectoryExists(It.IsAny<string>()), Times.Once);
+        _mockFolderShim.Verify(f => f.GetFiles(It.IsAny<string>(), "mood_data_archive_*.json"), Times.Once);
+    }
+
+    [Fact]
+    public void GetArchiveFiles_ReturnEmptyList_WhenDirectoryExistsButNoFiles()
+    {
+        // Arrange
+        _mockFolderShim.Setup(f => f.DirectoryExists(It.IsAny<string>()))
+            .Returns(true);
+        _mockFolderShim.Setup(f => f.GetFiles(It.IsAny<string>(), "mood_data_archive_*.json"))
+            .Returns(Array.Empty<string>());
+
+        // Act
+        var result = _sut.GetArchiveFiles();
+
+        // Assert
+        result.Should().BeEmpty("because no archive files exist in the directory");
+        
+        // Verify both directory check and file search were performed
+        _mockFolderShim.Verify(f => f.DirectoryExists(It.IsAny<string>()), Times.Once);
+        _mockFolderShim.Verify(f => f.GetFiles(It.IsAny<string>(), "mood_data_archive_*.json"), Times.Once);
+    }
+
+    [Fact]
+    public void GetArchiveFiles_ReturnEmptyList_WhenExceptionOccurs()
+    {
+        // Arrange
+        _mockFolderShim.Setup(f => f.DirectoryExists(It.IsAny<string>()))
+            .Returns(true);
+        _mockFolderShim.Setup(f => f.GetFiles(It.IsAny<string>(), "mood_data_archive_*.json"))
+            .Throws(new UnauthorizedAccessException("Access denied"));
+
+        // Act
+        var result = _sut.GetArchiveFiles();
+
+        // Assert
+        result.Should().BeEmpty("because an empty list should be returned on error to prevent crashes");
+        
+        // Verify the exception was handled gracefully
+        _mockFolderShim.Verify(f => f.DirectoryExists(It.IsAny<string>()), Times.Once);
+        _mockFolderShim.Verify(f => f.GetFiles(It.IsAny<string>(), "mood_data_archive_*.json"), Times.Once);
+    }
+
+    #endregion
 }
