@@ -32,7 +32,14 @@ public static class MauiProgram
 		builder.Services.AddSingleton<IBrowserShim, BrowserShim>();
 		
 		// Register new infrastructure services
-		builder.Services.AddSingleton<ILoggingService, LoggingService>();
+		builder.Services.AddSingleton<ILoggingService>(serviceProvider =>
+		{
+			// Create logging service with explicit configuration
+			var loggingService = new LoggingService();
+			// Could add startup configuration here if needed
+			// loggingService.IsEnabled = GetLoggingConfigFromSettings();
+			return loggingService;
+		});
 		builder.Services.AddSingleton<IWindowActivationService, WindowActivationService>();
 		builder.Services.AddSingleton<IBrowserService, BrowserService>();
 		builder.Services.AddTransient<IMoodEntryViewFactory, MoodEntryViewFactory>();
