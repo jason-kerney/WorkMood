@@ -1,4 +1,5 @@
-﻿using WorkMood.MauiApp.Services;
+﻿using System.Linq;
+using WorkMood.MauiApp.Services;
 using WorkMood.MauiApp.Shims;
 using WorkMood.MauiApp.ViewModels;
 using WorkMood.MauiApp.Pages;
@@ -10,6 +11,9 @@ public static class MauiProgram
 {
 	public static Microsoft.Maui.Hosting.MauiApp CreateMauiApp()
 	{
+		// Parse command line arguments for logging configuration
+		var enableLogging = ShouldEnableLogging();
+		
 		var builder = Microsoft.Maui.Hosting.MauiApp.CreateBuilder();
 		builder.UseMauiApp<App>()
 			.ConfigureFonts(fonts =>
@@ -36,8 +40,8 @@ public static class MauiProgram
 		{
 			// Create logging service with explicit configuration
 			var loggingService = new LoggingService();
-			// Could add startup configuration here if needed
-			// loggingService.IsEnabled = GetLoggingConfigFromSettings();
+			// Configure logging based on command line arguments
+			loggingService.IsEnabled = enableLogging;
 			return loggingService;
 		});
 		builder.Services.AddSingleton<IWindowActivationService, WindowActivationService>();
@@ -79,5 +83,33 @@ public static class MauiProgram
 		builder.Services.AddTransient<MoodRecording>();
 
 		return builder.Build();
+	}
+
+	/// <summary>
+	/// Determines if logging should be enabled based on command line arguments
+	/// </summary>
+	/// <returns>True if logging should be enabled, false otherwise</returns>
+	private static bool ShouldEnableLogging()
+	{
+		try
+		{
+			// Get command line arguments from environment
+			var args = Environment.GetCommandLineArgs();
+			
+			// Check for --log or -log parameter to enable logging
+			var hasLog = args.Any(arg => 
+				string.Equals(arg, "--log", StringComparison.OrdinalIgnoreCase) ||
+				string.Equals(arg, "-l", StringComparison.OrdinalIgnoreCase));
+			
+			if (hasLog) return true;
+			
+			// Default to enabled for now (will be changed to disabled soon)
+			return true;
+		}
+		catch
+		{
+			// If there's any error parsing arguments, default to enabled
+			return true;
+		}
 	}
 }
