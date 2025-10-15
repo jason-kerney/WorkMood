@@ -492,4 +492,239 @@ public class LoggingServiceShould
     }
 
     #endregion
+
+    #region IsEnabled Property Tests
+
+    [Fact]
+    public void IsEnabled_DefaultsToTrue_WhenConstructedWithParameters()
+    {
+        // Act
+        var sut = CreateLoggingService();
+
+        // Assert
+        sut.IsEnabled.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsEnabled_DefaultsToTrue_WhenConstructedWithDefaultConstructor()
+    {
+        // Act
+        var sut = new LoggingService();
+
+        // Assert
+        sut.IsEnabled.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsEnabled_CanBeSetToFalse()
+    {
+        // Arrange
+        var sut = CreateLoggingService();
+
+        // Act
+        sut.IsEnabled = false;
+
+        // Assert
+        sut.IsEnabled.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsEnabled_CanBeSetToTrue()
+    {
+        // Arrange
+        var sut = CreateLoggingService();
+        sut.IsEnabled = false;
+
+        // Act
+        sut.IsEnabled = true;
+
+        // Assert
+        sut.IsEnabled.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Log_DoesNothing_WhenIsEnabledIsFalse()
+    {
+        // Arrange
+        var sut = CreateLoggingService();
+        sut.IsEnabled = false;
+
+        // Act
+        sut.Log("Test message");
+
+        // Assert
+        _mockFileShim.Verify(x => x.AppendAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _mockDateShim.Verify(x => x.Now(), Times.Never);
+    }
+
+    [Fact]
+    public void Log_WithLogLevel_DoesNothing_WhenIsEnabledIsFalse()
+    {
+        // Arrange
+        var sut = CreateLoggingService();
+        sut.IsEnabled = false;
+
+        // Act
+        sut.Log(LogLevel.Error, "Test error message");
+
+        // Assert
+        _mockFileShim.Verify(x => x.AppendAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _mockDateShim.Verify(x => x.Now(), Times.Never);
+    }
+
+    [Fact]
+    public void LogException_DoesNothing_WhenIsEnabledIsFalse()
+    {
+        // Arrange
+        var sut = CreateLoggingService();
+        sut.IsEnabled = false;
+        var exception = new InvalidOperationException("Test exception");
+
+        // Act
+        sut.LogException(exception);
+
+        // Assert
+        _mockFileShim.Verify(x => x.AppendAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _mockDateShim.Verify(x => x.Now(), Times.Never);
+    }
+
+    [Fact]
+    public void LogException_WithMessage_DoesNothing_WhenIsEnabledIsFalse()
+    {
+        // Arrange
+        var sut = CreateLoggingService();
+        sut.IsEnabled = false;
+        var exception = new ArgumentException("Test exception");
+
+        // Act
+        sut.LogException(exception, "Additional message");
+
+        // Assert
+        _mockFileShim.Verify(x => x.AppendAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _mockDateShim.Verify(x => x.Now(), Times.Never);
+    }
+
+    [Fact]
+    public void Log_WorksNormally_WhenIsEnabledIsTrue()
+    {
+        // Arrange
+        var sut = CreateLoggingService();
+        sut.IsEnabled = true;
+        var message = "Test message";
+        var expectedLogEntry = "[2024-10-15 14:30:45.123] [INFO   ] Test message" + Environment.NewLine;
+
+        // Act
+        sut.Log(message);
+
+        // Assert
+        _mockFileShim.Verify(x => x.AppendAllText(_testLogPath, expectedLogEntry), Times.Once);
+        _mockDateShim.Verify(x => x.Now(), Times.Once);
+    }
+
+    [Fact]
+    public void Log_WithLogLevel_WorksNormally_WhenIsEnabledIsTrue()
+    {
+        // Arrange
+        var sut = CreateLoggingService();
+        sut.IsEnabled = true;
+        var message = "Error occurred";
+        var expectedLogEntry = "[2024-10-15 14:30:45.123] [ERROR  ] Error occurred" + Environment.NewLine;
+
+        // Act
+        sut.Log(LogLevel.Error, message);
+
+        // Assert
+        _mockFileShim.Verify(x => x.AppendAllText(_testLogPath, expectedLogEntry), Times.Once);
+        _mockDateShim.Verify(x => x.Now(), Times.Once);
+    }
+
+    [Fact]
+    public void LogException_WorksNormally_WhenIsEnabledIsTrue()
+    {
+        // Arrange
+        var sut = CreateLoggingService();
+        sut.IsEnabled = true;
+        var exception = new InvalidOperationException("Something went wrong");
+        var expectedLogEntry = "[2024-10-15 14:30:45.123] [ERROR  ] Exception: Something went wrong" + Environment.NewLine;
+
+        // Act
+        sut.LogException(exception);
+
+        // Assert
+        _mockFileShim.Verify(x => x.AppendAllText(_testLogPath, expectedLogEntry), Times.Once);
+        _mockDateShim.Verify(x => x.Now(), Times.Once);
+    }
+
+    [Fact]
+    public void Log_CanBeToggled_BetweenEnabledAndDisabled()
+    {
+        // Arrange
+        var sut = CreateLoggingService();
+        var message = "Test message";
+
+        // Act & Assert - Initially enabled (default)
+        sut.Log(message);
+        _mockFileShim.Verify(x => x.AppendAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+
+        // Reset mock for next verification
+        _mockFileShim.Reset();
+        _mockDateShim.Reset();
+        
+        // Act & Assert - Disabled
+        sut.IsEnabled = false;
+        sut.Log(message);
+        _mockFileShim.Verify(x => x.AppendAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+
+        // Reset mock for next verification
+        _mockFileShim.Reset();
+        _mockDateShim.Reset();
+        
+        // Act & Assert - Re-enabled
+        sut.IsEnabled = true;
+        sut.Log(message);
+        _mockFileShim.Verify(x => x.AppendAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(LogLevel.Debug)]
+    [InlineData(LogLevel.Info)]
+    [InlineData(LogLevel.Warning)]
+    [InlineData(LogLevel.Error)]
+    public void Log_WithAllLogLevels_DoesNothing_WhenIsEnabledIsFalse(LogLevel logLevel)
+    {
+        // Arrange
+        var sut = CreateLoggingService();
+        sut.IsEnabled = false;
+
+        // Act
+        sut.Log(logLevel, "Test message");
+
+        // Assert
+        _mockFileShim.Verify(x => x.AppendAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _mockDateShim.Verify(x => x.Now(), Times.Never);
+    }
+
+    [Fact]
+    public async Task Log_RespectIsEnabled_WhenLoggingConcurrently()
+    {
+        // Arrange
+        var sut = CreateLoggingService();
+        sut.IsEnabled = false;
+        var tasks = new Task[5];
+
+        // Act
+        for (int i = 0; i < tasks.Length; i++)
+        {
+            int taskId = i;
+            tasks[i] = Task.Run(() => sut.Log($"Message from task {taskId}"));
+        }
+
+        await Task.WhenAll(tasks);
+
+        // Assert
+        _mockFileShim.Verify(x => x.AppendAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _mockDateShim.Verify(x => x.Now(), Times.Never);
+    }
+
+    #endregion
 }

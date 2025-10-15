@@ -12,6 +12,11 @@ public class LoggingService : ILoggingService
     private readonly IFileShim _fileShim;
     private readonly IDateShim _dateShim;
 
+    /// <summary>
+    /// Gets or sets whether logging is enabled. When false, no logs will be generated.
+    /// </summary>
+    public bool IsEnabled { get; set; }
+
     public LoggingService(IFileShim fileShim, IDateShim dateShim, IFolderShim folderShim)
     {
         _fileShim = fileShim ?? throw new ArgumentNullException(nameof(fileShim));
@@ -19,6 +24,7 @@ public class LoggingService : ILoggingService
         
         var desktopPath = folderShim?.GetDesktopFolder() ?? throw new ArgumentNullException(nameof(folderShim));
         _logFilePath = folderShim.CombinePaths(desktopPath, "WorkMood_Debug.log");
+        IsEnabled = true;
     }
 
     /// <summary>
@@ -34,6 +40,9 @@ public class LoggingService : ILoggingService
     /// <param name="message">The message to log</param>
     public void Log(string message)
     {
+        if (!IsEnabled)
+            return;
+            
         Log(LogLevel.Info, message);
     }
 
@@ -44,6 +53,9 @@ public class LoggingService : ILoggingService
     /// <param name="message">The message to log</param>
     public void Log(LogLevel level, string message)
     {
+        if (!IsEnabled)
+            return;
+            
         if (string.IsNullOrWhiteSpace(message))
             return;
 
@@ -72,6 +84,9 @@ public class LoggingService : ILoggingService
     /// <param name="message">Additional message</param>
     public void LogException(Exception exception, string message = "")
     {
+        if (!IsEnabled)
+            return;
+            
         if (exception == null)
             return;
 
