@@ -38,20 +38,24 @@ This document outlines the plan to extract detailed sections from `.github/.copi
 
 ---
 
-### 2. Build & Testing Processes → `ai-codex-build-testing.md`
-**Content to Extract**:
-- Detailed framework targeting commands
-- Complete testing strategy documentation
-- Test organization patterns
-- Quality assurance checklists
-- Platform-specific build requirements
+### 2. Build & Testing Processes → `ai-codex-build-testing.md` ✅ COMPLETED
+**Content Extracted**:
+- ✅ Comprehensive framework targeting commands for Windows and macOS
+- ✅ Complete testing strategy with execution commands and filters
+- ✅ Detailed test organization patterns mirroring project structure
+- ✅ Quality gates and CI/CD pipeline configurations
+- ✅ Platform-specific build requirements and troubleshooting
+- ✅ Code coverage analysis and performance profiling guidance
+- ✅ Debug configurations and diagnostic tools usage
 
-**Summary for Main Instructions**:
-- Essential build commands only
-- Basic test command
-- Reference to build/testing codex
+**Summary in Main Instructions**:
+- ✅ Essential build commands for primary development workflow
+- ✅ Basic test execution commands
+- ✅ Reference link: "See `.github/ai-codex-build-testing.md` for comprehensive build & testing guidance"
 
 **When Copilot Uses**: Setting up build processes; configuring testing; troubleshooting compilation issues; cross-platform concerns
+
+**Commit**: `^d - extract Build & Testing Processes to ai-codex-build-testing for comprehensive guidance` (3a542cb)
 
 ---
 
@@ -158,9 +162,15 @@ This document outlines the plan to extract detailed sections from `.github/.copi
 - **Commit**: 6bfdfc9 - `^d - extract Code Creation & Architecture to ai-codex-architecture for focused reference`
 - **Result**: Essential architecture info remains in main instructions; comprehensive guidance available via codex
 
-### 🔄 Next Section: Build & Testing Processes  
-**Target File**: `.github/ai-codex-build-testing.md`
-**Expected Outcome**: Essential commands remain in main instructions; detailed build/test procedures available via reference
+### ✅ Completed: Build & Testing Processes
+- **File Created**: `.github/ai-codex-build-testing.md` (500+ lines)
+- **Main Instructions Updated**: Reduced from 32 to 11 lines with codex reference
+- **Commit**: 3a542cb - `^d - extract Build & Testing Processes to ai-codex-build-testing for comprehensive guidance`
+- **Result**: Essential build/test commands remain; comprehensive procedures available via codex
+
+### 🔄 Next Section: Refactoring Methodology
+**Target File**: `.github/ai-codex-refactoring.md`
+**Expected Outcome**: Essential refactoring principles remain; detailed Shim Factory methodology available via reference
 
 ## Success Criteria
 - Main instructions file is significantly shorter and more focused
