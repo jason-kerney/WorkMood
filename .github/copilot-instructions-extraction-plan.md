@@ -18,20 +18,23 @@ This document outlines the plan to extract detailed sections from `.github/.copi
 
 ## Sections to Extract
 
-### 1. Code Creation & Architecture → `ai-codex-architecture.md`
-**Content to Extract**:
-- MVVM Clean Architecture requirements
-- Detailed folder structure with descriptions
-- Complete service interfaces list
-- Dependency injection patterns and examples
-- Interface segregation principles
+### 1. Code Creation & Architecture → `ai-codex-architecture.md` ✅ COMPLETED
+**Content Extracted**:
+- ✅ MVVM Clean Architecture requirements with detailed principles
+- ✅ Complete folder structure with comprehensive descriptions for all 12 directories
+- ✅ All service interfaces with full method signatures and examples
+- ✅ Dependency injection patterns with code examples
+- ✅ Interface segregation principles and factory patterns
+- ✅ Testing considerations and architecture validation patterns
 
-**Summary for Main Instructions**:
-- Brief MVVM overview
-- Reference to architecture codex
-- Essential service interface names only
+**Summary in Main Instructions**:
+- ✅ Concise MVVM overview (4 key principles)
+- ✅ Essential service interface names only
+- ✅ Reference link: "See `.github/ai-codex-architecture.md` for comprehensive architecture guidance"
 
 **When Copilot Uses**: Creating new classes, services, or ViewModels; organizing project structure; implementing dependency injection
+
+**Commit**: `^d - extract Code Creation & Architecture to ai-codex-architecture for focused reference` (6bfdfc9)
 
 ---
 
@@ -128,7 +131,18 @@ This document outlines the plan to extract detailed sections from `.github/.copi
 3. **Update References**: Replace detailed content with summary + reference
 4. **Test Integration**: Ensure references work and flow is maintained
 5. **Commit**: Use format `^d - extract [section] to ai-codex-[topic] for focused reference`
-6. **Wait for Confirmation**: Pause for validation before proceeding
+6. **Update Plan**: Mark section as completed with commit details and accomplishments
+7. **Wait for Confirmation**: Pause for validation before proceeding
+
+### Plan Maintenance
+**This plan document will be updated after each extraction to:**
+- ✅ Mark completed sections with detailed accomplishments
+- 📊 Track quantitative results (lines reduced, codex size, etc.)
+- 🔗 Document commit hashes and messages for traceability
+- 📋 Update progress status showing what's completed and what's next
+- 🎯 Maintain clear roadmap for remaining work
+
+**Update Pattern**: After each section extraction, the plan will be updated with completion status, then committed using: `^d - update extraction plan with [section] completion status`
 
 ### Quality Gates:
 - ✅ **Coherence**: Main instructions remain coherent and actionable
@@ -136,10 +150,17 @@ This document outlines the plan to extract detailed sections from `.github/.copi
 - ✅ **Accessibility**: Copilot can find and use referenced information
 - ✅ **Maintainability**: Updates to codexes are manageable and clear
 
-## Starting Point
-**First Section**: Code Creation & Architecture
-**Target File**: `.github/ai-codex-architecture.md`
-**Expected Outcome**: Main instructions focus on essential architecture principles while detailed patterns are available via reference
+## Progress Status
+
+### ✅ Completed: Code Creation & Architecture
+- **File Created**: `.github/ai-codex-architecture.md` (400+ lines)
+- **Main Instructions Updated**: Reduced from 45 to 10 lines with codex reference
+- **Commit**: 6bfdfc9 - `^d - extract Code Creation & Architecture to ai-codex-architecture for focused reference`
+- **Result**: Essential architecture info remains in main instructions; comprehensive guidance available via codex
+
+### 🔄 Next Section: Build & Testing Processes  
+**Target File**: `.github/ai-codex-build-testing.md`
+**Expected Outcome**: Essential commands remain in main instructions; detailed build/test procedures available via reference
 
 ## Success Criteria
 - Main instructions file is significantly shorter and more focused
