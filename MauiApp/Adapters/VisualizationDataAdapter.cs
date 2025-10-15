@@ -55,7 +55,9 @@ public static class VisualizationDataAdapter
     }
     
     /// <summary>
-    /// Helper method to get human-readable description of mood value
+    /// Helper method to get human-readable description of mood change value.
+    /// Change values represent the difference between start and end of work mood.
+    /// Positive = improved, Zero = no change, Negative = declined
     /// </summary>
     private static string GetValueDescription(double? value)
     {
@@ -64,12 +66,12 @@ public static class VisualizationDataAdapter
             
         return value.Value switch
         {
-            > 7 => "Significantly improved",
-            > 6 => "Moderately improved", 
-            > 5 => "Slightly improved",
-            5 => "No change",
-            > 4 => "Slightly declined",
-            > 3 => "Moderately declined",
+            >= 2 => "Significantly improved",
+            >= 1 => "Moderately improved", 
+            > 0 => "Slightly improved",
+            0 => "No change",
+            > -1 => "Slightly declined",
+            >= -2 => "Moderately declined",
             _ => "Significantly declined"
         };
     }

@@ -94,10 +94,12 @@ public static class MoodVisualizationFormatter
     }
     
     /// <summary>
-    /// Converts numeric mood value to human-readable description
+    /// Converts numeric mood change value to human-readable description.
+    /// Change values represent the difference between start and end of work mood.
+    /// Positive = improved, Zero = no change, Negative = declined
     /// </summary>
-    /// <param name="value">The mood value to describe</param>
-    /// <returns>Human-readable description of the mood value</returns>
+    /// <param name="value">The mood change value to describe</param>
+    /// <returns>Human-readable description of the mood change value</returns>
     private static string GetValueDescription(double? value)
     {
         if (!value.HasValue)
@@ -105,12 +107,12 @@ public static class MoodVisualizationFormatter
             
         return value.Value switch
         {
-            > 7 => "Significantly improved",
-            > 6 => "Moderately improved", 
-            > 5 => "Slightly improved",
-            5 => "No change",
-            > 4 => "Slightly declined",
-            > 3 => "Moderately declined",
+            >= 2 => "Significantly improved",
+            >= 1 => "Moderately improved", 
+            > 0 => "Slightly improved",
+            0 => "No change",
+            > -1 => "Slightly declined",
+            >= -2 => "Moderately declined",
             _ => "Significantly declined"
         };
     }
