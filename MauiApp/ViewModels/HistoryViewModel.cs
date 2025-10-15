@@ -13,6 +13,7 @@ public class HistoryViewModel : ViewModelBase
 {
     private readonly IMoodDataService _moodDataService;
     private readonly INavigationService _navigationService;
+    private readonly ILoggingService _loggingService;
     private Func<Task>? _visualizationNavigationHandler;
 
     // Backing fields for properties
@@ -27,10 +28,11 @@ public class HistoryViewModel : ViewModelBase
     private string _errorMessage = string.Empty;
     private bool _hasError = false;
 
-    public HistoryViewModel(IMoodDataService moodDataService, INavigationService navigationService)
+    public HistoryViewModel(IMoodDataService moodDataService, INavigationService navigationService, ILoggingService loggingService)
     {
         _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        _loggingService = loggingService ?? throw new ArgumentNullException(nameof(loggingService));
         
         RecentEntries = new ObservableCollection<MoodEntry>();
         
@@ -41,15 +43,7 @@ public class HistoryViewModel : ViewModelBase
 
     private void LogViewModel(string message)
     {
-        try
-        {
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            var logEntry = $"[{timestamp}] HistoryViewModel: {message}";
-            var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            var logPath = Path.Combine(desktopPath, "WorkMood_ViewModel_Debug.log");
-            File.AppendAllText(logPath, logEntry + Environment.NewLine);
-        }
-        catch { } // Ignore logging errors
+        _loggingService.LogDebug($"HistoryViewModel: {message}");
     }
 
     /// <summary>

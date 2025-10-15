@@ -35,6 +35,7 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ILoggingService, LoggingService>();
 		builder.Services.AddSingleton<IWindowActivationService, WindowActivationService>();
 		builder.Services.AddSingleton<IBrowserService, BrowserService>();
+		builder.Services.AddTransient<IMoodEntryViewFactory, MoodEntryViewFactory>();
 		
 		// Register graph-related services
 		builder.Services.AddSingleton<ILineGraphService, LineGraphService>();

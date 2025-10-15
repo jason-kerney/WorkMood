@@ -1,6 +1,7 @@
 using WorkMood.MauiApp.ViewModels;
 using WorkMood.MauiApp.Services;
 using WorkMood.MauiApp.Pages;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace WorkMood.MauiApp.Pages;
 
@@ -8,11 +9,13 @@ public partial class Main : ContentPage
 {
     private readonly MainPageViewModel _viewModel;
     private readonly INavigationService _navigationService;
+    private readonly IServiceProvider _serviceProvider;
 
-    public Main(MainPageViewModel viewModel)
+    public Main(MainPageViewModel viewModel, IServiceProvider serviceProvider)
     {
         InitializeComponent();
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         BindingContext = _viewModel;
         _navigationService = new NavigationService(this);
         
@@ -49,7 +52,9 @@ public partial class Main : ContentPage
 
     private async void OnNavigateToHistory(object? sender, EventArgs e)
     {
-        await _navigationService.NavigateAsync(() => new History());
+        // Get the singleton LoggingService from DI to ensure unified logging
+        var loggingService = _serviceProvider.GetRequiredService<ILoggingService>();
+        await _navigationService.NavigateAsync(() => new History(loggingService: loggingService));
     }
 
     private async void OnNavigateToGraph(object? sender, EventArgs e)
@@ -81,7 +86,7 @@ public partial class Main : ContentPage
 
     private async void OnNavigateToAbout(object? sender, EventArgs e)
     {
-        await _navigationService.NavigateAsync(() => new About());
+        await _navigationService.NavigateAsync(() => _serviceProvider.GetRequiredService<About>());
     }
 
     private async void OnDisplayAlert(object? sender, DisplayAlertEventArgs e)

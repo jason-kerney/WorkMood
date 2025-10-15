@@ -11,10 +11,10 @@ namespace WorkMood.MauiApp.ViewModels;
 /// </summary>
 public class AboutViewModel : ViewModelBase
 {
-    private readonly INavigationService _navigationService;
     private readonly IBrowserService _browserService;
     private readonly IVersionRetriever _versionRetriever;
     private readonly IMoodDataService _moodDataService;
+    private readonly ILoggingService _loggingService;
 
     private string _appTitle = "WorkMood - Daily Mood Tracker";
     private string _appVersion = string.Empty;
@@ -29,12 +29,13 @@ public class AboutViewModel : ViewModelBase
     /// <param name="browserService">Service for opening external URLs</param>
     /// <param name="versionRetriever">Service for retrieving version information</param>
     /// <param name="moodDataService">Service for mood data operations</param>
-    public AboutViewModel(INavigationService navigationService, IBrowserService browserService, IVersionRetriever versionRetriever, IMoodDataService moodDataService)
+    /// <param name="loggingService">Service for logging operations</param>
+    public AboutViewModel(IBrowserService browserService, IVersionRetriever versionRetriever, IMoodDataService moodDataService, ILoggingService loggingService)
     {
-        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _browserService = browserService ?? throw new ArgumentNullException(nameof(browserService));
         _versionRetriever = versionRetriever ?? throw new ArgumentNullException(nameof(versionRetriever));
         _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
+        _loggingService = loggingService ?? throw new ArgumentNullException(nameof(loggingService));
 
         // Initialize version information
         InitializeVersionInfo();
@@ -71,9 +72,28 @@ public class AboutViewModel : ViewModelBase
         set => SetProperty(ref _appDescription, value);
     }
 
-
-
-
+    /// <summary>
+    /// Gets or sets whether logging is enabled
+    /// </summary>
+    public bool IsLoggingEnabled
+    {
+        get => _loggingService.IsEnabled;
+        set
+        {
+            if (_loggingService.IsEnabled != value)
+            {
+                _loggingService.IsEnabled = value;
+                OnPropertyChanged();
+                
+                // Log the change (if logging is enabled)
+                if (value)
+                {
+                    _loggingService.Log("Logging has been enabled via About page");
+                }
+                // Note: We can't log when disabling because logging would be disabled
+            }
+        }
+    }
 
     #endregion
 

@@ -6,6 +6,11 @@ namespace WorkMood.MauiApp.Services;
 public interface ILoggingService
 {
     /// <summary>
+    /// Gets or sets whether logging is enabled. When false, no logs will be generated.
+    /// </summary>
+    bool IsEnabled { get; set; }
+
+    /// <summary>
     /// Logs a message with the current timestamp
     /// </summary>
     /// <param name="message">The message to log</param>

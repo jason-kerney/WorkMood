@@ -43,16 +43,18 @@ public partial class History : ContentPage
     /// Constructor for backwards compatibility and dependency injection support
     /// </summary>
     /// <param name="moodDataService">The mood data service (for backwards compatibility)</param>
-    public History(MoodDataService? moodDataService = null)
+    /// <param name="loggingService">The logging service (for unified logging)</param>
+    public History(MoodDataService? moodDataService = null, ILoggingService? loggingService = null)
     {
         InitializeComponent();
         
         // Create dependencies - in a proper DI container, these would be injected
         var dataService = moodDataService ?? new MoodDataService();
         var navigationService = new NavigationService(this);
+        var logService = loggingService ?? new LoggingService();
         _viewFactory = new MoodEntryViewFactory();
         
-        _viewModel = new HistoryViewModel(dataService, navigationService);
+        _viewModel = new HistoryViewModel(dataService, navigationService, logService);
         BindingContext = _viewModel;
         _navigationService = navigationService;
         

@@ -1,6 +1,4 @@
 using WorkMood.MauiApp.ViewModels;
-using WorkMood.MauiApp.Services;
-using WhatsYourVersion;
 
 namespace WorkMood.MauiApp.Pages;
 
@@ -24,25 +22,5 @@ public partial class About : ContentPage
         BindingContext = _viewModel;
     }
 
-    /// <summary>
-    /// Constructor for backwards compatibility and dependency injection support
-    /// </summary>
-    /// <param name="navigationService">The navigation service (optional for DI scenarios)</param>
-    /// <param name="browserService">The browser service (optional for DI scenarios)</param>
-    /// <param name="versionRetriever">The version retriever service (optional for DI scenarios)</param>
-    /// <param name="moodDataService">The mood data service (optional for DI scenarios)</param>
-    public About(INavigationService? navigationService = null, IBrowserService? browserService = null, IVersionRetriever? versionRetriever = null, IMoodDataService? moodDataService = null)
-    {
-        InitializeComponent();
-        
-        // Create dependencies following Dependency Inversion Principle
-        var navService = navigationService ?? new NavigationService(this);
-        var browService = browserService ?? new BrowserService(new Shims.BrowserShim());
-        var verService = versionRetriever ?? new VersionRetriever(AssemblyWrapper.From<App>());
-        var moodService = moodDataService ?? new MoodDataService();
-        
-        // Create and set the ViewModel
-        _viewModel = new AboutViewModel(navService, browService, verService, moodService);
-        BindingContext = _viewModel;
-    }
+
 }
