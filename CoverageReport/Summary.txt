@@ -1,25 +1,25 @@
 Summary
-  Generated on: 10/14/2025 - 3:40:11 PM
-  Coverage date: 10/14/2025 - 3:40:10 PM
+  Generated on: 10/15/2025 - 2:21:25 PM
+  Coverage date: 10/15/2025 - 2:21:24 PM
   Parser: Cobertura
   Assemblies: 1
   Classes: 111
   Files: 72
-  Line coverage: 22.6%
-  Covered lines: 1416
-  Uncovered lines: 4823
-  Coverable lines: 6239
-  Total lines: 12027
-  Branch coverage: 16.3% (272 of 1659)
-  Covered branches: 272
-  Total branches: 1659
-  Method coverage: 23.4% (238 of 1015)
-  Full method coverage: 21% (214 of 1015)
-  Covered methods: 238
-  Fully covered methods: 214
-  Total methods: 1015
+  Line coverage: 23.4%
+  Covered lines: 1463
+  Uncovered lines: 4781
+  Coverable lines: 6244
+  Total lines: 12045
+  Branch coverage: 17.3% (290 of 1667)
+  Covered branches: 290
+  Total branches: 1667
+  Method coverage: 24% (244 of 1016)
+  Full method coverage: 21.6% (220 of 1016)
+  Covered methods: 244
+  Fully covered methods: 220
+  Total methods: 1016
 
-WorkMood.MauiApp                                                        22.6%
+WorkMood.MauiApp                                                        23.4%
   WorkMood.MauiApp.Adapters.VisualizationDataAdapter                       0%
   WorkMood.MauiApp.App                                                     0%
   WorkMood.MauiApp.AppShell                                                0%
@@ -76,7 +76,7 @@ WorkMood.MauiApp                                                        22.6%
   WorkMood.MauiApp.Services.GraphDataTransformer                        96.8%
   WorkMood.MauiApp.Services.LineGraphGenerator                          96.3%
   WorkMood.MauiApp.Services.LineGraphService                            87.5%
-  WorkMood.MauiApp.Services.LoggingService                                 0%
+  WorkMood.MauiApp.Services.LoggingService                               100%
   WorkMood.MauiApp.Services.LoggingServiceExtensions                       0%
   WorkMood.MauiApp.Services.MoodDataService                             95.3%
   WorkMood.MauiApp.Services.MoodDispatcherService                          0%
@@ -100,7 +100,7 @@ WorkMood.MauiApp                                                        22.6%
   WorkMood.MauiApp.Shims.DrawShimFactory                                 100%
   WorkMood.MauiApp.Shims.FileShim                                         20%
   WorkMood.MauiApp.Shims.FileShimFactory                                 100%
-  WorkMood.MauiApp.Shims.FolderShim                                       50%
+  WorkMood.MauiApp.Shims.FolderShim                                     62.5%
   WorkMood.MauiApp.Shims.FontFaceShim                                    100%
   WorkMood.MauiApp.Shims.FontShimFactory                                 100%
   WorkMood.MauiApp.Shims.FontStyleShim                                   100%
