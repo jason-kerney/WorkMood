@@ -59,21 +59,25 @@ This document outlines the plan to extract detailed sections from `.github/.copi
 
 ---
 
-### 3. Refactoring Methodology → `ai-codex-refactoring.md`
-**Content to Extract**:
-- Complete Shim Factory Pattern implementation process
-- Detailed existing shim abstractions
-- Refactoring philosophy and methodology
-- Phase-by-phase refactoring steps
-- Refactoring targets by priority
-- Anti-patterns to avoid
+### 3. Refactoring Methodology → `ai-codex-refactoring.md` ✅ COMPLETED
+**Content Extracted**:
+- ✅ Complete Shim Factory Pattern implementation with two-phase approach
+- ✅ Detailed existing shim abstractions for File System, Drawing, and Utilities
+- ✅ Disciplined incremental refactoring philosophy with core principles
+- ✅ Phase-by-phase refactoring steps with critical sequence methodology
+- ✅ Refactoring targets prioritized by impact (High/Medium/Lower)
+- ✅ Comprehensive anti-patterns section with specific examples
+- ✅ Historical reference and success metrics from actual refactoring sessions
+- ✅ Advanced shim patterns including argument-based and composite factories
 
-**Summary for Main Instructions**:
-- Brief refactoring approach
-- Reference to refactoring codex
-- Key principle: "ONE method at a time"
+**Summary in Main Instructions**:
+- ✅ Essential refactoring philosophy with 4 core principles
+- ✅ Key principle emphasized: "ONE method at a time"
+- ✅ Reference link: "See `.github/ai-codex-refactoring.md` for comprehensive refactoring guidance"
 
 **When Copilot Uses**: Planning refactoring sessions; implementing dependency injection; creating shim abstractions; systematic code improvement
+
+**Commit**: `^d - extract Refactoring Methodology to ai-codex-refactoring for systematic guidance` (aa62232)
 
 ---
 
@@ -168,9 +172,15 @@ This document outlines the plan to extract detailed sections from `.github/.copi
 - **Commit**: 3a542cb - `^d - extract Build & Testing Processes to ai-codex-build-testing for comprehensive guidance`
 - **Result**: Essential build/test commands remain; comprehensive procedures available via codex
 
-### 🔄 Next Section: Refactoring Methodology
-**Target File**: `.github/ai-codex-refactoring.md`
-**Expected Outcome**: Essential refactoring principles remain; detailed Shim Factory methodology available via reference
+### ✅ Completed: Refactoring Methodology
+- **File Created**: `.github/ai-codex-refactoring.md` (600+ lines)
+- **Main Instructions Updated**: Reduced from 42 to 8 lines with codex reference
+- **Commit**: aa62232 - `^d - extract Refactoring Methodology to ai-codex-refactoring for systematic guidance`
+- **Result**: Essential refactoring principles remain; comprehensive Shim Factory methodology available via codex
+
+### 🔄 Next Section: Version Control & Commit Management
+**Target File**: `.github/ai-codex-commits.md`
+**Expected Outcome**: Essential Arlo's notation format remains; detailed commit guidelines available via reference
 
 ## Success Criteria
 - Main instructions file is significantly shorter and more focused
