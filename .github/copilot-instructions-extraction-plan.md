@@ -81,25 +81,7 @@ This document outlines the plan to extract detailed sections from `.github/.copi
 
 ---
 
-### 4. Version Control & Commit Management → `ai-codex-commits.md`
-**Content to Extract**:
-- Complete Arlo's Commit Notation system
-- Detailed risk assessment criteria
-- All intention types and examples
-- Quality gates before commit
-- VS Code commit message generation methods
-- PowerShell helper commands
-
-**Summary for Main Instructions**:
-- Basic commit format: `[Risk][Intention] - [Description]`
-- Common examples only (`^r`, `^f`, `^d`)
-- Reference to commit codex
-
-**When Copilot Uses**: Generating commit messages; assessing commit risk; understanding commit notation; using commit tools
-
----
-
-### 5. Documentation Maintenance → `ai-codex-documentation.md`
+### 4. Documentation Maintenance → `ai-codex-documentation.md`
 **Content to Extract**:
 - Detailed maintenance triggers
 - Complete update process workflow
@@ -116,7 +98,7 @@ This document outlines the plan to extract detailed sections from `.github/.copi
 
 ---
 
-### 6. Code Transformation Examples → `ai-codex-examples.md`
+### 5. Code Transformation Examples → `ai-codex-examples.md`
 **Content to Extract**:
 - Complete before/after code examples
 - Factory pattern implementations
@@ -178,9 +160,11 @@ This document outlines the plan to extract detailed sections from `.github/.copi
 - **Commit**: aa62232 - `^d - extract Refactoring Methodology to ai-codex-refactoring for systematic guidance`
 - **Result**: Essential refactoring principles remain; comprehensive Shim Factory methodology available via codex
 
-### 🔄 Next Section: Version Control & Commit Management
-**Target File**: `.github/ai-codex-commits.md`
-**Expected Outcome**: Essential Arlo's notation format remains; detailed commit guidelines available via reference
+### 🔄 Next Section: Documentation Maintenance  
+**Target File**: `.github/ai-codex-documentation.md`
+**Expected Outcome**: Essential maintenance triggers remain; detailed update processes available via reference
+
+**Note**: Version Control & Commit Management (Section 5) will remain in main instructions as it's always-relevant information that developers need immediate access to.
 
 ## Success Criteria
 - Main instructions file is significantly shorter and more focused
