@@ -14,6 +14,19 @@ public static class MauiProgram
 		// Parse command line arguments for logging configuration
 		var enableLogging = ShouldEnableLogging();
 		
+		// Create logging service early for use during application startup
+		var loggingService = new LoggingService();
+		loggingService.IsEnabled = enableLogging;
+		
+		try
+		{
+			loggingService.LogInfo("Application starting...");
+		}
+		catch
+		{
+			// Silently ignore logging failures during startup
+		}
+		
 		var builder = Microsoft.Maui.Hosting.MauiApp.CreateBuilder();
 		builder.UseMauiApp<App>()
 			.ConfigureFonts(fonts =>
@@ -77,10 +90,6 @@ public static class MauiProgram
 		// Register new infrastructure services
 		builder.Services.AddSingleton<ILoggingService>(serviceProvider =>
 		{
-			// Create logging service with explicit configuration
-			var loggingService = new LoggingService();
-			// Configure logging based on command line arguments
-			loggingService.IsEnabled = enableLogging;
 			return loggingService;
 		});
 		builder.Services.AddSingleton<IWindowActivationService, WindowActivationService>();
