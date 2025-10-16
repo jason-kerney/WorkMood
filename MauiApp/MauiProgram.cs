@@ -12,11 +12,12 @@ public static class MauiProgram
 	public static Microsoft.Maui.Hosting.MauiApp CreateMauiApp()
 	{
 		// Parse command line arguments for logging configuration
-		var enableLogging = ShouldEnableLogging();
+		var (enableLogging, logLevel) = ParseLoggingConfiguration();
 		
 		// Create logging service early for use during application startup
 		var loggingService = new LoggingService();
 		loggingService.IsEnabled = enableLogging;
+		loggingService.MinimumLogLevel = logLevel;
 		
 		try
 		{
@@ -135,30 +136,73 @@ public static class MauiProgram
 	}
 
 	/// <summary>
-	/// Determines if logging should be enabled based on command line arguments
+	/// Parses command line arguments for logging configuration
 	/// </summary>
-	/// <returns>True if logging should be enabled, false otherwise</returns>
-	private static bool ShouldEnableLogging()
+	/// <returns>Tuple containing (enabled, logLevel) where enabled indicates if logging should be enabled and logLevel is the minimum log level</returns>
+	private static (bool enabled, LogLevel logLevel) ParseLoggingConfiguration()
 	{
 		try
 		{
 			// Get command line arguments from environment
 			var args = Environment.GetCommandLineArgs();
 			
-			// Check for --log or -log parameter to enable logging
-			var hasLog = args.Any(arg => 
-				string.Equals(arg, "--log", StringComparison.OrdinalIgnoreCase) ||
-				string.Equals(arg, "-l", StringComparison.OrdinalIgnoreCase));
+			// Look for --logging or --log or -l parameters with optional log level values
+			foreach (var arg in args)
+			{
+				if (string.Equals(arg, "--logging", StringComparison.OrdinalIgnoreCase) ||
+				    string.Equals(arg, "--log", StringComparison.OrdinalIgnoreCase) ||
+				    string.Equals(arg, "-l", StringComparison.OrdinalIgnoreCase))
+				{
+					// Found logging flag without specific level, default to Info
+					return (true, LogLevel.Info);
+				}
+				
+				if (arg.StartsWith("--logging=", StringComparison.OrdinalIgnoreCase))
+				{
+					// Extract the log level from --logging=<level>
+					var levelString = arg.Substring(10); // Remove "--logging="
+					if (TryParseLogLevel(levelString, out var logLevel))
+					{
+						return (true, logLevel);
+					}
+					
+					// Invalid log level specified, default to Info but still enable logging
+					return (true, LogLevel.Info);
+				}
+				
+				if (arg.StartsWith("--log=", StringComparison.OrdinalIgnoreCase))
+				{
+					// Extract the log level from --log=<level>
+					var levelString = arg.Substring(6); // Remove "--log="
+					if (TryParseLogLevel(levelString, out var logLevel))
+					{
+						return (true, logLevel);
+					}
+					
+					// Invalid log level specified, default to Info but still enable logging
+					return (true, LogLevel.Info);
+				}
+			}
 			
-			if (hasLog) return true;
-			
-			// Default to disabled - use --log or -l to enable
-			return false;
+			// No logging parameter found, default to disabled
+			return (false, LogLevel.Info);
 		}
 		catch
 		{
-			// If there's any error parsing arguments, default to enabled
-			return true;
+			// If there's any error parsing arguments, default to enabled with Info level
+			return (true, LogLevel.Info);
 		}
+	}
+	
+	/// <summary>
+	/// Attempts to parse a string into a LogLevel enum value
+	/// </summary>
+	/// <param name="levelString">The string to parse</param>
+	/// <param name="logLevel">The parsed LogLevel if successful</param>
+	/// <returns>True if parsing was successful, false otherwise</returns>
+	private static bool TryParseLogLevel(string levelString, out LogLevel logLevel)
+	{
+		return Enum.TryParse<LogLevel>(levelString, true, out logLevel) && 
+		       Enum.IsDefined(typeof(LogLevel), logLevel);
 	}
 }
