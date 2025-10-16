@@ -148,44 +148,31 @@ public static class MauiProgram
 			
 			// Look for --logging or --log or -l parameters with optional log level values
 			foreach (var arg in args)
-			{
-				if (string.Equals(arg, "--logging", StringComparison.OrdinalIgnoreCase) ||
-				    string.Equals(arg, "--log", StringComparison.OrdinalIgnoreCase) ||
-				    string.Equals(arg, "-l", StringComparison.OrdinalIgnoreCase))
-				{
-					// Found logging flag without specific level, default to Info
-					return (true, LogLevel.Info);
-				}
-				
-				if (arg.StartsWith("--logging=", StringComparison.OrdinalIgnoreCase))
-				{
-					// Extract the log level from --logging=<level>
-					var levelString = arg.Substring(10); // Remove "--logging="
-					if (TryParseLogLevel(levelString, out var logLevel))
-					{
-						return (true, logLevel);
-					}
-					
-					// Invalid log level specified, default to Info but still enable logging
-					return (true, LogLevel.Info);
-				}
-				
-				if (arg.StartsWith("--log=", StringComparison.OrdinalIgnoreCase))
-				{
-					// Extract the log level from --log=<level>
-					var levelString = arg.Substring(6); // Remove "--log="
-					if (TryParseLogLevel(levelString, out var logLevel))
-					{
-						return (true, logLevel);
-					}
-					
-					// Invalid log level specified, default to Info but still enable logging
-					return (true, LogLevel.Info);
-				}
-			}
-			
-			// No logging parameter found, default to disabled
-			return (false, LogLevel.Info);
+            {
+                if (string.Equals(arg, "--logging", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(arg, "--log", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(arg, "-l", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Found logging flag without specific level, default to Info
+                    return (true, LogLevel.Info);
+                }
+
+                if (HasLoggingLevel(arg))
+                {
+                    // Extract the log level from --logging=<level>
+                    var levelString = arg.Substring(10); // Remove "--logging="
+                    if (TryParseLogLevel(levelString, out var logLevel))
+                    {
+                        return (true, logLevel);
+                    }
+
+                    // Invalid log level specified, default to Info but still enable logging
+                    return (true, LogLevel.Info);
+                }
+            }
+
+            // No logging parameter found, default to disabled
+            return (false, LogLevel.Info);
 		}
 		catch
 		{
@@ -193,14 +180,22 @@ public static class MauiProgram
 			return (true, LogLevel.Info);
 		}
 	}
-	
-	/// <summary>
-	/// Attempts to parse a string into a LogLevel enum value
-	/// </summary>
-	/// <param name="levelString">The string to parse</param>
-	/// <param name="logLevel">The parsed LogLevel if successful</param>
-	/// <returns>True if parsing was successful, false otherwise</returns>
-	private static bool TryParseLogLevel(string levelString, out LogLevel logLevel)
+
+    private static bool HasLoggingLevel(string arg)
+    {
+        return arg.StartsWith(
+                            "--logging=", StringComparison.OrdinalIgnoreCase)
+                            || arg.StartsWith("--log=", StringComparison.OrdinalIgnoreCase)
+                            || arg.StartsWith("-l=", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Attempts to parse a string into a LogLevel enum value
+    /// </summary>
+    /// <param name="levelString">The string to parse</param>
+    /// <param name="logLevel">The parsed LogLevel if successful</param>
+    /// <returns>True if parsing was successful, false otherwise</returns>
+    private static bool TryParseLogLevel(string levelString, out LogLevel logLevel)
 	{
 		return Enum.TryParse<LogLevel>(levelString, true, out logLevel) && 
 		       Enum.IsDefined(typeof(LogLevel), logLevel);
