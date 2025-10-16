@@ -118,13 +118,33 @@
                     <Border.Shadow>
                         <Shadow Brush="Black" Opacity="0.3" Radius="4" Offset="2,2" />
                     </Border.Shadow>
-                    <StackLayout Orientation="Horizontal" Spacing="10">
-                        <CheckBox IsChecked="{Binding IsLoggingEnabled}" 
-                                  VerticalOptions="Center" />
-                        <Label Text="Enable Logging" 
-                               FontSize="16"
-                               VerticalOptions="Center"
-                               TextColor="Black" />
+                    <StackLayout Spacing="10">
+                        <!-- Logging Enable/Disable -->
+                        <StackLayout Orientation="Horizontal" Spacing="10">
+                            <CheckBox IsChecked="{Binding IsLoggingEnabled}" 
+                                      VerticalOptions="Center" />
+                            <Label Text="Enable Logging" 
+                                   FontSize="16"
+                                   VerticalOptions="Center"
+                                   TextColor="Black" />
+                        </StackLayout>
+                        
+                        <!-- Log Level Picker (only visible when logging is enabled) -->
+                        <StackLayout IsVisible="{Binding IsLoggingEnabled}" 
+                                     Spacing="5">
+                            <Label Text="Minimum Log Level:" 
+                                   FontSize="14"
+                                   TextColor="DarkGray" />
+                            <Picker ItemsSource="{Binding LogLevels}"
+                                    SelectedItem="{Binding SelectedLogLevel}"
+                                    Title="Select Log Level"
+                                    FontSize="14"
+                                    BackgroundColor="White" />
+                            <Label Text="Debug: All messages | Info: General info | Warning: Issues | Error: Critical errors only" 
+                                   FontSize="10"
+                                   TextColor="Gray"
+                                   FontAttributes="Italic" />
+                        </StackLayout>
                     </StackLayout>
                 </Border>
                 

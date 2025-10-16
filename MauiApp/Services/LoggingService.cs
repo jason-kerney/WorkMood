@@ -17,6 +17,12 @@ public class LoggingService : ILoggingService
     /// </summary>
     public bool IsEnabled { get; set; }
 
+    /// <summary>
+    /// Gets or sets the minimum log level that will be written to the log file.
+    /// Logs below this level will be ignored.
+    /// </summary>
+    public LogLevel MinimumLogLevel { get; set; }
+
     public LoggingService(IFileShim fileShim, IDateShim dateShim, IFolderShim folderShim)
     {
         _fileShim = fileShim ?? throw new ArgumentNullException(nameof(fileShim));
@@ -25,6 +31,7 @@ public class LoggingService : ILoggingService
         var desktopPath = folderShim?.GetDesktopFolder() ?? throw new ArgumentNullException(nameof(folderShim));
         _logFilePath = folderShim.CombinePaths(desktopPath, "WorkMood_Debug.log");
         IsEnabled = false;
+        MinimumLogLevel = LogLevel.Debug; // Default to logging all levels
     }
 
     /// <summary>
@@ -57,6 +64,10 @@ public class LoggingService : ILoggingService
             return;
             
         if (string.IsNullOrWhiteSpace(message))
+            return;
+
+        // Check if the log level meets the minimum threshold
+        if (level < MinimumLogLevel)
             return;
 
         try

@@ -11,6 +11,12 @@ public interface ILoggingService
     bool IsEnabled { get; set; }
 
     /// <summary>
+    /// Gets or sets the minimum log level that will be written to the log file.
+    /// Logs below this level will be ignored.
+    /// </summary>
+    LogLevel MinimumLogLevel { get; set; }
+
+    /// <summary>
     /// Logs a message with the current timestamp
     /// </summary>
     /// <param name="message">The message to log</param>

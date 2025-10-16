@@ -95,6 +95,39 @@ public class AboutViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Gets the available log levels for the picker
+    /// </summary>
+    public List<string> LogLevels { get; } = new List<string>
+    {
+        "Debug",
+        "Info", 
+        "Warning",
+        "Error"
+    };
+
+    /// <summary>
+    /// Gets or sets the selected minimum log level
+    /// </summary>
+    public string SelectedLogLevel
+    {
+        get => _loggingService.MinimumLogLevel.ToString();
+        set
+        {
+            if (Enum.TryParse<LogLevel>(value, out var logLevel) && _loggingService.MinimumLogLevel != logLevel)
+            {
+                _loggingService.MinimumLogLevel = logLevel;
+                OnPropertyChanged();
+                
+                // Log the change if logging is enabled
+                if (_loggingService.IsEnabled)
+                {
+                    _loggingService.Log($"Minimum log level changed to {logLevel} via About page");
+                }
+            }
+        }
+    }
+
     #endregion
 
     #region Private Methods
