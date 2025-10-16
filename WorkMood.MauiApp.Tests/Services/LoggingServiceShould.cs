@@ -103,6 +103,7 @@ public class LoggingServiceShould
     {
         // Arrange
         var sut = CreateLoggingService();
+        sut.IsEnabled = true; // Enable logging for this test
         var message = "Test log message";
         var expectedLogEntry = "[2024-10-15 14:30:45.123] [INFO   ] Test log message" + Environment.NewLine;
 
@@ -118,6 +119,7 @@ public class LoggingServiceShould
     {
         // Arrange
         var sut = CreateLoggingService();
+        sut.IsEnabled = true; // Enable logging for this test
         var message = "Error occurred";
         var expectedLogEntry = "[2024-10-15 14:30:45.123] [ERROR  ] Error occurred" + Environment.NewLine;
 
@@ -137,6 +139,7 @@ public class LoggingServiceShould
     {
         // Arrange
         var sut = CreateLoggingService();
+        sut.IsEnabled = true;
         var message = "Test message";
         var expectedLogEntry = $"[2024-10-15 14:30:45.123] [{expectedLevelString}] Test message" + Environment.NewLine;
 
@@ -221,6 +224,7 @@ public class LoggingServiceShould
     {
         // Arrange
         var sut = CreateLoggingService();
+        sut.IsEnabled = true;
         var exception = new InvalidOperationException("Something went wrong");
         var expectedLogEntry = "[2024-10-15 14:30:45.123] [ERROR  ] Exception: Something went wrong" + Environment.NewLine;
 
@@ -236,6 +240,7 @@ public class LoggingServiceShould
     {
         // Arrange
         var sut = CreateLoggingService();
+        sut.IsEnabled = true;
         var exception = new ArgumentException("Invalid argument");
         var message = "Data validation failed";
         var expectedLogEntry = "[2024-10-15 14:30:45.123] [ERROR  ] Data validation failed - Exception: Invalid argument" + Environment.NewLine;
@@ -252,6 +257,7 @@ public class LoggingServiceShould
     {
         // Arrange
         var sut = CreateLoggingService();
+        sut.IsEnabled = true;
         Exception exception;
         
         try
@@ -276,6 +282,7 @@ public class LoggingServiceShould
     {
         // Arrange
         var sut = CreateLoggingService();
+        sut.IsEnabled = true;
         var innerException = new ArgumentException("Inner error");
         var outerException = new InvalidOperationException("Outer error", innerException);
 
@@ -307,6 +314,7 @@ public class LoggingServiceShould
     {
         // Arrange
         var sut = CreateLoggingService();
+        sut.IsEnabled = true;
         var exception = new InvalidOperationException("Test error");
         var expectedLogEntry = "[2024-10-15 14:30:45.123] [ERROR  ] Exception: Test error" + Environment.NewLine;
 
@@ -322,6 +330,7 @@ public class LoggingServiceShould
     {
         // Arrange
         var sut = CreateLoggingService();
+        sut.IsEnabled = true;
         var exception = new InvalidOperationException("Test error");
         var expectedLogEntry = "[2024-10-15 14:30:45.123] [ERROR  ] Exception: Test error" + Environment.NewLine;
 
@@ -384,6 +393,7 @@ public class LoggingServiceShould
     {
         // Arrange
         var sut = CreateLoggingService();
+        sut.IsEnabled = true;
         var tasks = new Task[10];
         var logCallCount = 0;
 
@@ -414,6 +424,7 @@ public class LoggingServiceShould
     {
         // Arrange
         var sut = CreateLoggingService();
+        sut.IsEnabled = true;
         var tasks = new Task[5];
         var logCallCount = 0;
 
@@ -458,6 +469,7 @@ public class LoggingServiceShould
         _mockFolderShim.Setup(x => x.CombinePaths(customDesktopPath, "WorkMood_Debug.log")).Returns(customLogPath);
         
         var sut = CreateLoggingService();
+        sut.IsEnabled = true;
         var expectedLogEntry = "[2024-10-15 14:30:45.123] [INFO   ] Test message" + Environment.NewLine;
 
         // Act
@@ -474,6 +486,7 @@ public class LoggingServiceShould
     {
         // Arrange
         var sut = CreateLoggingService();
+        sut.IsEnabled = true;
         var firstTime = new DateTime(2024, 10, 15, 10, 0, 0);
         var secondTime = new DateTime(2024, 10, 15, 11, 0, 0);
         
@@ -496,23 +509,23 @@ public class LoggingServiceShould
     #region IsEnabled Property Tests
 
     [Fact]
-    public void IsEnabled_DefaultsToTrue_WhenConstructedWithParameters()
+    public void IsEnabled_DefaultsToFalse_WhenConstructedWithParameters()
     {
         // Act
         var sut = CreateLoggingService();
 
         // Assert
-        sut.IsEnabled.Should().BeTrue();
+        sut.IsEnabled.Should().BeFalse();
     }
 
     [Fact]
-    public void IsEnabled_DefaultsToTrue_WhenConstructedWithDefaultConstructor()
+    public void IsEnabled_DefaultsToFalse_WhenConstructedWithDefaultConstructor()
     {
         // Act
         var sut = new LoggingService();
 
         // Assert
-        sut.IsEnabled.Should().BeTrue();
+        sut.IsEnabled.Should().BeFalse();
     }
 
     [Fact]
@@ -662,7 +675,8 @@ public class LoggingServiceShould
         var sut = CreateLoggingService();
         var message = "Test message";
 
-        // Act & Assert - Initially enabled (default)
+        // Act & Assert - Enable and test
+        sut.IsEnabled = true;
         sut.Log(message);
         _mockFileShim.Verify(x => x.AppendAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
 

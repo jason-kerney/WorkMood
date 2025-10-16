@@ -24,7 +24,7 @@ public class LoggingService : ILoggingService
         
         var desktopPath = folderShim?.GetDesktopFolder() ?? throw new ArgumentNullException(nameof(folderShim));
         _logFilePath = folderShim.CombinePaths(desktopPath, "WorkMood_Debug.log");
-        IsEnabled = true;
+        IsEnabled = false;
     }
 
     /// <summary>

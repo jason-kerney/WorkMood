@@ -103,8 +103,8 @@ public static class MauiProgram
 			
 			if (hasLog) return true;
 			
-			// Default to enabled for now (will be changed to disabled soon)
-			return true;
+			// Default to disabled - use --log or -l to enable
+			return false;
 		}
 		catch
 		{
