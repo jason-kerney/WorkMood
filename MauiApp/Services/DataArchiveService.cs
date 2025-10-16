@@ -16,17 +16,19 @@ public class DataArchiveService : IDataArchiveService
     private readonly IDateShim dateShim;
     private readonly IFileShim fileShim;
     private readonly IJsonSerializerShim jsonSerializerShim;
+    private readonly ILoggingService _loggingService;
 
     /// <summary>
     /// Creates a new data archive service
     /// </summary>
-    public DataArchiveService(IFolderShim folderShim, IDateShim dateShim, IFileShim fileShim, IJsonSerializerShim jsonSerializerShim)
+    public DataArchiveService(IFolderShim folderShim, IDateShim dateShim, IFileShim fileShim, IJsonSerializerShim jsonSerializerShim, ILoggingService loggingService)
     {
         // Validate parameters
         ArgumentNullException.ThrowIfNull(folderShim);
         ArgumentNullException.ThrowIfNull(dateShim);
         ArgumentNullException.ThrowIfNull(fileShim);
         ArgumentNullException.ThrowIfNull(jsonSerializerShim);
+        ArgumentNullException.ThrowIfNull(loggingService);
 
         // Store archives in the same directory as the main data file
         _archiveDirectory = folderShim.GetArchiveFolder();
@@ -44,9 +46,10 @@ public class DataArchiveService : IDataArchiveService
         this.dateShim = dateShim;
         this.fileShim = fileShim;
         this.jsonSerializerShim = jsonSerializerShim;
+        this._loggingService = loggingService;
     }
 
-    public DataArchiveService() : this(new FolderShim(), new DateShim(), new FileShim(), new JsonSerializerShim()) { }
+    public DataArchiveService() : this(new FolderShim(), new DateShim(), new FileShim(), new JsonSerializerShim(), new LoggingService()) { }
 
     /// <summary>
     /// Checks if archiving is needed and performs archiving if required.
@@ -165,15 +168,12 @@ public class DataArchiveService : IDataArchiveService
     {
         try
         {
-            var timestamp = dateShim.Now().ToString("yyyy-MM-dd HH:mm:ss.fff");
-            var logEntry = $"[{timestamp}] [DataArchiveService] {message}";
-
-            var desktopPath = folderShim.GetDesktopFolder();
-            var logPath = folderShim.CombinePaths(desktopPath, "WorkMood_Debug.log");
-
-            fileShim.AppendAllText(logPath, logEntry + Environment.NewLine);
+            _loggingService.LogDebug($"DataArchiveService: {message}");
         }
-        catch { } // Ignore logging errors
+        catch
+        {
+            // Silently ignore logging failures to prevent them from disrupting main functionality
+        }
     }
 
     /// <summary>

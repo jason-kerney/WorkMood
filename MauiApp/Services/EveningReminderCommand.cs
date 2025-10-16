@@ -13,18 +13,20 @@ public class EveningReminderCommand : IDispatcherCommand
     private readonly IScheduleConfigService _scheduleConfigService;
     private readonly IDateShim dateShim;
     private readonly IFolderShim folder;
+    private readonly ILoggingService _loggingService;
     private int _callCount = 0;
     private DateOnly _lastReminderDate = DateOnly.MinValue;
 
-    public EveningReminderCommand(IMoodDataService moodDataService, IScheduleConfigService scheduleConfigService, IDateShim dateShim, IFolderShim folder)
+    public EveningReminderCommand(IMoodDataService moodDataService, IScheduleConfigService scheduleConfigService, IDateShim dateShim, IFolderShim folder, ILoggingService loggingService)
     {
         _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
         _scheduleConfigService = scheduleConfigService ?? throw new ArgumentNullException(nameof(scheduleConfigService));
         this.dateShim = dateShim;
         this.folder = folder;
+        _loggingService = loggingService ?? throw new ArgumentNullException(nameof(loggingService));
     }
     
-    public EveningReminderCommand() : this(new MoodDataService(), new ScheduleConfigService(), new DateShim(), new FolderShim()) { }
+    public EveningReminderCommand() : this(new MoodDataService(), new ScheduleConfigService(), new DateShim(), new FolderShim(), new LoggingService()) { }
 
     /// <summary>
     /// Processes a timer tick to check if an evening mood reminder should be sent
@@ -159,15 +161,7 @@ public class EveningReminderCommand : IDispatcherCommand
     
     private void Log(string message)
     {
-        try
-        {
-            var timestamp = dateShim.Now().ToString("yyyy-MM-dd HH:mm:ss.fff");
-            var logEntry = $"[{timestamp}] {message}";
-            var desktopPath = folder.GetDesktopFolder();
-            var logPath = Path.Combine(desktopPath, "WorkMood_Debug.log");
-            File.AppendAllText(logPath, logEntry + Environment.NewLine);
-        }
-        catch { } // Ignore logging errors
+        _loggingService.LogDebug(message);
     }
 }
 

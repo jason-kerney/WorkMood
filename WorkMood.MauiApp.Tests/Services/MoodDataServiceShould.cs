@@ -59,7 +59,8 @@ public class MoodDataServiceShould
             _mockFolderShim.Object,
             _mockDateShim.Object,
             _mockFileShim.Object,
-            _mockJsonSerializerShim.Object);
+            _mockJsonSerializerShim.Object,
+            new Mock<ILoggingService>().Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -75,7 +76,8 @@ public class MoodDataServiceShould
             null!,
             _mockDateShim.Object,
             _mockFileShim.Object,
-            _mockJsonSerializerShim.Object);
+            _mockJsonSerializerShim.Object,
+            new Mock<ILoggingService>().Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -91,7 +93,8 @@ public class MoodDataServiceShould
             _mockFolderShim.Object,
             null!,
             _mockFileShim.Object,
-            _mockJsonSerializerShim.Object);
+            _mockJsonSerializerShim.Object,
+            new Mock<ILoggingService>().Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -107,7 +110,8 @@ public class MoodDataServiceShould
             _mockFolderShim.Object,
             _mockDateShim.Object,
             null!,
-            _mockJsonSerializerShim.Object);
+            _mockJsonSerializerShim.Object,
+            new Mock<ILoggingService>().Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -123,11 +127,29 @@ public class MoodDataServiceShould
             _mockFolderShim.Object,
             _mockDateShim.Object,
             _mockFileShim.Object,
-            null!);
+            null!,
+            new Mock<ILoggingService>().Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
            .WithParameterName("jsonSerializerShim");
+    }
+
+    [Fact]
+    public void ThrowArgumentNullException_WhenLoggingServiceIsNull()
+    {
+        // Act
+        var act = () => new MoodDataService(
+            _mockArchiveService.Object,
+            _mockFolderShim.Object,
+            _mockDateShim.Object,
+            _mockFileShim.Object,
+            _mockJsonSerializerShim.Object,
+            null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("loggingService");
     }
 
     [Fact]
@@ -716,7 +738,8 @@ public class MoodDataServiceShould
             _mockFolderShim.Object,
             _mockDateShim.Object,
             _mockFileShim.Object,
-            _mockJsonSerializerShim.Object);
+            _mockJsonSerializerShim.Object,
+            new Mock<ILoggingService>().Object);
     }
 }
 

@@ -16,6 +16,7 @@ public partial class History : ContentPage
     private readonly HistoryViewModel _viewModel;
     private readonly IMoodEntryViewFactory _viewFactory;
     private readonly INavigationService _navigationService;
+    private readonly ILoggingService? _loggingService;
 
     /// <summary>
     /// Initializes a new instance of the History
@@ -57,6 +58,7 @@ public partial class History : ContentPage
         _viewModel = new HistoryViewModel(dataService, navigationService, logService);
         BindingContext = _viewModel;
         _navigationService = navigationService;
+        _loggingService = logService;
         
         // Subscribe to ViewModel property changes for UI updates that require programmatic handling
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
@@ -99,15 +101,7 @@ public partial class History : ContentPage
 
     private void LogHistoryUI(string message)
     {
-        try
-        {
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            var logEntry = $"[{timestamp}] HistoryUI: {message}";
-            var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            var logPath = System.IO.Path.Combine(desktopPath, "WorkMood_HistoryUI_Debug.log");
-            File.AppendAllText(logPath, logEntry + Environment.NewLine);
-        }
-        catch { } // Ignore logging errors
+        _loggingService?.LogDebug($"HistoryUI: {message}");
     }
 
     /// <summary>

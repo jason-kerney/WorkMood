@@ -17,6 +17,7 @@ public class MoodDataService : IMoodDataService
     private readonly IDateShim _dateShim;
     private readonly IFileShim _fileShim;
     private readonly IJsonSerializerShim _jsonSerializerShim;
+    private readonly ILoggingService _loggingService;
     private MoodCollection? _cachedCollection;
 
     /// <summary>
@@ -27,18 +28,21 @@ public class MoodDataService : IMoodDataService
     /// <param name="dateShim">Shim for date operations</param>
     /// <param name="fileShim">Shim for file operations</param>
     /// <param name="jsonSerializerShim">Shim for JSON serialization</param>
+    /// <param name="loggingService">Service for centralized logging</param>
     public MoodDataService(
         IDataArchiveService archiveService,
         IFolderShim folderShim,
         IDateShim dateShim,
         IFileShim fileShim,
-        IJsonSerializerShim jsonSerializerShim)
+        IJsonSerializerShim jsonSerializerShim,
+        ILoggingService loggingService)
     {
         _archiveService = archiveService ?? throw new ArgumentNullException(nameof(archiveService));
         _folderShim = folderShim ?? throw new ArgumentNullException(nameof(folderShim));
         _dateShim = dateShim ?? throw new ArgumentNullException(nameof(dateShim));
         _fileShim = fileShim ?? throw new ArgumentNullException(nameof(fileShim));
         _jsonSerializerShim = jsonSerializerShim ?? throw new ArgumentNullException(nameof(jsonSerializerShim));
+        _loggingService = loggingService ?? throw new ArgumentNullException(nameof(loggingService));
         
         Log("MoodDataService: Constructor starting");
         
@@ -66,25 +70,24 @@ public class MoodDataService : IMoodDataService
     /// Creates a new mood data service with default shims (for backwards compatibility)
     /// </summary>
     public MoodDataService() : this(
-        new DataArchiveService(new Shims.FolderShim(), new Shims.DateShim(), new Shims.FileShim(), new Shims.JsonSerializerShim()),
+        CreateDefaultArchiveService(),
         new Shims.FolderShim(),
         new Shims.DateShim(),
         new Shims.FileShim(),
-        new Shims.JsonSerializerShim())
+        new Shims.JsonSerializerShim(),
+        new LoggingService())
     {
+    }
+
+    private static DataArchiveService CreateDefaultArchiveService()
+    {
+        var loggingService = new LoggingService();
+        return new DataArchiveService(new Shims.FolderShim(), new Shims.DateShim(), new Shims.FileShim(), new Shims.JsonSerializerShim(), loggingService);
     }
 
     private void Log(string message)
     {
-        try
-        {
-            var timestamp = _dateShim.Now().ToString("yyyy-MM-dd HH:mm:ss.fff");
-            var logEntry = $"[{timestamp}] {message}";
-            var desktopPath = _folderShim.GetDesktopFolder();
-            var logPath = _folderShim.CombinePaths(desktopPath, "WorkMood_Debug.log");
-            _fileShim.AppendAllText(logPath, logEntry + Environment.NewLine);
-        }
-        catch { } // Ignore logging errors
+        _loggingService.LogDebug(message);
     }
 
     /// <summary>

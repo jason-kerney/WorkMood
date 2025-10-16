@@ -23,17 +23,56 @@ public static class MauiProgram
 			});
 
 		// Register core services for dependency injection
-		builder.Services.AddSingleton<IDataArchiveService, DataArchiveService>();
-		builder.Services.AddSingleton<MoodDataService>();
+		builder.Services.AddSingleton<IDataArchiveService>(serviceProvider =>
+		{
+			var folderShim = serviceProvider.GetRequiredService<IFolderShim>();
+			var dateShim = serviceProvider.GetRequiredService<IDateShim>();
+			var fileShim = serviceProvider.GetRequiredService<IFileShim>();
+			var jsonSerializerShim = serviceProvider.GetRequiredService<IJsonSerializerShim>();
+			var loggingService = serviceProvider.GetRequiredService<ILoggingService>();
+			return new DataArchiveService(folderShim, dateShim, fileShim, jsonSerializerShim, loggingService);
+		});
+		builder.Services.AddSingleton<MoodDataService>(serviceProvider =>
+		{
+			var archiveService = serviceProvider.GetRequiredService<IDataArchiveService>();
+			var folderShim = serviceProvider.GetRequiredService<IFolderShim>();
+			var dateShim = serviceProvider.GetRequiredService<IDateShim>();
+			var fileShim = serviceProvider.GetRequiredService<IFileShim>();
+			var jsonSerializerShim = serviceProvider.GetRequiredService<IJsonSerializerShim>();
+			var loggingService = serviceProvider.GetRequiredService<ILoggingService>();
+			return new MoodDataService(archiveService, folderShim, dateShim, fileShim, jsonSerializerShim, loggingService);
+		});
 		builder.Services.AddSingleton<IMoodDataService>(provider => provider.GetRequiredService<MoodDataService>());
-		builder.Services.AddSingleton<ScheduleConfigService>();
+		builder.Services.AddSingleton<ScheduleConfigService>(serviceProvider => 
+		{
+			var loggingService = serviceProvider.GetRequiredService<ILoggingService>();
+			return new ScheduleConfigService(loggingService);
+		});
+		builder.Services.AddSingleton<IScheduleConfigService>(provider => provider.GetRequiredService<ScheduleConfigService>());
 		builder.Services.AddSingleton<AutoSaveCommand>();
-		builder.Services.AddSingleton<MorningReminderCommand>();
-		builder.Services.AddSingleton<EveningReminderCommand>();
+		builder.Services.AddSingleton<MorningReminderCommand>(serviceProvider =>
+		{
+			var moodDataService = serviceProvider.GetRequiredService<MoodDataService>();
+			var scheduleConfigService = serviceProvider.GetRequiredService<ScheduleConfigService>();
+			var loggingService = serviceProvider.GetRequiredService<ILoggingService>();
+			return new MorningReminderCommand(moodDataService, scheduleConfigService, loggingService);
+		});
+		builder.Services.AddSingleton<EveningReminderCommand>(serviceProvider =>
+		{
+			var moodDataService = serviceProvider.GetRequiredService<IMoodDataService>();
+			var scheduleConfigService = serviceProvider.GetRequiredService<IScheduleConfigService>();
+			var dateShim = serviceProvider.GetRequiredService<IDateShim>();
+			var folderShim = serviceProvider.GetRequiredService<IFolderShim>();
+			var loggingService = serviceProvider.GetRequiredService<ILoggingService>();
+			return new EveningReminderCommand(moodDataService, scheduleConfigService, dateShim, folderShim, loggingService);
+		});
 		
 		// Register shim services
 		builder.Services.AddSingleton<IFolderShim, FolderShim>();
 		builder.Services.AddSingleton<IBrowserShim, BrowserShim>();
+		builder.Services.AddSingleton<IDateShim, DateShim>();
+		builder.Services.AddSingleton<IFileShim, FileShim>();
+		builder.Services.AddSingleton<IJsonSerializerShim, JsonSerializerShim>();
 		
 		// Register new infrastructure services
 		builder.Services.AddSingleton<ILoggingService>(serviceProvider =>
@@ -68,10 +107,11 @@ public static class MauiProgram
 		builder.Services.AddSingleton<MoodDispatcherService>(serviceProvider =>
 		{
 			var scheduleConfigService = serviceProvider.GetRequiredService<ScheduleConfigService>();
+			var loggingService = serviceProvider.GetRequiredService<ILoggingService>();
 			var autoSaveCommand = serviceProvider.GetRequiredService<AutoSaveCommand>();
 			var morningReminderCommand = serviceProvider.GetRequiredService<MorningReminderCommand>();
 			var eveningReminderCommand = serviceProvider.GetRequiredService<EveningReminderCommand>();
-			return new MoodDispatcherService(scheduleConfigService, autoSaveCommand, morningReminderCommand, eveningReminderCommand);
+			return new MoodDispatcherService(scheduleConfigService, loggingService, autoSaveCommand, morningReminderCommand, eveningReminderCommand);
 		});
 		
 		// Register view models

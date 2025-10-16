@@ -14,6 +14,7 @@ public class DataArchiveServiceShould
     private readonly Mock<IDateShim> _mockDateShim;
     private readonly Mock<IFileShim> _mockFileShim;
     private readonly Mock<IJsonSerializerShim> _mockJsonSerializerShim;
+    private readonly Mock<ILoggingService> _mockLoggingService;
     private readonly DataArchiveService _sut;
 
     public DataArchiveServiceShould()
@@ -22,6 +23,7 @@ public class DataArchiveServiceShould
         _mockDateShim = new Mock<IDateShim>();
         _mockFileShim = new Mock<IFileShim>();
         _mockJsonSerializerShim = new Mock<IJsonSerializerShim>();
+        _mockLoggingService = new Mock<ILoggingService>();
 
         // Setup default behavior for constructor
         _mockFolderShim.Setup(x => x.GetArchiveFolder()).Returns(@"C:\Archive");
@@ -31,7 +33,8 @@ public class DataArchiveServiceShould
             _mockFolderShim.Object, 
             _mockDateShim.Object, 
             _mockFileShim.Object, 
-            _mockJsonSerializerShim.Object);
+            _mockJsonSerializerShim.Object,
+            _mockLoggingService.Object);
     }
 
     #region Constructor Tests
@@ -45,7 +48,8 @@ public class DataArchiveServiceShould
             null!, 
             _mockDateShim.Object, 
             _mockFileShim.Object, 
-            _mockJsonSerializerShim.Object);
+            _mockJsonSerializerShim.Object,
+            new Mock<ILoggingService>().Object);
         
         act.Should().Throw<ArgumentNullException>()
            .WithParameterName("folderShim");
@@ -59,7 +63,8 @@ public class DataArchiveServiceShould
             _mockFolderShim.Object, 
             null!, 
             _mockFileShim.Object, 
-            _mockJsonSerializerShim.Object);
+            _mockJsonSerializerShim.Object,
+            new Mock<ILoggingService>().Object);
         
         act.Should().Throw<ArgumentNullException>()
            .WithParameterName("dateShim");
@@ -73,7 +78,8 @@ public class DataArchiveServiceShould
             _mockFolderShim.Object, 
             _mockDateShim.Object, 
             null!, 
-            _mockJsonSerializerShim.Object);
+            _mockJsonSerializerShim.Object,
+            new Mock<ILoggingService>().Object);
         
         act.Should().Throw<ArgumentNullException>()
            .WithParameterName("fileShim");
@@ -87,7 +93,8 @@ public class DataArchiveServiceShould
             _mockFolderShim.Object, 
             _mockDateShim.Object, 
             _mockFileShim.Object, 
-            null!);
+            null!,
+            new Mock<ILoggingService>().Object);
         
         act.Should().Throw<ArgumentNullException>()
            .WithParameterName("jsonSerializerShim");
@@ -101,9 +108,25 @@ public class DataArchiveServiceShould
             _mockFolderShim.Object, 
             _mockDateShim.Object, 
             _mockFileShim.Object, 
-            _mockJsonSerializerShim.Object);
+            _mockJsonSerializerShim.Object,
+            new Mock<ILoggingService>().Object);
         
         act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ThrowArgumentNullException_WhenLoggingServiceIsNull()
+    {
+        // Act & Assert
+        var act = () => new DataArchiveService(
+            _mockFolderShim.Object, 
+            _mockDateShim.Object, 
+            _mockFileShim.Object, 
+            _mockJsonSerializerShim.Object,
+            null!);
+        
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("loggingService");
     }
 
     [Fact]
@@ -1006,23 +1029,14 @@ public class DataArchiveServiceShould
     [Fact]
     public void LogMethod_CoverageTest_WhenCalledThroughPublicMethods()
     {
-        // Arrange - Setup mocks for logging infrastructure
-        _mockDateShim.Setup(d => d.Now())
-            .Returns(new DateTime(2024, 12, 1, 10, 30, 45, 123));
-        _mockFolderShim.Setup(f => f.GetDesktopFolder())
-            .Returns("C:\\Users\\Test\\Desktop");
-        _mockFolderShim.Setup(f => f.CombinePaths(It.IsAny<string>(), It.IsAny<string>()))
-            .Returns("C:\\Users\\Test\\Desktop\\WorkMood_Debug.log");
-
-        // Act - Call a method that triggers logging (ShouldArchive calls Log)
+        // Arrange - Create a collection to test with
         var collection = new MoodCollection(new List<MoodEntry>());
+
+        // Act - Call a method that triggers logging (ShouldArchive calls centralized logging)
         _sut.ShouldArchive(collection, 3);
 
-        // Assert - Verify logging infrastructure was called
-        _mockDateShim.Verify(d => d.Now(), Times.AtLeastOnce);
-        _mockFolderShim.Verify(f => f.GetDesktopFolder(), Times.AtLeastOnce);
-        _mockFolderShim.Verify(f => f.CombinePaths(It.IsAny<string>(), "WorkMood_Debug.log"), Times.AtLeastOnce);
-        _mockFileShim.Verify(f => f.AppendAllText(It.IsAny<string>(), It.IsAny<string>()), Times.AtLeastOnce);
+        // Assert - Verify centralized logging service was called
+        _mockLoggingService.Verify(x => x.Log(LogLevel.Debug, It.IsAny<string>()), Times.AtLeastOnce());
     }
 
     [Fact]
@@ -1040,26 +1054,20 @@ public class DataArchiveServiceShould
     }
 
     [Fact]
-    public void LogMethod_HandleFileOperationExceptions_WhenFileOperationsFail()
+    public void LogMethod_HandleExceptions_WhenLoggingServiceFails()
     {
-        // Arrange - Make file operations fail during logging
-        _mockDateShim.Setup(d => d.Now())
-            .Returns(new DateTime(2024, 12, 1, 10, 30, 45, 123));
-        _mockFolderShim.Setup(f => f.GetDesktopFolder())
-            .Returns("C:\\Users\\Test\\Desktop");
-        _mockFolderShim.Setup(f => f.CombinePaths(It.IsAny<string>(), It.IsAny<string>()))
-            .Returns("C:\\Users\\Test\\Desktop\\WorkMood_Debug.log");
-        _mockFileShim.Setup(f => f.AppendAllText(It.IsAny<string>(), It.IsAny<string>()))
-            .Throws(new UnauthorizedAccessException("Access denied to log file"));
+        // Arrange - Make logging service fail
+        _mockLoggingService.Setup(x => x.Log(LogLevel.Debug, It.IsAny<string>()))
+            .Throws(new InvalidOperationException("Logging service failure"));
 
-        // Act & Assert - Should not throw even when file operations fail during logging
+        // Act & Assert - Should not throw even when logging service fails
         var collection = new MoodCollection(new List<MoodEntry>());
         var act = () => _sut.ShouldArchive(collection, 3);
         
-        act.Should().NotThrow("because logging file operation exceptions should be silently ignored");
+        act.Should().NotThrow("because logging service exceptions should be handled gracefully");
         
         // Verify the logging attempt was made
-        _mockFileShim.Verify(f => f.AppendAllText(It.IsAny<string>(), It.IsAny<string>()), Times.AtLeastOnce);
+        _mockLoggingService.Verify(x => x.Log(LogLevel.Debug, It.IsAny<string>()), Times.AtLeastOnce());
     }
 
     #endregion
@@ -1136,20 +1144,14 @@ public class DataArchiveServiceShould
         var recentEntry = new MoodEntry { Date = new DateOnly(2024, 11, 1), StartOfWork = 5 };
         var collection = new MoodCollection(new List<MoodEntry> { recentEntry });
 
-        // Setup logging
-        _mockDateShim.Setup(d => d.Now()).Returns(new DateTime(2024, 12, 1, 10, 0, 0));
-        _mockFolderShim.Setup(f => f.GetDesktopFolder()).Returns("C:\\Desktop");
-        _mockFolderShim.Setup(f => f.CombinePaths(It.IsAny<string>(), It.IsAny<string>()))
-            .Returns("C:\\Desktop\\WorkMood_Debug.log");
-
         // Act
         var result = await _sut.ArchiveOldDataAsync(collection, 3);
 
         // Assert
         result.Should().BeSameAs(collection, "because original collection should be returned when no entries need archiving");
         
-        // Verify logging occurred for "no entries found" path
-        _mockDateShim.Verify(d => d.Now(), Times.AtLeastOnce);
+        // Verify centralized logging service was called for "no entries found" path
+        _mockLoggingService.Verify(x => x.Log(LogLevel.Debug, It.IsAny<string>()), Times.AtLeastOnce());
     }
 
     [Fact]

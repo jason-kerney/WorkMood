@@ -10,13 +10,15 @@ public class MorningReminderCommand : IDispatcherCommand
 {
     private readonly MoodDataService _moodDataService;
     private readonly ScheduleConfigService _scheduleConfigService;
+    private readonly ILoggingService _loggingService;
     private int _callCount = 0;
     private DateOnly _lastReminderDate = DateOnly.MinValue;
 
-    public MorningReminderCommand(MoodDataService moodDataService, ScheduleConfigService scheduleConfigService)
+    public MorningReminderCommand(MoodDataService moodDataService, ScheduleConfigService scheduleConfigService, ILoggingService loggingService)
     {
         _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
         _scheduleConfigService = scheduleConfigService ?? throw new ArgumentNullException(nameof(scheduleConfigService));
+        _loggingService = loggingService ?? throw new ArgumentNullException(nameof(loggingService));
     }
 
     /// <summary>
@@ -100,15 +102,7 @@ public class MorningReminderCommand : IDispatcherCommand
     
     private void Log(string message)
     {
-        try
-        {
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            var logEntry = $"[{timestamp}] {message}";
-            var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            var logPath = Path.Combine(desktopPath, "WorkMood_Debug.log");
-            File.AppendAllText(logPath, logEntry + Environment.NewLine);
-        }
-        catch { } // Ignore logging errors
+        _loggingService.LogDebug(message);
     }
 }
 

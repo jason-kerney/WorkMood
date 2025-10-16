@@ -13,6 +13,7 @@ public class MoodDispatcherService : IDisposable
 {
     private readonly IDispatcherCommand[] _commands = null!;
     private readonly ScheduleConfigService _scheduleConfigService = null!;
+    private readonly ILoggingService _loggingService = null!;
     private readonly System.Timers.Timer _timer = null!;
     private DateOnly _lastCheckedDate;
     private bool _disposed = false;
@@ -23,9 +24,10 @@ public class MoodDispatcherService : IDisposable
     public event EventHandler<MorningReminderEventArgs>? MorningReminderOccurred;
     public event EventHandler<EveningReminderEventArgs>? EveningReminderOccurred;
 
-    public MoodDispatcherService(ScheduleConfigService scheduleConfigService, [NotNull] params IDispatcherCommand[] commands)
+    public MoodDispatcherService(ScheduleConfigService scheduleConfigService, ILoggingService loggingService, [NotNull] params IDispatcherCommand[] commands)
     {
         _scheduleConfigService = scheduleConfigService ?? throw new ArgumentNullException(nameof(scheduleConfigService));
+        _loggingService = loggingService ?? throw new ArgumentNullException(nameof(loggingService));
         _commands = commands ?? throw new ArgumentNullException(nameof(commands));
         ArgumentOutOfRangeException.ThrowIfZero(_commands.Length, nameof(commands));
         
@@ -265,46 +267,7 @@ public class MoodDispatcherService : IDisposable
 
     private void Log(string message)
     {
-        try
-        {
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            var logEntry = $"[{timestamp}] {message}";
-            
-            // Try multiple locations
-            var locations = new[]
-            {
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "WorkMood_Debug.log"),
-                Path.Combine(Path.GetTempPath(), "WorkMood_Debug.log"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WorkMood_Debug.log"),
-                @"C:\WorkMood_Debug.log"
-            };
-            
-            foreach (var location in locations)
-            {
-                try
-                {
-                    File.AppendAllText(location, logEntry + Environment.NewLine);
-                    break; // If successful, don't try other locations
-                }
-                catch
-                {
-                    continue; // Try next location
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            // Try to log the exception to a fallback location
-            try
-            {
-                var fallbackPath = Path.Combine(Path.GetTempPath(), "WorkMood_Debug_Fallback.log");
-                File.AppendAllText(fallbackPath, $"[{DateTime.Now}] LOGGING ERROR: {ex.Message} | Original message: {message}" + Environment.NewLine);
-            }
-            catch
-            {
-                // Ultimate fallback - ignore completely
-            }
-        }
+        _loggingService.LogDebug(message);
     }
 
     /// <summary>

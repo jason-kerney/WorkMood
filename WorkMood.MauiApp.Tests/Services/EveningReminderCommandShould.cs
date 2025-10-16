@@ -13,6 +13,7 @@ public class EveningReminderCommandShould
     private readonly Mock<IScheduleConfigService> _mockScheduleConfigService;
     private readonly Mock<IDateShim> _mockDateShim;
     private readonly Mock<IFolderShim> _mockFolderShim;
+    private readonly Mock<ILoggingService> _mockLoggingService;
     private readonly EveningReminderCommand _sut;
     private readonly DateOnly _testDate = new(2025, 9, 30);
     private readonly DateOnly _previousDate = new(2025, 9, 29);
@@ -24,6 +25,7 @@ public class EveningReminderCommandShould
         _mockScheduleConfigService = new Mock<IScheduleConfigService>();
         _mockDateShim = new Mock<IDateShim>();
         _mockFolderShim = new Mock<IFolderShim>();
+        _mockLoggingService = new Mock<ILoggingService>();
 
         // Create default schedule config with evening time at 17:00 (5:00 PM)
         _defaultScheduleConfig = new ScheduleConfig(
@@ -39,7 +41,7 @@ public class EveningReminderCommandShould
         _mockDateShim.Setup(x => x.GetToday()).Returns(new DateTime(2025, 9, 30));
         _mockFolderShim.Setup(x => x.GetDesktopFolder()).Returns(@"C:\Users\Test\Desktop");
 
-        _sut = new EveningReminderCommand(_mockMoodDataService.Object, _mockScheduleConfigService.Object, _mockDateShim.Object, _mockFolderShim.Object);
+        _sut = new EveningReminderCommand(_mockMoodDataService.Object, _mockScheduleConfigService.Object, _mockDateShim.Object, _mockFolderShim.Object, _mockLoggingService.Object);
     }
 
     #region Constructor Tests
@@ -48,7 +50,7 @@ public class EveningReminderCommandShould
     public void ThrowArgumentNullException_WhenMoodDataServiceIsNull()
     {
         // Act & Assert
-        var act = () => new EveningReminderCommand(null!, _mockScheduleConfigService.Object, _mockDateShim.Object, _mockFolderShim.Object);
+        var act = () => new EveningReminderCommand(null!, _mockScheduleConfigService.Object, _mockDateShim.Object, _mockFolderShim.Object, _mockLoggingService.Object);
         act.Should().Throw<ArgumentNullException>()
            .WithParameterName("moodDataService");
     }
@@ -57,7 +59,7 @@ public class EveningReminderCommandShould
     public void ThrowArgumentNullException_WhenScheduleConfigServiceIsNull()
     {
         // Act & Assert
-        var act = () => new EveningReminderCommand(_mockMoodDataService.Object, null!, _mockDateShim.Object, _mockFolderShim.Object);
+        var act = () => new EveningReminderCommand(_mockMoodDataService.Object, null!, _mockDateShim.Object, _mockFolderShim.Object, _mockLoggingService.Object);
         act.Should().Throw<ArgumentNullException>()
            .WithParameterName("scheduleConfigService");
     }
@@ -66,7 +68,7 @@ public class EveningReminderCommandShould
     public void NotThrowException_WhenDateShimIsNull()
     {
         // Act & Assert - The constructor doesn't validate dateShim
-        var act = () => new EveningReminderCommand(_mockMoodDataService.Object, _mockScheduleConfigService.Object, null!, _mockFolderShim.Object);
+        var act = () => new EveningReminderCommand(_mockMoodDataService.Object, _mockScheduleConfigService.Object, null!, _mockFolderShim.Object, _mockLoggingService.Object);
         act.Should().NotThrow();
     }
 
@@ -74,15 +76,24 @@ public class EveningReminderCommandShould
     public void NotThrowException_WhenFolderShimIsNull()
     {
         // Act & Assert - The constructor doesn't validate folder
-        var act = () => new EveningReminderCommand(_mockMoodDataService.Object, _mockScheduleConfigService.Object, _mockDateShim.Object, null!);
+        var act = () => new EveningReminderCommand(_mockMoodDataService.Object, _mockScheduleConfigService.Object, _mockDateShim.Object, null!, _mockLoggingService.Object);
         act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ThrowArgumentNullException_WhenLoggingServiceIsNull()
+    {
+        // Act & Assert
+        var act = () => new EveningReminderCommand(_mockMoodDataService.Object, _mockScheduleConfigService.Object, _mockDateShim.Object, _mockFolderShim.Object, null!);
+        act.Should().Throw<ArgumentNullException>()
+           .WithParameterName("loggingService");
     }
 
     [Fact]
     public void CreateSuccessfully_WhenAllDependenciesProvided()
     {
         // Act & Assert
-        var command = new EveningReminderCommand(_mockMoodDataService.Object, _mockScheduleConfigService.Object, _mockDateShim.Object, _mockFolderShim.Object);
+        var command = new EveningReminderCommand(_mockMoodDataService.Object, _mockScheduleConfigService.Object, _mockDateShim.Object, _mockFolderShim.Object, _mockLoggingService.Object);
         command.Should().NotBeNull();
     }
 
@@ -573,22 +584,18 @@ public class EveningReminderCommandShould
     #region File Logging Tests
 
     [Fact]
-    public async Task ProcessTickAsync_WriteToLogFile_WhenLoggingEnabled()
+    public async Task ProcessTickAsync_CallLoggingService_WhenProcessingReminder()
     {
         // Arrange
         SetupWithinEveningTimeWindow();
         SetupMoodEntryWithNoMoods();
-        
-        var desktopPath = @"C:\Users\Test\Desktop";
-        _mockFolderShim.Setup(x => x.GetDesktopFolder()).Returns(desktopPath);
 
-        // We can't easily test the actual file writing without a file system abstraction,
-        // but we can at least verify the folder shim is called
         // Act
         await _sut.ProcessTickAsync(_previousDate, _testDate);
 
         // Assert
-        _mockFolderShim.Verify(x => x.GetDesktopFolder(), Times.AtLeast(1));
+        // Verify that the logging service is called for debug logging during processing
+        _mockLoggingService.Verify(x => x.Log(LogLevel.Debug, It.IsAny<string>()), Times.AtLeastOnce());
     }
 
     [Fact]

@@ -10,13 +10,16 @@ public class ScheduleConfigService : IScheduleConfigService
 {
     private readonly string _configFilePath;
     private readonly JsonSerializerOptions _jsonOptions;
+    private readonly ILoggingService _loggingService;
     private ScheduleConfig? _cachedConfig;
 
     /// <summary>
     /// Creates a new schedule configuration service
     /// </summary>
-    public ScheduleConfigService()
+    public ScheduleConfigService(ILoggingService? loggingService = null)
     {
+        _loggingService = loggingService ?? new LoggingService();
+        
         Log("ScheduleConfigService: Constructor starting");
         
         // Store config in the app's local data directory
@@ -41,15 +44,7 @@ public class ScheduleConfigService : IScheduleConfigService
 
     private void Log(string message)
     {
-        try
-        {
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            var logEntry = $"[{timestamp}] {message}";
-            var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            var logPath = Path.Combine(desktopPath, "WorkMood_Debug.log");
-            File.AppendAllText(logPath, logEntry + Environment.NewLine);
-        }
-        catch { } // Ignore logging errors
+        _loggingService.LogDebug(message);
     }
 
     /// <summary>
