@@ -159,8 +159,9 @@ public static class MauiProgram
 
                 if (HasLoggingLevel(arg))
                 {
-                    // Extract the log level from --logging=<level>
-                    var levelString = arg.Substring(10); // Remove "--logging="
+                    // Extract the log level from argument by finding the '=' position
+                    var equalIndex = arg.IndexOf('=');
+                    var levelString = arg.Substring(equalIndex + 1);
                     if (TryParseLogLevel(levelString, out var logLevel))
                     {
                         return (true, logLevel);
