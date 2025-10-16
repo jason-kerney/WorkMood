@@ -96,12 +96,12 @@ public class AboutViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Gets the available log levels for the picker
+    /// Gets the available log levels for the picker (ordered by hierarchy)
     /// </summary>
     public List<string> LogLevels { get; } = new List<string>
     {
-        "Debug",
-        "Info", 
+        "Info",
+        "Debug", 
         "Warning",
         "Error"
     };

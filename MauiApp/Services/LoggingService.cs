@@ -31,7 +31,7 @@ public class LoggingService : ILoggingService
         var desktopPath = folderShim?.GetDesktopFolder() ?? throw new ArgumentNullException(nameof(folderShim));
         _logFilePath = folderShim.CombinePaths(desktopPath, "WorkMood_Debug.log");
         IsEnabled = false;
-        MinimumLogLevel = LogLevel.Debug; // Default to logging all levels
+        MinimumLogLevel = LogLevel.Info; // Default to Info level
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ public class LoggingService : ILoggingService
             return;
 
         // Check if the log level meets the minimum threshold
-        if (level < MinimumLogLevel)
+        if ((int)level < (int)MinimumLogLevel)
             return;
 
         try

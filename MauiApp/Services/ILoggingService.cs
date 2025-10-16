@@ -64,12 +64,12 @@ public static class LoggingServiceExtensions
 }
 
 /// <summary>
-/// Log levels for categorizing log entries
+/// Log levels for categorizing log entries with hierarchical values
 /// </summary>
 public enum LogLevel
 {
-    Debug,
-    Info,
-    Warning,
-    Error
+    Info = 1,
+    Debug = 2,
+    Warning = 3,
+    Error = 4
 }
