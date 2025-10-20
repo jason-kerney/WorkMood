@@ -1,5 +1,12 @@
 # DataPointComponent Test Plan
 
+## Testing Framework Requirements
+**Testing Framework**: xUnit with Assert.* methods (NOT NUnit)  
+**Required Imports**: `using Xunit;`  
+**Assertion Style**: `Assert.NotNull()`, `Assert.Equal()`, `Assert.True()` etc. (xUnit syntax)  
+**Test Method Attributes**: `[Fact]` for single tests, `[Theory]` for parameterized tests  
+**NOT SUPPORTED**: NUnit syntax (`[Test]`, `Assert.That()`, `Is.EqualTo()`, etc.)
+
 ## Object Analysis
 
 **File**: `MauiApp/Graphics/EnhancedLineGraphDrawable.cs`  

@@ -1,5 +1,12 @@
 # AutoSaveEventArgs - Individual Test Plan
 
+## Testing Framework Requirements
+**Testing Framework**: xUnit with Assert.* methods (NOT NUnit)  
+**Required Imports**: `using Xunit;`  
+**Assertion Style**: `Assert.NotNull()`, `Assert.Equal()`, `Assert.True()` etc. (xUnit syntax)  
+**Test Method Attributes**: `[Fact]` for single tests, `[Theory]` for parameterized tests  
+**NOT SUPPORTED**: NUnit syntax (`[Test]`, `Assert.That()`, `Is.EqualTo()`, etc.)
+
 ## Class Overview
 **File**: `MauiApp/Services/MoodDispatcherService.cs` (lines 326-330)  
 **Type**: Event Arguments Class  
@@ -493,6 +500,7 @@ public void EventUsage_Should_HandleMoodEntryReferences_WithoutMemoryLeaks()
 - [ ] **EventArgs inheritance** - Proper inheritance behavior validated
 - [ ] **Event system compatibility** - Works correctly with .NET event handlers
 - [ ] **Reference integrity** - MoodEntry references handled correctly
+- [ ] **COMPLETION REQUIREMENT**: Before marking this component complete, re-read and update the Master Test Execution Plan with progress, learnings, and any discovered patterns
 
 ## Implementation Priority
 **LOW PRIORITY** - Simple event args class with excellent testability. Can be implemented quickly as part of comprehensive test suite coverage goals.
