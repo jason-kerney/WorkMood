@@ -4,9 +4,17 @@
 
 This document provides a comprehensive, step-by-step execution plan for implementing unit tests across the WorkMood codebase. The plan is ordered from easiest to hardest complexity, designed for execution by AI assistants with built-in verification and maintenance protocols.
 
-**Last Updated**: October 17, 2025  
-**Status**: Ready for Execution  
+**Last Updated**: October 20, 2025  
+**Status**: Plan Updates Required - Critical Bug Fixed  
 **Total Components to Test**: 58
+
+## ⚠️ CRITICAL UPDATE - Testing Framework Requirements
+
+**DISCOVERED BUG**: Individual test plans do not specify the testing framework. This project uses **xUnit**, not NUnit.
+
+**REQUIRED ACTION**: All individual test plans must be updated to include testing framework specifications before proceeding with any component testing.
+
+**SYSTEMATIC UPDATE PLAN**: See `docs/testing-strategy/TEST-PLAN-UPDATE-STRATEGY.md` for comprehensive approach to update all 118 individual test plans efficiently and consistently.
 
 ---
 
@@ -15,13 +23,17 @@ This document provides a comprehensive, step-by-step execution plan for implemen
 ### Before Starting Any Component
 1. **Verify Plan Accuracy**: Read the component's source code and ensure the individual test plan matches reality
 2. **Update Sub-Plan**: Add maintenance requirements and checkpoint protocols to the individual plan
-3. **Establish Baseline**: Confirm component location, dependencies, and current test coverage
+3. **CRITICAL - Add Testing Framework**: Ensure individual test plan specifies "Testing Framework: xUnit with Assert.* methods (NOT NUnit)"
+4. **Insert Master Plan Update Requirement**: Modify the individual test plan to include as a completion step: "Before marking this component complete, re-read and update the Master Test Execution Plan with progress, learnings, and any discovered patterns"
+5. **Update Master Plan**: Re-read this master plan and update any outdated information, progress tracking, or learned patterns before proceeding
+6. **Establish Baseline**: Confirm component location, dependencies, and current test coverage
 
 ### During Component Testing
 - **Verification Checkpoints**: Pause every 2-3 tests for verification
 - **Master Plan Review**: Re-read this master plan every 10 tests to maintain alignment
 - **Complexity Escalation**: For complicated scenarios, propose direction but request feedback
 - **Plan Updates**: Keep individual test plans current as work progresses
+- **Completion Requirement**: Each individual test plan must include updating this master plan as a final step before completion
 
 ### Between Each Sub-Plan
 - **MANDATORY VERIFICATION**: Request human confirmation before proceeding to next component
@@ -34,9 +46,11 @@ This document provides a comprehensive, step-by-step execution plan for implemen
 
 ### Component 1: AutoSaveEventArgs
 **Complexity**: 1/10 | **Testability**: 9/10  
-**Location**: `MauiApp/Models/AutoSaveEventArgs.cs`
+**Location**: `MauiApp/Services/MoodDispatcherService.cs` (lines 326-330)
+**Update**: Corrected location - found as nested class in MoodDispatcherService, not separate file
 
 **Pre-Execution Checklist**:
+- [ ] **Update Master Plan**: Re-read and update this master plan with any new learnings or progress
 - [ ] Verify component exists at specified location
 - [ ] Confirm it's a pure event args class with no dependencies
 - [ ] Update individual test plan with maintenance protocols
@@ -403,8 +417,10 @@ Before beginning Phase 3, ensure the following infrastructure is in place:
 
 ### Current Progress
 - **Last Completed Component**: None
-- **Current Component**: Ready to begin Component 1
-- **Next Verification Point**: After Component 2
+- **Current Component**: EXECUTION HALTED - Critical Bug Discovered
+- **Next Action Required**: Update all individual test plans with testing framework specification
+- **Plan Corrections Made**: 2 (AutoSaveEventArgs location corrected, Testing framework bug discovered)
+- **Critical Bug**: Individual test plans missing testing framework specification (xUnit vs NUnit)
 
 ### Key Metrics to Track
 - **Tests Written**: 0
@@ -438,10 +454,11 @@ Before beginning Phase 3, ensure the following infrastructure is in place:
 
 This plan is designed to be **living documentation**. Each AI instance executing this plan should:
 
-1. **Update progress** after each component
-2. **Revise estimates** based on actual experience
-3. **Document patterns** discovered for future components
-4. **Escalate early** when encountering unexpected complexity
-5. **Maintain human collaboration** especially for architectural decisions
+1. **Update this master plan** before starting each component - re-read entirely and update any outdated information
+2. **Update progress** after each component in the Execution Status Tracking section
+3. **Revise estimates** based on actual experience in component descriptions
+4. **Document patterns** discovered for future components in relevant sections
+5. **Escalate early** when encountering unexpected complexity
+6. **Maintain human collaboration** especially for architectural decisions
 
 The goal is not just to write tests, but to establish sustainable testing practices for the WorkMood codebase.
