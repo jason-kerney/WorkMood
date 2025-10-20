@@ -7,6 +7,26 @@
 **Test Method Attributes**: `[Fact]` for single tests, `[Theory]` for parameterized tests  
 **NOT SUPPORTED**: NUnit syntax (`[Test]`, `Assert.That()`, `Is.EqualTo()`, etc.)
 
+## Execution Protocols & Maintenance
+
+### Pre-Execution Requirements
+- [x] ✅ Generate baseline coverage report (DisplayAlertEventArgs at 0%)
+- [x] ✅ Component location verified (MainPageViewModel.cs lines 377-394, corrected from Models location)
+- [x] ✅ Dependencies confirmed (pure event args, no external dependencies)
+- [x] ✅ Individual test plan updated with coverage & maintenance protocols
+
+### During Testing Checkpoints
+- **Checkpoint 1**: After 2-3 basic tests (constructor, properties, EventArgs inheritance)
+- **Checkpoint 2**: After edge case testing (null/empty strings, long values)
+- **Checkpoint 3**: After integration pattern testing (EventArgs compliance, handler usage)
+
+### Completion Requirements
+- [ ] Run `generate-coverage-report.ps1` and commit updated `CoverageReport/Summary.txt` showing improved coverage
+- [ ] Update Master Test Execution Plan with Component 3 progress, learnings, and patterns
+- [ ] Verify all tests pass and component achieves expected coverage (target: DisplayAlertEventArgs 100%)
+- [ ] Document event args testing patterns for future similar components
+- [ ] Request human verification before proceeding to Component 4
+
 ## Overview
 
 ### Object Under Test
