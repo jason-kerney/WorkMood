@@ -18,11 +18,14 @@ This document provides a comprehensive, step-by-step execution plan for implemen
 ## Execution Protocols
 
 ### Before Starting Any Component
-1. **Verify Plan Accuracy**: Read the component's source code and ensure the individual test plan matches reality
-2. **Update Sub-Plan**: Add maintenance requirements and checkpoint protocols to the individual plan
-3. **Insert Master Plan Update Requirement**: Modify the individual test plan to include as a completion step: "Before marking this component complete, re-read and update the Master Test Execution Plan with progress, learnings, and any discovered patterns"
-4. **Update Master Plan**: Re-read this master plan and update any outdated information, progress tracking, or learned patterns before proceeding
-5. **Establish Baseline**: Confirm component location, dependencies, and current test coverage
+1. **Generate Baseline Coverage**: Run `generate-coverage-report.ps1` and commit the `CoverageReport/Summary.txt` file to establish pre-test coverage baseline
+2. **Verify Plan Accuracy**: Read the component's source code and ensure the individual test plan matches reality
+3. **Update Sub-Plan**: Add maintenance requirements and checkpoint protocols to the individual plan
+4. **Insert Coverage & Master Plan Update Requirements**: Modify the individual test plan to include as completion steps:
+   - "Run `generate-coverage-report.ps1` and commit the updated `CoverageReport/Summary.txt` file showing improved coverage"
+   - "Before marking this component complete, re-read and update the Master Test Execution Plan with progress, learnings, and any discovered patterns"
+5. **Update Master Plan**: Re-read this master plan and update any outdated information, progress tracking, or learned patterns before proceeding
+6. **Establish Baseline**: Confirm component location, dependencies, and current test coverage
 
 ### During Component Testing
 - **Verification Checkpoints**: Pause every 2-3 tests for verification
@@ -32,8 +35,9 @@ This document provides a comprehensive, step-by-step execution plan for implemen
 - **Completion Requirement**: Each individual test plan must include updating this master plan as a final step before completion
 
 ### Between Each Sub-Plan
+- **Generate Post-Test Coverage**: Run `generate-coverage-report.ps1` and commit updated `CoverageReport/Summary.txt` showing coverage improvements
 - **MANDATORY VERIFICATION**: Request human confirmation before proceeding to next component
-- **Status Report**: Provide summary of what was accomplished and any issues encountered
+- **Status Report**: Provide summary of what was accomplished, coverage improvements, and any issues encountered
 - **Plan Adjustment**: Allow for any necessary tasks or adjustments based on progress
 
 ---
@@ -420,6 +424,7 @@ Before beginning Phase 3, ensure the following infrastructure is in place:
 ### Key Metrics to Track
 - **Tests Written**: 46 (AutoSaveEventArgs: 13, AxisRange: 33)
 - **Components Completed**: 2/58 (Component 1: AutoSaveEventArgs ✅, Component 2: AxisRange ✅)
+- **Coverage Improvements**: Track line coverage changes via `CoverageReport/Summary.txt` commits
 - **Infrastructure Pieces Created**: 1 (PowerShell automation script)
 - **Refactoring Recommendations Made**: 0
 
