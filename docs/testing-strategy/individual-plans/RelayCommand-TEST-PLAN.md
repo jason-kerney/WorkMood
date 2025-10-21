@@ -186,7 +186,7 @@ RelayCommandTests/
 #### Construction Tests
 
 ```csharp
-[Test]
+[Fact]
 public void Construction_Should_AcceptValidAction_WithoutCanExecute()
 {
     // Arrange
@@ -197,7 +197,124 @@ public void Construction_Should_AcceptValidAction_WithoutCanExecute()
     var command = new RelayCommand(action);
 
     // Assert
-    Assert.That(command, Is.Not.Null);
+    Assert.NotNull(command);
+    Assert.True(command.CanExecute(null));
+    
+    // Verify action can be executed
+    command.Execute(null);
+    Assert.True(actionExecuted);
+}
+
+[Fact]
+public void Construction_Should_ThrowArgumentNullException_WhenActionIsNull()
+{
+    // Arrange
+    Action<object?> action = null!;
+
+    // Act & Assert
+    var exception = Assert.Throws<ArgumentNullException>(() => new RelayCommand(action));
+    Assert.Equal("execute", exception.ParamName);
+}
+```
+
+#### CanExecute Tests
+
+```csharp
+[Fact]
+public void CanExecute_Should_ReturnTrue_WhenNoCanExecuteSpecified()
+{
+    // Arrange
+    var command = new RelayCommand(_ => { });
+
+    // Act & Assert
+    Assert.True(command.CanExecute(null));
+    Assert.True(command.CanExecute("test"));
+    Assert.True(command.CanExecute(42));
+}
+
+[Theory]
+[InlineData(true, true)]
+[InlineData(false, false)]
+public void CanExecute_Should_ReturnCorrectValue_WhenCanExecuteSpecified(bool canExecuteResult, bool expected)
+{
+    // Arrange
+    var command = new RelayCommand(_ => { }, _ => canExecuteResult);
+
+    // Act
+    var result = command.CanExecute(null);
+
+    // Assert
+    Assert.Equal(expected, result);
+}
+```
+
+#### Execute Tests
+
+```csharp
+[Fact]
+public void Execute_Should_InvokeAction_WithCorrectParameter()
+{
+    // Arrange
+    object? receivedParameter = null;
+    var command = new RelayCommand(param => receivedParameter = param);
+    var testParameter = "test";
+
+    // Act
+    command.Execute(testParameter);
+
+    // Assert
+    Assert.Equal(testParameter, receivedParameter);
+}
+
+[Fact]
+public void Execute_Should_InvokeParameterlessAction_FromOverload()
+{
+    // Arrange
+    var actionExecuted = false;
+    var command = new RelayCommand(() => actionExecuted = true);
+
+    // Act
+    command.Execute("ignored parameter");
+
+    // Assert
+    Assert.True(actionExecuted);
+}
+```
+
+#### Event Tests
+
+```csharp
+[Fact]
+public void CanExecuteChanged_Should_SubscribeToCommandManager()
+{
+    // Arrange
+    var command = new RelayCommand(_ => { });
+    var eventRaised = false;
+    EventHandler handler = (_, _) => eventRaised = true;
+
+    // Act
+    command.CanExecuteChanged += handler;
+    CommandManager.InvalidateRequerySuggested();
+
+    // Assert
+    Assert.True(eventRaised);
+}
+
+[Fact]
+public void RaiseCanExecuteChanged_Should_TriggerEvent()
+{
+    // Arrange
+    var command = new RelayCommand(_ => { });
+    var eventRaised = false;
+    command.CanExecuteChanged += (_, _) => eventRaised = true;
+
+    // Act
+    command.RaiseCanExecuteChanged();
+
+    // Assert
+    Assert.True(eventRaised);
+}
+```
     Assert.That(command.CanExecute(null), Is.True);
     
     command.Execute(null);
@@ -866,7 +983,7 @@ public void LifecycleManagement_Should_HandleCommandLifecycle_Properly()
 
 ## Dependencies for Testing
 
-- **NUnit** - Standard testing framework
+- **xUnit** - Standard testing framework (Assert.NotNull, Assert.Equal, Assert.True syntax)
 - **Custom test doubles** - ViewModel and delegate implementations
 - **CommandManager** - Integration with command coordination infrastructure
 
@@ -880,5 +997,13 @@ public void LifecycleManagement_Should_HandleCommandLifecycle_Properly()
 - Integration pattern validation
 - Exception handling scenarios
 - MVVM lifecycle testing
+
+## Completion Requirements
+
+Upon completion of testing implementation:
+
+1. **Coverage Report**: Run `generate-coverage-report.ps1` and commit the updated `CoverageReport/Summary.txt` file showing improved coverage for RelayCommand from 0% baseline
+2. **Master Plan Update**: Before marking this component complete, re-read and update the Master Test Execution Plan with progress, learnings, and any discovered patterns
+3. **Verification**: Request human confirmation before proceeding to next component as per Master Plan protocols
 
 This class represents a fundamental MVVM component requiring thorough testing to ensure proper command behavior throughout the application.
