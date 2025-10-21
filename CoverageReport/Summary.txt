@@ -1,25 +1,25 @@
 Summary
-  Generated on: 10/20/2025 - 4:31:38 PM
-  Coverage date: 10/20/2025 - 4:31:37 PM
+  Generated on: 10/21/2025 - 9:28:38 AM
+  Coverage date: 10/21/2025 - 9:28:37 AM
   Parser: Cobertura
   Assemblies: 1
   Classes: 111
   Files: 72
-  Line coverage: 23.3%
-  Covered lines: 1477
-  Uncovered lines: 4835
+  Line coverage: 23.4%
+  Covered lines: 1481
+  Uncovered lines: 4831
   Coverable lines: 6312
   Total lines: 12186
   Branch coverage: 17.8% (306 of 1711)
   Covered branches: 306
   Total branches: 1711
-  Method coverage: 24.9% (256 of 1026)
-  Full method coverage: 22.6% (232 of 1026)
-  Covered methods: 256
-  Fully covered methods: 232
+  Method coverage: 25.3% (260 of 1026)
+  Full method coverage: 23% (236 of 1026)
+  Covered methods: 260
+  Fully covered methods: 236
   Total methods: 1026
 
-WorkMood.MauiApp                                                        23.3%
+WorkMood.MauiApp                                                        23.4%
   WorkMood.MauiApp.Adapters.VisualizationDataAdapter                       0%
   WorkMood.MauiApp.App                                                     0%
   WorkMood.MauiApp.AppShell                                                0%
@@ -86,7 +86,7 @@ WorkMood.MauiApp                                                        23.3%
   WorkMood.MauiApp.Services.MoodVisualizationService                    93.3%
   WorkMood.MauiApp.Services.MorningReminderCommand                         0%
   WorkMood.MauiApp.Services.MorningReminderData                            0%
-  WorkMood.MauiApp.Services.MorningReminderEventArgs                       0%
+  WorkMood.MauiApp.Services.MorningReminderEventArgs                     100%
   WorkMood.MauiApp.Services.NavigationService                              0%
   WorkMood.MauiApp.Services.ScheduleConfigService                          0%
   WorkMood.MauiApp.Services.WindowActivationService                        0%
