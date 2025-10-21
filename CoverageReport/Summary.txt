@@ -1,25 +1,25 @@
 Summary
-  Generated on: 10/21/2025 - 1:14:27 PM
-  Coverage date: 10/21/2025 - 1:14:26 PM
+  Generated on: 10/21/2025 - 1:35:27 PM
+  Coverage date: 10/21/2025 - 1:35:26 PM
   Parser: Cobertura
   Assemblies: 1
   Classes: 111
   Files: 72
-  Line coverage: 23.6%
-  Covered lines: 1495
-  Uncovered lines: 4817
+  Line coverage: 23.9%
+  Covered lines: 1511
+  Uncovered lines: 4801
   Coverable lines: 6312
   Total lines: 12186
-  Branch coverage: 17.8% (306 of 1711)
-  Covered branches: 306
+  Branch coverage: 18.3% (314 of 1711)
+  Covered branches: 314
   Total branches: 1711
-  Method coverage: 25.9% (266 of 1026)
-  Full method coverage: 23.5% (242 of 1026)
-  Covered methods: 266
-  Fully covered methods: 242
+  Method coverage: 26.7% (274 of 1026)
+  Full method coverage: 24.3% (250 of 1026)
+  Covered methods: 274
+  Fully covered methods: 250
   Total methods: 1026
 
-WorkMood.MauiApp                                                        23.6%
+WorkMood.MauiApp                                                        23.9%
   WorkMood.MauiApp.Adapters.VisualizationDataAdapter                       0%
   WorkMood.MauiApp.App                                                     0%
   WorkMood.MauiApp.AppShell                                                0%
@@ -38,8 +38,8 @@ WorkMood.MauiApp                                                        23.6%
   WorkMood.MauiApp.Graphics.LineComponent                                  0%
   WorkMood.MauiApp.Graphics.MissingDataComponent                           0%
   WorkMood.MauiApp.Infrastructure.BasePage                                 0%
-  WorkMood.MauiApp.Infrastructure.CommandManager                           0%
-  WorkMood.MauiApp.Infrastructure.RelayCommand                             0%
+  WorkMood.MauiApp.Infrastructure.CommandManager                         100%
+  WorkMood.MauiApp.Infrastructure.RelayCommand                           100%
   WorkMood.MauiApp.Infrastructure.RelayCommand<T>                          0%
   WorkMood.MauiApp.Infrastructure.ViewModelBase                            0%
   WorkMood.MauiApp.MauiProgram                                             0%
