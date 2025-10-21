@@ -1,30 +1,30 @@
 Summary
-  Generated on: 10/21/2025 - 4:53:12 PM
-  Coverage date: 10/21/2025 - 4:53:11 PM
+  Generated on: 10/21/2025 - 4:58:18 PM
+  Coverage date: 10/21/2025 - 4:58:18 PM
   Parser: Cobertura
   Assemblies: 1
   Classes: 111
   Files: 72
-  Line coverage: 24.3%
-  Covered lines: 1535
-  Uncovered lines: 4777
+  Line coverage: 24.5%
+  Covered lines: 1547
+  Uncovered lines: 4765
   Coverable lines: 6312
   Total lines: 12186
-  Branch coverage: 19.6% (336 of 1711)
-  Covered branches: 336
+  Branch coverage: 20.1% (344 of 1711)
+  Covered branches: 344
   Total branches: 1711
-  Method coverage: 27.5% (283 of 1026)
-  Full method coverage: 25.2% (259 of 1026)
-  Covered methods: 283
-  Fully covered methods: 259
+  Method coverage: 27.7% (285 of 1026)
+  Full method coverage: 25.4% (261 of 1026)
+  Covered methods: 285
+  Fully covered methods: 261
   Total methods: 1026
 
-WorkMood.MauiApp                                                        24.3%
+WorkMood.MauiApp                                                        24.5%
   WorkMood.MauiApp.Adapters.VisualizationDataAdapter                       0%
   WorkMood.MauiApp.App                                                     0%
   WorkMood.MauiApp.AppShell                                                0%
   WorkMood.MauiApp.Converters.BoolToColorConverter                         0%
-  WorkMood.MauiApp.Converters.InverseBoolConverter                         0%
+  WorkMood.MauiApp.Converters.InverseBoolConverter                       100%
   WorkMood.MauiApp.Converters.InvertedBoolConverter                        0%
   WorkMood.MauiApp.Converters.IsNotNullConverter                           0%
   WorkMood.MauiApp.Converters.MoodAverageConverter                         0%
