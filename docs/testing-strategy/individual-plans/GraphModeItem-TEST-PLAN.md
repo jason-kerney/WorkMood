@@ -683,6 +683,34 @@ public void Constructor_WithAllDefinedEnumValues_ShouldWork()
 - Perfect testability (10/10) - exemplary enum wrapper pattern implementation
 - Target: 100% coverage for pure enum wrapper class with zero dependencies
 - Completes critical priority tier with all 11 ViewModel objects tested
+
+---
+
+## Test Completion Requirements
+
+### Success Criteria
+
+- [ ] **95% line coverage achieved** for GraphModeItem class
+- [ ] **All constructor parameters validated** including null checks and enum coverage
+- [ ] **Property behavior verified** for GraphMode and DisplayName immutability
+- [ ] **All GraphMode enum values tested** including Impact, Average, and RawData
+- [ ] **String handling validated** for display names and edge cases
+- [ ] **UI binding compatibility confirmed** via property accessibility testing
+- [ ] **All tests pass** with 100% success rate
+
+### Completion Protocol
+
+- [ ] **Generate post-test coverage** - Run `generate-coverage-report.ps1` and commit the updated `CoverageReport/Summary.txt` file showing coverage improvement from 0% baseline
+- [ ] **Update Master Plan** - Before marking this component complete, re-read and update the Master Test Execution Plan with progress, learnings, and any discovered patterns
+- [ ] **Verify 3-checkpoint strategy** - Ensure proper checkpoint verification was followed during implementation
+- [ ] **Commit with Arlo's notation** - Use appropriate risk assessment (^t for tests) with descriptive commit message
+
+---
+
+## Commit Message Suggestion
+
+```bash
+^t - implement comprehensive GraphModeItem testing with enum wrapper validation
 ```
 
 **Risk Assessment**: `^` (Validated) - Perfect enum wrapper pattern implementation with no dependencies, comprehensive test coverage planned, identical to other successful wrapper classes (DateRangeItem, DisplayAlertEventArgs).
