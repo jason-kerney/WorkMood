@@ -1,25 +1,25 @@
 Summary
-  Generated on: 10/22/2025 - 3:20:36 PM
-  Coverage date: 10/22/2025 - 3:20:35 PM
+  Generated on: 10/22/2025 - 4:19:10 PM
+  Coverage date: 10/22/2025 - 4:19:09 PM
   Parser: Cobertura
   Assemblies: 1
   Classes: 111
   Files: 72
-  Line coverage: 25.9%
-  Covered lines: 1640
-  Uncovered lines: 4672
+  Line coverage: 26%
+  Covered lines: 1645
+  Uncovered lines: 4667
   Coverable lines: 6312
   Total lines: 12186
-  Branch coverage: 23.4% (402 of 1711)
-  Covered branches: 402
+  Branch coverage: 23.6% (404 of 1711)
+  Covered branches: 404
   Total branches: 1711
-  Method coverage: 28.9% (297 of 1026)
-  Full method coverage: 26.7% (274 of 1026)
-  Covered methods: 297
-  Fully covered methods: 274
+  Method coverage: 29.2% (300 of 1026)
+  Full method coverage: 26.9% (277 of 1026)
+  Covered methods: 300
+  Fully covered methods: 277
   Total methods: 1026
 
-WorkMood.MauiApp                                                        25.9%
+WorkMood.MauiApp                                                          26%
   WorkMood.MauiApp.Adapters.VisualizationDataAdapter                       0%
   WorkMood.MauiApp.App                                                     0%
   WorkMood.MauiApp.AppShell                                                0%
@@ -51,7 +51,7 @@ WorkMood.MauiApp                                                        25.9%
   WorkMood.MauiApp.Models.MoodCollection                                75.5%
   WorkMood.MauiApp.Models.MoodEntry                                     83.6%
   WorkMood.MauiApp.Models.ScheduleConfig                                43.4%
-  WorkMood.MauiApp.Models.ScheduleOverride                              66.6%
+  WorkMood.MauiApp.Models.ScheduleOverride                               100%
   WorkMood.MauiApp.Pages.About                                             0%
   WorkMood.MauiApp.Pages.Graph                                             0%
   WorkMood.MauiApp.Pages.History                                           0%
