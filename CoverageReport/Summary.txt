@@ -1,25 +1,25 @@
 Summary
-  Generated on: 10/22/2025 - 1:01:18 PM
-  Coverage date: 10/22/2025 - 1:01:17 PM
+  Generated on: 10/22/2025 - 1:08:27 PM
+  Coverage date: 10/22/2025 - 1:08:26 PM
   Parser: Cobertura
   Assemblies: 1
   Classes: 111
   Files: 72
-  Line coverage: 25.1%
-  Covered lines: 1586
-  Uncovered lines: 4726
+  Line coverage: 25.6%
+  Covered lines: 1617
+  Uncovered lines: 4695
   Coverable lines: 6312
   Total lines: 12186
-  Branch coverage: 21.5% (368 of 1711)
-  Covered branches: 368
+  Branch coverage: 22.9% (392 of 1711)
+  Covered branches: 392
   Total branches: 1711
-  Method coverage: 28.3% (291 of 1026)
-  Full method coverage: 26% (267 of 1026)
-  Covered methods: 291
-  Fully covered methods: 267
+  Method coverage: 28.5% (293 of 1026)
+  Full method coverage: 26.3% (270 of 1026)
+  Covered methods: 293
+  Fully covered methods: 270
   Total methods: 1026
 
-WorkMood.MauiApp                                                        25.1%
+WorkMood.MauiApp                                                        25.6%
   WorkMood.MauiApp.Adapters.VisualizationDataAdapter                       0%
   WorkMood.MauiApp.App                                                     0%
   WorkMood.MauiApp.AppShell                                                0%
@@ -28,7 +28,7 @@ WorkMood.MauiApp                                                        25.1%
   WorkMood.MauiApp.Converters.InvertedBoolConverter                      100%
   WorkMood.MauiApp.Converters.IsNotNullConverter                         100%
   WorkMood.MauiApp.Converters.MoodAverageConverter                         0%
-  WorkMood.MauiApp.Converters.MoodEmojiConverter                           0%
+  WorkMood.MauiApp.Converters.MoodEmojiConverter                         100%
   WorkMood.MauiApp.Converters.NullableMoodConverter                        0%
   WorkMood.MauiApp.Factories.VisualizationServiceFactory                   0%
   WorkMood.MauiApp.Graphics.BaselineComponent                              0%
@@ -49,7 +49,7 @@ WorkMood.MauiApp                                                        25.1%
   WorkMood.MauiApp.Models.GraphData                                      100%
   WorkMood.MauiApp.Models.GraphDisplayOptions                              0%
   WorkMood.MauiApp.Models.MoodCollection                                75.5%
-  WorkMood.MauiApp.Models.MoodEntry                                     81.9%
+  WorkMood.MauiApp.Models.MoodEntry                                     83.6%
   WorkMood.MauiApp.Models.ScheduleConfig                                43.4%
   WorkMood.MauiApp.Models.ScheduleOverride                              66.6%
   WorkMood.MauiApp.Pages.About                                             0%
