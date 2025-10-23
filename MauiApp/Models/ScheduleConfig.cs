@@ -94,11 +94,12 @@ public class ScheduleConfig
     }
 
     /// <summary>
-    /// Cleans up old overrides (removes overrides older than 30 days)
+    /// Cleans up old overrides (removes overrides older than 30 days from the given date)
     /// </summary>
-    public void CleanupOldOverrides()
+    public void CleanupOldOverrides(DateOnly? referenceDate = null)
     {
-        var cutoffDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-30));
+        var today = referenceDate ?? DateOnly.FromDateTime(DateTime.Today);
+        var cutoffDate = today.AddDays(-30);
         Overrides.RemoveAll(o => o.Date < cutoffDate);
     }
 }

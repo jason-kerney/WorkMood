@@ -1,5 +1,6 @@
 using System.Text.Json;
 using WorkMood.MauiApp.Models;
+using WorkMood.MauiApp.Shims;
 
 namespace WorkMood.MauiApp.Services;
 
@@ -11,25 +12,37 @@ public class ScheduleConfigService : IScheduleConfigService
     private readonly string _configFilePath;
     private readonly JsonSerializerOptions _jsonOptions;
     private readonly ILoggingService _loggingService;
+    private readonly IFileShim _fileShim;
+    private readonly IFolderShim _folderShim;
+    private readonly IJsonSerializerShim _jsonSerializerShim;
+    private readonly IDateShim _dateShim;
     private ScheduleConfig? _cachedConfig;
 
     /// <summary>
-    /// Creates a new schedule configuration service
+    /// Creates a new schedule configuration service with dependency injection
     /// </summary>
-    public ScheduleConfigService(ILoggingService? loggingService = null)
+    public ScheduleConfigService(
+        IFileShim fileShim, 
+        IFolderShim folderShim, 
+        IJsonSerializerShim jsonSerializerShim, 
+        IDateShim dateShim,
+        ILoggingService? loggingService = null)
     {
+        _fileShim = fileShim ?? throw new ArgumentNullException(nameof(fileShim));
+        _folderShim = folderShim ?? throw new ArgumentNullException(nameof(folderShim));
+        _jsonSerializerShim = jsonSerializerShim ?? throw new ArgumentNullException(nameof(jsonSerializerShim));
+        _dateShim = dateShim ?? throw new ArgumentNullException(nameof(dateShim));
         _loggingService = loggingService ?? new LoggingService();
         
         Log("ScheduleConfigService: Constructor starting");
         
         // Store config in the app's local data directory
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var appFolder = Path.Combine(appDataPath, "WorkMood");
-        Directory.CreateDirectory(appFolder);
+        var appFolder = _folderShim.GetApplicationFolder();
+        _folderShim.CreateDirectory(appFolder);
         
         Log($"ScheduleConfigService: Created app folder at {appFolder}");
         
-        _configFilePath = Path.Combine(appFolder, "schedule_config.json");
+        _configFilePath = _folderShim.CombinePaths(appFolder, "schedule_config.json");
 
         Log($"ScheduleConfigService: Config file path: {_configFilePath}");
 
@@ -40,6 +53,14 @@ public class ScheduleConfigService : IScheduleConfigService
         };
         
         Log("ScheduleConfigService: Constructor completed");
+    }
+
+    /// <summary>
+    /// Creates a new schedule configuration service with default dependencies
+    /// </summary>
+    public ScheduleConfigService(ILoggingService? loggingService = null)
+        : this(new FileShim(), new FolderShim(), new JsonSerializerShim(), new DateShim(), loggingService)
+    {
     }
 
     private void Log(string message)
@@ -65,7 +86,7 @@ public class ScheduleConfigService : IScheduleConfigService
         {
             Log($"LoadScheduleConfigAsync: Checking if file exists: {_configFilePath}");
             
-            if (!File.Exists(_configFilePath))
+            if (!_fileShim.Exists(_configFilePath))
             {
                 Log("LoadScheduleConfigAsync: File doesn't exist, creating default configuration");
                 _cachedConfig = new ScheduleConfig();
@@ -73,7 +94,7 @@ public class ScheduleConfigService : IScheduleConfigService
             }
 
             Log("LoadScheduleConfigAsync: Reading file");
-            var json = await File.ReadAllTextAsync(_configFilePath);
+            var json = await _fileShim.ReadAllTextAsync(_configFilePath);
             
             if (string.IsNullOrWhiteSpace(json))
             {
@@ -83,7 +104,7 @@ public class ScheduleConfigService : IScheduleConfigService
             }
 
             Log("LoadScheduleConfigAsync: Deserializing JSON");
-            var config = JsonSerializer.Deserialize<ScheduleConfig>(json, _jsonOptions);
+            var config = _jsonSerializerShim.Deserialize<ScheduleConfig>(json, _jsonOptions);
             _cachedConfig = config ?? new ScheduleConfig();
             
             Log($"LoadScheduleConfigAsync: Loaded - Morning: {_cachedConfig.MorningTime}, Evening: {_cachedConfig.EveningTime}");
@@ -110,8 +131,8 @@ public class ScheduleConfigService : IScheduleConfigService
         {
             Log($"SaveScheduleConfigAsync: Saving - Morning: {config.MorningTime}, Evening: {config.EveningTime}");
             
-            var json = JsonSerializer.Serialize(config, _jsonOptions);
-            await File.WriteAllTextAsync(_configFilePath, json);
+            var json = _jsonSerializerShim.Serialize(config, _jsonOptions);
+            await _fileShim.WriteAllTextAsync(_configFilePath, json);
             
             _cachedConfig = config;
             Log("SaveScheduleConfigAsync: Successfully saved configuration");
@@ -170,7 +191,7 @@ public class ScheduleConfigService : IScheduleConfigService
         }
         
         // Remove all overrides for dates that have already passed
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = _dateShim.GetTodayDate();
         var removedCount = updatedConfig.Overrides.RemoveAll(o => o.Date < today);
         if (removedCount > 0)
         {
@@ -178,7 +199,7 @@ public class ScheduleConfigService : IScheduleConfigService
         }
         
         // Clean up very old overrides (30+ days) as well
-        updatedConfig.CleanupOldOverrides();
+        updatedConfig.CleanupOldOverrides(today);
         
         // Save the configuration
         await SaveScheduleConfigAsync(updatedConfig);
