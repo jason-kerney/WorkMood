@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using WorkMood.MauiApp.Shims;
 
 namespace WorkMood.MauiApp.Services;
 
@@ -10,18 +11,27 @@ namespace WorkMood.MauiApp.Services;
 /// </summary>
 public class NavigationService : INavigationService
 {
-    private readonly Page _page;
+    private readonly IPageNavigationShim _navigationShim;
+    private readonly IPageDialogShim _dialogShim;
 
+    // Original constructor for existing production code (no breaking changes)
     public NavigationService(Page page)
+        : this(new PageNavigationShim(page), new PageDialogShim(page))
     {
-        _page = page ?? throw new ArgumentNullException(nameof(page));
+    }
+
+    // Testable constructor with dependency injection
+    public NavigationService(IPageNavigationShim navigationShim, IPageDialogShim dialogShim)
+    {
+        _navigationShim = navigationShim ?? throw new ArgumentNullException(nameof(navigationShim));
+        _dialogShim = dialogShim ?? throw new ArgumentNullException(nameof(dialogShim));
     }
 
     public async Task GoBackAsync()
     {
         try
         {
-            await _page.Navigation.PopAsync();
+            await _navigationShim.PopAsync();
         }
         catch (Exception ex)
         {
@@ -33,7 +43,7 @@ public class NavigationService : INavigationService
     {
         try
         {
-            await _page.Navigation.PushAsync(page);
+            await _navigationShim.PushAsync(page);
         }
         catch (Exception ex)
         {
@@ -46,7 +56,7 @@ public class NavigationService : INavigationService
         try
         {
             var page = pageFactory();
-            await _page.Navigation.PushAsync(page);
+            await _navigationShim.PushAsync(page);
         }
         catch (Exception ex)
         {
@@ -56,12 +66,12 @@ public class NavigationService : INavigationService
 
     public async Task ShowAlertAsync(string title, string message, string accept)
     {
-        await _page.DisplayAlert(title, message, accept);
+        await _dialogShim.DisplayAlertAsync(title, message, accept);
     }
 
     public async Task<bool> ShowConfirmationAsync(string title, string message, string accept, string cancel)
     {
-        return await _page.DisplayAlert(title, message, accept, cancel);
+        return await _dialogShim.DisplayAlertAsync(title, message, accept, cancel);
     }
 
     public async Task ShowErrorAsync(string message, Exception? exception = null)
