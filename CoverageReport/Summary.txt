@@ -1,26 +1,26 @@
 Summary
-  Generated on: 10/24/2025 - 4:13:13 PM
-  Coverage date: 10/24/2025 - 4:13:12 PM
+  Generated on: 10/24/2025 - 4:39:40 PM
+  Coverage date: 10/24/2025 - 4:39:39 PM
   Parser: Cobertura
   Assemblies: 1
   Classes: 113
   Files: 74
-  Line coverage: 29.3%
-  Covered lines: 1860
-  Uncovered lines: 4488
+  Line coverage: 30.2%
+  Covered lines: 1920
+  Uncovered lines: 4428
   Coverable lines: 6348
   Total lines: 12286
-  Branch coverage: 26.9% (465 of 1727)
-  Covered branches: 465
+  Branch coverage: 27.9% (482 of 1727)
+  Covered branches: 482
   Total branches: 1727
-  Method coverage: 31.6% (327 of 1034)
-  Full method coverage: 29.2% (302 of 1034)
-  Covered methods: 327
-  Fully covered methods: 302
+  Method coverage: 32.6% (338 of 1034)
+  Full method coverage: 30.1% (312 of 1034)
+  Covered methods: 338
+  Fully covered methods: 312
   Total methods: 1034
 
-WorkMood.MauiApp                                                        29.3%
-  WorkMood.MauiApp.Adapters.VisualizationDataAdapter                       0%
+WorkMood.MauiApp                                                        30.2%
+  WorkMood.MauiApp.Adapters.VisualizationDataAdapter                     100%
   WorkMood.MauiApp.App                                                     0%
   WorkMood.MauiApp.AppShell                                                0%
   WorkMood.MauiApp.Converters.BoolToColorConverter                       100%
@@ -59,8 +59,8 @@ WorkMood.MauiApp                                                        29.3%
   WorkMood.MauiApp.Pages.MoodRecording                                     0%
   WorkMood.MauiApp.Pages.Settings                                          0%
   WorkMood.MauiApp.Pages.Visualization                                     0%
-  WorkMood.MauiApp.Processors.MoodDayInfo                                  0%
-  WorkMood.MauiApp.Processors.MoodVisualizationFormatter                   0%
+  WorkMood.MauiApp.Processors.MoodDayInfo                                100%
+  WorkMood.MauiApp.Processors.MoodVisualizationFormatter                22.8%
   WorkMood.MauiApp.Processors.VisualizationDataProcessor                94.7%
   WorkMood.MauiApp.Services.AutoSaveCommand                             96.8%
   WorkMood.MauiApp.Services.AutoSaveEventArgs                            100%
