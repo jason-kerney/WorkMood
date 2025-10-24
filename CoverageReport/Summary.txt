@@ -1,25 +1,25 @@
 Summary
-  Generated on: 10/23/2025 - 2:35:23 PM
-  Coverage date: 10/23/2025 - 2:35:22 PM
+  Generated on: 10/24/2025 - 4:13:13 PM
+  Coverage date: 10/24/2025 - 4:13:12 PM
   Parser: Cobertura
   Assemblies: 1
   Classes: 113
   Files: 74
-  Line coverage: 28.3%
-  Covered lines: 1799
-  Uncovered lines: 4549
+  Line coverage: 29.3%
+  Covered lines: 1860
+  Uncovered lines: 4488
   Coverable lines: 6348
   Total lines: 12286
-  Branch coverage: 26.5% (459 of 1727)
-  Covered branches: 459
+  Branch coverage: 26.9% (465 of 1727)
+  Covered branches: 465
   Total branches: 1727
-  Method coverage: 30.7% (318 of 1034)
-  Full method coverage: 28.7% (297 of 1034)
-  Covered methods: 318
-  Fully covered methods: 297
+  Method coverage: 31.6% (327 of 1034)
+  Full method coverage: 29.2% (302 of 1034)
+  Covered methods: 327
+  Fully covered methods: 302
   Total methods: 1034
 
-WorkMood.MauiApp                                                        28.3%
+WorkMood.MauiApp                                                        29.3%
   WorkMood.MauiApp.Adapters.VisualizationDataAdapter                       0%
   WorkMood.MauiApp.App                                                     0%
   WorkMood.MauiApp.AppShell                                                0%
@@ -87,9 +87,9 @@ WorkMood.MauiApp                                                        28.3%
   WorkMood.MauiApp.Services.MorningReminderCommand                         0%
   WorkMood.MauiApp.Services.MorningReminderData                          100%
   WorkMood.MauiApp.Services.MorningReminderEventArgs                     100%
-  WorkMood.MauiApp.Services.NavigationService                           10.4%
+  WorkMood.MauiApp.Services.NavigationService                           81.2%
   WorkMood.MauiApp.Services.ScheduleConfigService                       97.1%
-  WorkMood.MauiApp.Services.WindowActivationService                        0%
+  WorkMood.MauiApp.Services.WindowActivationService                     39.7%
   WorkMood.MauiApp.Shims.BitmapShim                                      100%
   WorkMood.MauiApp.Shims.BrowserShim                                       0%
   WorkMood.MauiApp.Shims.CanvasShim                                     88.5%
