@@ -1,23 +1,23 @@
 Summary
-  Generated on: 10/23/2025 - 9:52:01 AM
-  Coverage date: 10/23/2025 - 9:52:00 AM
+  Generated on: 10/23/2025 - 2:35:23 PM
+  Coverage date: 10/23/2025 - 2:35:22 PM
   Parser: Cobertura
   Assemblies: 1
-  Classes: 111
-  Files: 72
+  Classes: 113
+  Files: 74
   Line coverage: 28.3%
-  Covered lines: 1794
-  Uncovered lines: 4530
-  Coverable lines: 6324
-  Total lines: 12208
-  Branch coverage: 26.5% (457 of 1721)
-  Covered branches: 457
-  Total branches: 1721
-  Method coverage: 30.8% (317 of 1027)
-  Full method coverage: 28.8% (296 of 1027)
-  Covered methods: 317
-  Fully covered methods: 296
-  Total methods: 1027
+  Covered lines: 1799
+  Uncovered lines: 4549
+  Coverable lines: 6348
+  Total lines: 12286
+  Branch coverage: 26.5% (459 of 1727)
+  Covered branches: 459
+  Total branches: 1727
+  Method coverage: 30.7% (318 of 1034)
+  Full method coverage: 28.7% (297 of 1034)
+  Covered methods: 318
+  Fully covered methods: 297
+  Total methods: 1034
 
 WorkMood.MauiApp                                                        28.3%
   WorkMood.MauiApp.Adapters.VisualizationDataAdapter                       0%
@@ -87,7 +87,7 @@ WorkMood.MauiApp                                                        28.3%
   WorkMood.MauiApp.Services.MorningReminderCommand                         0%
   WorkMood.MauiApp.Services.MorningReminderData                          100%
   WorkMood.MauiApp.Services.MorningReminderEventArgs                     100%
-  WorkMood.MauiApp.Services.NavigationService                              0%
+  WorkMood.MauiApp.Services.NavigationService                           10.4%
   WorkMood.MauiApp.Services.ScheduleConfigService                       97.1%
   WorkMood.MauiApp.Services.WindowActivationService                        0%
   WorkMood.MauiApp.Shims.BitmapShim                                      100%
@@ -107,6 +107,8 @@ WorkMood.MauiApp                                                        28.3%
   WorkMood.MauiApp.Shims.FontStyleShimFactory                            100%
   WorkMood.MauiApp.Shims.ImageShim                                      91.6%
   WorkMood.MauiApp.Shims.JsonSerializerShim                                0%
+  WorkMood.MauiApp.Shims.PageDialogShim                                    0%
+  WorkMood.MauiApp.Shims.PageNavigationShim                                0%
   WorkMood.MauiApp.Shims.PaintShim                                       100%
   WorkMood.MauiApp.Shims.PaintShimArgs                                   100%
   WorkMood.MauiApp.Shims.PathEffectShim                                 62.5%
