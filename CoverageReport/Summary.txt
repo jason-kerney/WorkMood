@@ -1,25 +1,25 @@
 Summary
-  Generated on: 10/24/2025 - 4:39:40 PM
-  Coverage date: 10/24/2025 - 4:39:39 PM
+  Generated on: 10/24/2025 - 5:00:30 PM
+  Coverage date: 10/24/2025 - 5:00:29 PM
   Parser: Cobertura
   Assemblies: 1
   Classes: 113
   Files: 74
-  Line coverage: 30.2%
-  Covered lines: 1920
-  Uncovered lines: 4428
+  Line coverage: 30.4%
+  Covered lines: 1933
+  Uncovered lines: 4415
   Coverable lines: 6348
   Total lines: 12286
-  Branch coverage: 27.9% (482 of 1727)
-  Covered branches: 482
+  Branch coverage: 28.1% (486 of 1727)
+  Covered branches: 486
   Total branches: 1727
-  Method coverage: 32.6% (338 of 1034)
-  Full method coverage: 30.1% (312 of 1034)
-  Covered methods: 338
-  Fully covered methods: 312
+  Method coverage: 32.8% (340 of 1034)
+  Full method coverage: 30.3% (314 of 1034)
+  Covered methods: 340
+  Fully covered methods: 314
   Total methods: 1034
 
-WorkMood.MauiApp                                                        30.2%
+WorkMood.MauiApp                                                        30.4%
   WorkMood.MauiApp.Adapters.VisualizationDataAdapter                     100%
   WorkMood.MauiApp.App                                                     0%
   WorkMood.MauiApp.AppShell                                                0%
@@ -30,7 +30,7 @@ WorkMood.MauiApp                                                        30.2%
   WorkMood.MauiApp.Converters.MoodAverageConverter                       100%
   WorkMood.MauiApp.Converters.MoodEmojiConverter                         100%
   WorkMood.MauiApp.Converters.NullableMoodConverter                      100%
-  WorkMood.MauiApp.Factories.VisualizationServiceFactory                   0%
+  WorkMood.MauiApp.Factories.VisualizationServiceFactory                 100%
   WorkMood.MauiApp.Graphics.BaselineComponent                              0%
   WorkMood.MauiApp.Graphics.DataPointComponent                             0%
   WorkMood.MauiApp.Graphics.EnhancedLineGraphDrawable                      0%
