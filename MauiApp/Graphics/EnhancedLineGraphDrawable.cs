@@ -175,7 +175,7 @@ public class DataPointComponent : IGraphComponent
         var maxAbsValue = Math.Max(1.0, data.MaxAbsoluteValue);
         var scaleFactor = graphHeight / (2.0 * maxAbsValue);
         
-        for (int day = 0; day < 14; day++)
+        for (int day = 0; day < 14 && day < data.DailyValues.Length; day++)
         {
             var dailyValue = data.DailyValues[day];
             if (dailyValue.HasData && dailyValue.Value.HasValue)
