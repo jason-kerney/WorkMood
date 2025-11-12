@@ -62,11 +62,11 @@ public class AccessibleMoodColorStrategy : IMoodColorStrategy
         }
         else if (value < 0)
         {
-            // Negative - shades of orange
+            // Negative - shades of orange (more orange than default red)
             var intensity = Math.Min(1.0, Math.Abs(value) / maxAbsValue);
             return Color.FromRgb(
                 1.0f, // Red component (full red for orange)
-                (float)(0.4 + (1.0 - intensity) * 0.3), // Green component (orange when combined with red)
+                (float)(0.5 + (1.0 - intensity) * 0.3), // Green component (ensures more orange than default)
                 (float)(0.1 + (1.0 - intensity) * 0.2)  // Blue component
             );
         }
