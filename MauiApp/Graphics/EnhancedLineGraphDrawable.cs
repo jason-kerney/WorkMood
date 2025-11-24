@@ -131,7 +131,7 @@ public class LineComponent : IGraphComponent
         // Collect points with data
         var dataPoints = new List<PointF>();
         
-        for (int day = 0; day < 14; day++)
+        for (int day = 0; day < 14 && day < data.DailyValues.Length; day++)
         {
             var dailyValue = data.DailyValues[day];
             if (dailyValue.HasData && dailyValue.Value.HasValue)
