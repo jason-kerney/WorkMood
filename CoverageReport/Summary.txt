@@ -1,25 +1,25 @@
 Summary
-  Generated on: 11/25/2025 - 8:15:04 AM
-  Coverage date: 11/25/2025 - 8:15:03 AM
+  Generated on: 11/25/2025 - 8:38:21 AM
+  Coverage date: 11/25/2025 - 8:38:20 AM
   Parser: Cobertura
   Assemblies: 1
   Classes: 113
   Files: 74
-  Line coverage: 32.7%
-  Covered lines: 2076
-  Uncovered lines: 4272
+  Line coverage: 32.8%
+  Covered lines: 2088
+  Uncovered lines: 4260
   Coverable lines: 6348
   Total lines: 12286
-  Branch coverage: 30.3% (526 of 1731)
-  Covered branches: 526
+  Branch coverage: 30.6% (531 of 1731)
+  Covered branches: 531
   Total branches: 1731
-  Method coverage: 33.4% (346 of 1034)
-  Full method coverage: 31.3% (324 of 1034)
-  Covered methods: 346
-  Fully covered methods: 324
+  Method coverage: 33.7% (349 of 1034)
+  Full method coverage: 32% (331 of 1034)
+  Covered methods: 349
+  Fully covered methods: 331
   Total methods: 1034
 
-WorkMood.MauiApp                                                        32.7%
+WorkMood.MauiApp                                                        32.8%
   WorkMood.MauiApp.Adapters.VisualizationDataAdapter                     100%
   WorkMood.MauiApp.App                                                     0%
   WorkMood.MauiApp.AppShell                                                0%
@@ -74,8 +74,8 @@ WorkMood.MauiApp                                                        32.7%
   WorkMood.MauiApp.Services.EveningReminderData                          100%
   WorkMood.MauiApp.Services.EveningReminderEventArgs                       0%
   WorkMood.MauiApp.Services.GraphDataTransformer                        96.8%
-  WorkMood.MauiApp.Services.LineGraphGenerator                          96.3%
-  WorkMood.MauiApp.Services.LineGraphService                            87.5%
+  WorkMood.MauiApp.Services.LineGraphGenerator                          96.6%
+  WorkMood.MauiApp.Services.LineGraphService                             100%
   WorkMood.MauiApp.Services.LoggingService                              89.6%
   WorkMood.MauiApp.Services.LoggingServiceExtensions                      25%
   WorkMood.MauiApp.Services.MoodDataService                             93.2%
