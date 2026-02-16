@@ -8,13 +8,12 @@ namespace WorkMood.MauiApp.Tests.Services;
 /// <summary>
 /// Tests for DataMigrationService - migrating data from LocalApplicationData to Documents
 /// Location: MauiApp/Services/DataMigrationService.cs
-/// Purpose: Verify safe migration of mood data to cloud-sync-enabled location
+/// Purpose: Verify safe migration of mood data to cloud-sync-enabled location with cleanup
 /// </summary>
 public class DataMigrationServiceShould
 {
     private const string OldLocation = "C:\\Users\\Test\\AppData\\Local\\WorkMood";
     private const string NewLocation = "C:\\Users\\Test\\Documents\\WorkMood";
-    private const string MigrationMarker = ".migration_complete";
 
     #region Setup Helper
 
@@ -40,22 +39,22 @@ public class DataMigrationServiceShould
     #region Migration Already Completed Tests
 
     [Fact]
-    public async Task MigrateIfNeededAsync_WhenMigrationMarkerExists_ShouldSkipMigration()
+    public async Task MigrateIfNeededAsync_WhenOldLocationDoesNotExist_ShouldSkipMigration()
     {
         // Arrange
         var (folderMock, fileMock, _, service) = CreateServiceWithMocks();
 
-        fileMock.Setup(f => f.Exists(It.IsAny<string>()))
-            .Returns(true); // Marker exists
+        folderMock.Setup(f => f.DirectoryExists(OldLocation))
+            .Returns(false); // Old location doesn't exist
 
         // Act
         await service.MigrateIfNeededAsync();
 
         // Assert
-        folderMock.Verify(f => f.DirectoryExists(It.IsAny<string>()), Times.Never,
-            "Should not check for old location when migration complete");
+        folderMock.Verify(f => f.DeleteDirectory(It.IsAny<string>()), Times.Never,
+            "Should not delete anything when old location doesn't exist");
         fileMock.Verify(f => f.ReadAllTextAsync(It.IsAny<string>()), Times.Never,
-            "Should not read files when migration already complete");
+            "Should not read files when old location empty");
     }
 
     #endregion
@@ -63,14 +62,12 @@ public class DataMigrationServiceShould
     #region No Data to Migrate Tests
 
     [Fact]
-    public async Task MigrateIfNeededAsync_WhenOldLocationEmpty_ShouldMarkAsCompleteWithoutMigrating()
+    public async Task MigrateIfNeededAsync_WhenOldLocationEmpty_ShouldSkipMigrationWithoutDeletion()
     {
         // Arrange
         var (folderMock, fileMock, _, service) = CreateServiceWithMocks();
 
-        // Setup: Marker doesn't exist, old location doesn't exist
-        fileMock.Setup(f => f.Exists(It.Is<string>(p => p.Contains(MigrationMarker))))
-            .Returns(false);
+        // Setup: Old location doesn't exist
         folderMock.Setup(f => f.DirectoryExists(OldLocation))
             .Returns(false);
 
@@ -78,8 +75,8 @@ public class DataMigrationServiceShould
         await service.MigrateIfNeededAsync();
 
         // Assert
-        folderMock.Verify(f => f.CreateDirectory(It.IsAny<string>()), Times.Once,
-            "Should create marker at new location");
+        folderMock.Verify(f => f.DeleteDirectory(It.IsAny<string>()), Times.Never,
+            "Should not delete when old location doesn't exist");
         fileMock.Verify(f => f.ReadAllTextAsync(It.IsAny<string>()), Times.Never,
             "Should not read files when old location empty");
     }
@@ -90,11 +87,11 @@ public class DataMigrationServiceShould
         // Arrange
         var (folderMock, fileMock, _, service) = CreateServiceWithMocks();
 
-        // Setup: Marker doesn't exist, old location exists but no data files
-        fileMock.Setup(f => f.Exists(It.IsAny<string>()))
-            .Returns(false); // No data files, no marker
+        // Setup: Old location exists but no data files
         folderMock.Setup(f => f.DirectoryExists(OldLocation))
             .Returns(true);
+        fileMock.Setup(f => f.Exists(It.IsAny<string>()))
+            .Returns(false); // No data files
 
         // Act
         await service.MigrateIfNeededAsync();
@@ -109,7 +106,7 @@ public class DataMigrationServiceShould
     #region New Location Has Newer Data Tests
 
     [Fact]
-    public async Task MigrateIfNeededAsync_WhenNewLocationHasNewerMoodData_ShouldSkipMigration()
+    public async Task MigrateIfNeededAsync_WhenNewLocationHasNewerMoodData_ShouldDeleteOldLocation()
     {
         // Arrange
         var (folderMock, fileMock, _, service) = CreateServiceWithMocks();
@@ -117,25 +114,20 @@ public class DataMigrationServiceShould
         var oldTime = DateTime.UtcNow.AddHours(-1);
         var newTime = DateTime.UtcNow;
 
-        fileMock.Setup(f => f.Exists(It.Is<string>(p => p.Contains(MigrationMarker))))
-            .Returns(false);
+        folderMock.Setup(f => f.DirectoryExists(OldLocation))
+            .Returns(true);
+        folderMock.Setup(f => f.DirectoryExists(NewLocation))
+            .Returns(true);
         fileMock.Setup(f => f.Exists(It.Is<string>(p => p.Contains("mood_data.json"))))
             .Returns(true);
-        folderMock.Setup(f => f.DirectoryExists(It.IsAny<string>()))
-            .Returns(true);
-
-        // Mock File.GetLastWriteTimeUtc to return older time for old file
-        var oldFilePath = Path.Combine(OldLocation, "mood_data.json");
-        var newFilePath = Path.Combine(NewLocation, "mood_data.json");
-
-        // We can't easily mock File.GetLastWriteTimeUtc, so we'll test the logic through behavior
 
         // Act
         await service.MigrateIfNeededAsync();
 
         // Assert
-        fileMock.Verify(f => f.ReadAllTextAsync(It.IsAny<string>()), Times.Never,
-            "Should not migrate when new location has newer data");
+        // Verify old location is deleted
+        folderMock.Verify(f => f.DeleteDirectory(OldLocation), Times.Once,
+            "Should delete old location when new location has newer data");
     }
 
     #endregion
@@ -149,10 +141,10 @@ public class DataMigrationServiceShould
         var (folderMock, fileMock, _, service) = CreateServiceWithMocks();
 
         // Setup conditions for migration
-        fileMock.Setup(f => f.Exists(It.Is<string>(p => p.Contains(MigrationMarker))))
-            .Returns(false);
-        folderMock.Setup(f => f.DirectoryExists(It.IsAny<string>()))
+        folderMock.Setup(f => f.DirectoryExists(OldLocation))
             .Returns(true);
+        folderMock.Setup(f => f.DirectoryExists(NewLocation))
+            .Returns(false);
         
         // Old location has mood data
         fileMock.Setup(f => f.Exists(It.Is<string>(p => p.Contains("mood_data.json"))))
@@ -179,10 +171,10 @@ public class DataMigrationServiceShould
         var (folderMock, fileMock, _, service) = CreateServiceWithMocks();
 
         // Setup conditions for migration
-        fileMock.Setup(f => f.Exists(It.Is<string>(p => p.Contains(MigrationMarker))))
-            .Returns(false);
-        folderMock.Setup(f => f.DirectoryExists(It.IsAny<string>()))
+        folderMock.Setup(f => f.DirectoryExists(OldLocation))
             .Returns(true);
+        folderMock.Setup(f => f.DirectoryExists(NewLocation))
+            .Returns(false);
         
         // Old location has schedule config
         fileMock.Setup(f => f.Exists(It.Is<string>(p => p.Contains("schedule_config.json"))))
@@ -201,16 +193,16 @@ public class DataMigrationServiceShould
     }
 
     [Fact]
-    public async Task MigrateIfNeededAsync_WhenMigrationCompletes_ShouldCreateMigrationMarker()
+    public async Task MigrateIfNeededAsync_WhenMigrationCompletes_ShouldDeleteOldLocation()
     {
         // Arrange
         var (folderMock, fileMock, _, service) = CreateServiceWithMocks();
 
         // Setup conditions for migration
-        fileMock.Setup(f => f.Exists(It.Is<string>(p => p.Contains(MigrationMarker))))
-            .Returns(false);
-        folderMock.Setup(f => f.DirectoryExists(It.IsAny<string>()))
+        folderMock.Setup(f => f.DirectoryExists(OldLocation))
             .Returns(true);
+        folderMock.Setup(f => f.DirectoryExists(NewLocation))
+            .Returns(false);
         fileMock.Setup(f => f.Exists(It.Is<string>(p => p.Contains("mood_data.json"))))
             .Returns(true);
         fileMock.Setup(f => f.ReadAllTextAsync(It.IsAny<string>()))
@@ -220,8 +212,8 @@ public class DataMigrationServiceShould
         await service.MigrateIfNeededAsync();
 
         // Assert
-        fileMock.Verify(f => f.WriteAllTextAsync(It.Is<string>(p => p.Contains(MigrationMarker)), It.IsAny<string>()), Times.Once,
-            "Should create migration marker after successful migration");
+        folderMock.Verify(f => f.DeleteDirectory(OldLocation), Times.Once,
+            "Should delete old location after successful migration");
     }
 
     #endregion
@@ -240,11 +232,16 @@ public class DataMigrationServiceShould
             Path.Combine(OldLocation, "archives", "archive_2024_02.json")
         };
 
-        // Setup conditions for migration
-        fileMock.Setup(f => f.Exists(It.Is<string>(p => p.Contains(MigrationMarker))))
-            .Returns(false);
-        folderMock.Setup(f => f.DirectoryExists(It.IsAny<string>()))
+        // Setup conditions for migration - must have mood_data to trigger migration
+        folderMock.Setup(f => f.DirectoryExists(OldLocation))
             .Returns(true);
+        folderMock.Setup(f => f.DirectoryExists(NewLocation))
+            .Returns(false);
+        
+        // Need at least one main data file to exist for migration to proceed
+        fileMock.Setup(f => f.Exists(It.Is<string>(p => p.Contains("mood_data.json"))))
+            .Returns(true);
+        
         folderMock.Setup(f => f.GetFiles(It.Is<string>(p => p.Contains("archives")), "*.json"))
             .Returns(archiveFiles);
         folderMock.Setup(f => f.GetFileName(It.IsAny<string>()))
@@ -274,10 +271,10 @@ public class DataMigrationServiceShould
         // Arrange
         var (folderMock, fileMock, _, service) = CreateServiceWithMocks();
 
-        fileMock.Setup(f => f.Exists(It.Is<string>(p => p.Contains(MigrationMarker))))
-            .Returns(false);
-        folderMock.Setup(f => f.DirectoryExists(It.IsAny<string>()))
+        folderMock.Setup(f => f.DirectoryExists(OldLocation))
             .Returns(true);
+        folderMock.Setup(f => f.DirectoryExists(NewLocation))
+            .Returns(false);
         fileMock.Setup(f => f.Exists(It.Is<string>(p => p.Contains("mood_data.json"))))
             .Returns(true);
         fileMock.Setup(f => f.ReadAllTextAsync(It.IsAny<string>()))
@@ -294,10 +291,10 @@ public class DataMigrationServiceShould
         // Arrange
         var (folderMock, fileMock, _, service) = CreateServiceWithMocks();
 
-        fileMock.Setup(f => f.Exists(It.Is<string>(p => p.Contains(MigrationMarker))))
-            .Returns(false);
-        folderMock.Setup(f => f.DirectoryExists(It.IsAny<string>()))
+        folderMock.Setup(f => f.DirectoryExists(OldLocation))
             .Returns(true);
+        folderMock.Setup(f => f.DirectoryExists(NewLocation))
+            .Returns(false);
         fileMock.Setup(f => f.Exists(It.IsAny<string>()))
             .Returns(true);
         folderMock.Setup(f => f.CreateDirectory(It.IsAny<string>()))
@@ -313,21 +310,24 @@ public class DataMigrationServiceShould
     #region Idempotency Tests
 
     [Fact]
-    public async Task MigrateIfNeededAsync_CalledMultipleTimes_ShouldOnlyMigrateOnce()
+    public async Task MigrateIfNeededAsync_CalledMultipleTimes_ShouldBeIdempotent()
     {
         // Arrange
         var (folderMock, fileMock, _, service) = CreateServiceWithMocks();
 
         var callCount = 0;
-        fileMock.Setup(f => f.Exists(It.Is<string>(p => p.Contains(MigrationMarker))))
+        
+        // First call: old location exists and has data
+        // Second call: old location doesn't exist (was deleted)
+        folderMock.Setup(f => f.DirectoryExists(OldLocation))
             .Returns(() =>
             {
                 callCount++;
-                return callCount > 1; // First call returns false, subsequent calls return true
+                return callCount == 1; // Exists first time, not after
             });
 
-        folderMock.Setup(f => f.DirectoryExists(OldLocation))
-            .Returns(true);
+        folderMock.Setup(f => f.DirectoryExists(NewLocation))
+            .Returns(false);
         fileMock.Setup(f => f.Exists(It.Is<string>(p => p.Contains("mood_data.json"))))
             .Returns(true);
         fileMock.Setup(f => f.ReadAllTextAsync(It.IsAny<string>()))
@@ -335,7 +335,7 @@ public class DataMigrationServiceShould
 
         // Act
         await service.MigrateIfNeededAsync(); // First call - should migrate
-        await service.MigrateIfNeededAsync(); // Second call - should skip
+        await service.MigrateIfNeededAsync(); // Second call - should skip (old location gone)
 
         // Assert
         fileMock.Verify(f => f.ReadAllTextAsync(It.IsAny<string>()), Times.Once,

@@ -11,7 +11,6 @@ public class DataMigrationService : IDataMigrationService
     private readonly IFolderShim _folderShim;
     private readonly IFileShim _fileShim;
     private readonly ILoggingService _loggingService;
-    private const string MigrationCompleteMarker = ".migration_complete";
 
     public DataMigrationService(
         IFolderShim folderShim,
@@ -29,32 +28,24 @@ public class DataMigrationService : IDataMigrationService
 
         try
         {
-            // If new location already has migration marker, skip
-            if (MigrationAlreadyCompleted())
-            {
-                Log("MigrateIfNeededAsync: Migration already completed, skipping");
-                return;
-            }
-
-            // If old location has no data, nothing to migrate
+            // If old location doesn't exist, migration is already complete
             if (!OldLocationHasData())
             {
-                Log("MigrateIfNeededAsync: No data in old location, marking as complete");
-                await CreateMigrationMarkerAsync();
+                Log("MigrateIfNeededAsync: No data in old location, migration already complete");
                 return;
             }
 
-            // If new location already has data that's newer, keep it
+            // If new location already has data that's newer, keep it and delete old location
             if (NewLocationHasNewerData())
             {
-                Log("MigrateIfNeededAsync: New location has newer data, skipping migration");
-                await CreateMigrationMarkerAsync();
+                Log("MigrateIfNeededAsync: New location has newer data, deleting old location");
+                await DeleteOldLocationAsync();
                 return;
             }
 
-            // Perform the migration
+            // Perform the migration and clean up old location
             await PerformMigrationAsync();
-            await CreateMigrationMarkerAsync();
+            await DeleteOldLocationAsync();
             Log("MigrateIfNeededAsync: Migration completed successfully");
         }
         catch (Exception ex)
@@ -63,13 +54,6 @@ public class DataMigrationService : IDataMigrationService
             Log($"MigrateIfNeededAsync: Stack trace: {ex.StackTrace}");
             // Don't throw - allow app to continue. Data services will handle missing files gracefully
         }
-    }
-
-    private bool MigrationAlreadyCompleted()
-    {
-        var newLocation = _folderShim.GetDocumentsFolder();
-        var markerPath = _folderShim.CombinePaths(newLocation, MigrationCompleteMarker);
-        return _fileShim.Exists(markerPath);
     }
 
     private bool OldLocationHasData()
@@ -217,22 +201,26 @@ public class DataMigrationService : IDataMigrationService
         }
     }
 
-    private async Task CreateMigrationMarkerAsync()
+    private async Task DeleteOldLocationAsync()
     {
         try
         {
-            var newLocation = _folderShim.GetDocumentsFolder();
-            _folderShim.CreateDirectory(newLocation);
+            var oldLocation = _folderShim.GetApplicationFolder();
             
-            var markerPath = _folderShim.CombinePaths(newLocation, MigrationCompleteMarker);
-            await _fileShim.WriteAllTextAsync(markerPath, "Migration completed");
-            
-            Log("CreateMigrationMarker: Migration marker created successfully");
+            if (!_folderShim.DirectoryExists(oldLocation))
+            {
+                Log("DeleteOldLocationAsync: Old location doesn't exist, nothing to delete");
+                return;
+            }
+
+            Log($"DeleteOldLocationAsync: Deleting old data location: {oldLocation}");
+            _folderShim.DeleteDirectory(oldLocation);
+            Log("DeleteOldLocationAsync: Old data location deleted successfully");
         }
         catch (Exception ex)
         {
-            Log($"CreateMigrationMarker: Error creating marker: {ex.Message}");
-            // Don't throw - this is non-critical
+            Log($"DeleteOldLocationAsync: Error deleting old location: {ex.Message}");
+            // Don't throw - old location can be cleaned up later
         }
     }
 

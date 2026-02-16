@@ -8,6 +8,7 @@ public interface IFolderShim
     string GetDocumentsFolder();
     string CombinePaths(params string[] paths);
     void CreateDirectory(string path);
+    void DeleteDirectory(string path);
     string GetFileName(string path);
     bool DirectoryExists(string path);
     string[] GetFiles(string path, string searchPattern);

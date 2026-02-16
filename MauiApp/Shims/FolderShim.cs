@@ -6,6 +6,8 @@ public class FolderShim : IFolderShim
 
     public void CreateDirectory(string path) => Directory.CreateDirectory(path);
 
+    public void DeleteDirectory(string path) => Directory.Delete(path, recursive: true);
+
     public bool DirectoryExists(string path) => Directory.Exists(path);
 
     public string GetApplicationFolder() =>
