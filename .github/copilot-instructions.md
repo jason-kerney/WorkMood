@@ -111,6 +111,19 @@ Identify and address code smells in WorkMood. Covers:
 
 **Invoke with:** `/code-smells [code snippet or method] [context/concern]`
 
+#### Test Organization & Hierarchy
+**Directory:** `.github/skills/test-organization-hierarchy/`
+
+Test suite organization and hierarchy guidance for WorkMood. Covers:
+- File structure mirroring source code organization
+- Test naming conventions and xUnit patterns
+- Test grouping with regions and nested classes
+- Test data builders and fixtures (DRY test setup)
+- Scaling from small to large test suites
+- Anti-patterns that cause test suite maintenance problems
+
+**Invoke with:** `/test-organization [test component] [organization question]`
+
 ### Using Skills in Copilot Chat
 
 **Option 1: Automatic Loading (Recommended)**
@@ -126,6 +139,7 @@ Use the slash command to explicitly invoke a skill:
 /refactoring Extract this 50-line method into smaller functions
 /tdd How should I test this MoodDataService method?
 /code-smells I noticed this ViewModel has too many dependencies
+/test-organization Where should tests for the new graph service go?
 ```
 
 **Option 3: Combine with Personas**
