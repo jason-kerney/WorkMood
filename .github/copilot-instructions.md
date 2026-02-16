@@ -32,6 +32,114 @@ npm install
 
 ---
 
+## Available Personas
+
+### 🎯 XP Developer Jason Kerney
+**File:** [`copilot-personas/xp-developer-jason-kerney.md`](copilot-personas/xp-developer-jason-kerney.md)
+
+Embodies Extreme Programming (XP) principles with a focus on:
+- Test-Driven Development (TDD) and the Red-Green-Refactor cycle
+- Simple, clean code with clarity as the primary goal
+- Continuous refactoring with passing tests
+- Collaborative pair programming mindset
+- SOLID principles and best practices
+
+Perfect for:
+- Teams committed to code quality and testing
+- Projects requiring maintainable, well-tested code
+- Learning XP principles and practices
+- Code reviews focused on craftsmanship
+
+### How to Use a Persona
+
+**Option 1: Reference in Copilot Chat (Recommended)**
+In your Copilot Chat requests, simply reference the persona:
+
+```
+@copilot Using the XP Developer Jason Kerney persona, 
+how should I approach testing this new feature?
+```
+
+Or paste the persona instructions directly into your chat message for immediate application.
+
+**Option 2: Configure as Default**
+To always use a persona in your workspace:
+1. Copy the persona file content
+2. Paste it into `.github/copilot-instructions.md`
+3. This will apply the persona globally to all Copilot interactions in the workspace
+
+---
+
+## Copilot Skills
+
+This workspace includes a library of Agent Skills that guide Copilot's behavior for specific tasks. Skills are auto-loaded when relevant to your request, or you can invoke them manually using `/skill-name` in Copilot Chat.
+
+### 📚 Available Skills
+
+#### Refactoring
+**Directory:** `.github/skills/refactoring/`
+
+Safe, incremental refactoring guidance for WorkMood. Covers:
+- Extract method, shim factory pattern, extract interface
+- DRY principles and code smell fixes
+- Test-driven approach with passing tests before and after
+- Zero functional modifications—behavior must remain identical
+
+**Invoke with:** `/refactoring [code context] [refactoring goal]`
+
+#### Test-Driven Development (TDD)
+**Directory:** `.github/skills/tdd/`
+
+Red-Green-Refactor cycle guidance for WorkMood. Covers:
+- Test-driven development philosophy and workflow
+- Arrange-Act-Assert pattern and test structure
+- C# and xUnit testing patterns and conventions
+- Common TDD patterns in WorkMood services and ViewModels
+- Anti-patterns and when NOT to test
+
+**Invoke with:** `/tdd [feature/method to implement] [test scenario]`
+
+#### Code Smells Detection
+**Directory:** `.github/skills/code-smells-detection/`
+
+Identify and address code smells in WorkMood. Covers:
+- Long methods, inappropriate intimacy, duplicate logic
+- Magic numbers/strings, MVVM violations
+- God classes, poor abstraction boundaries
+- When to refactor vs. when to leave code alone
+- WorkMood-specific smell patterns with examples
+
+**Invoke with:** `/code-smells [code snippet or method] [context/concern]`
+
+### Using Skills in Copilot Chat
+
+**Option 1: Automatic Loading (Recommended)**
+Simply ask a question related to refactoring or testing and Copilot will automatically load the relevant skill:
+```
+How should I break down this complex method?
+I need to write tests for a new feature.
+```
+
+**Option 2: Manual Invocation**
+Use the slash command to explicitly invoke a skill:
+```
+/refactoring Extract this 50-line method into smaller functions
+/tdd How should I test this MoodDataService method?
+/code-smells I noticed this ViewModel has too many dependencies
+```
+
+**Option 3: Combine with Personas**
+Mix skills with personas for targeted guidance:
+```
+@copilot Using the XP Developer Jason Kerney persona, 
+/refactoring guide me through this refactoring safely
+
+@copilot Using the XP Developer persona and /tdd skill,
+help me write tests for this feature using Red-Green-Refactor cycle
+```
+
+---
+
 ## When Creating Code
 
 ### Architecture Requirements
@@ -131,7 +239,7 @@ dotnet test                         # All tests
 1. **GitHub Copilot Chat Method (Most Effective)**:
    - Use `Ctrl+Shift+I` or open Copilot Chat
    - Ask: "Generate a commit message using Arlo's Commit Notation for my staged changes"
-   - Copilot will use the instructions in `.github/.copilot-instructions.md`
+   - Copilot will use the instructions in `.github/copilot-instructions.md`
 
 2. **Manual Template Reference**:
    - Git template (`.gitmessage`) shows in commit dialog as comments
@@ -155,7 +263,7 @@ dotnet test                         # All tests
 ## When Updating Instructions  
 
 ### Maintenance Triggers
-Update `.github/.copilot-instructions.md` when making changes that affect:
+Update `.github/copilot-instructions.md` when making changes that affect:
 
 1. **Project Structure** - Adding/removing projects, new folders, framework changes
 2. **Service Architecture** - New services, interface changes, DI patterns  
