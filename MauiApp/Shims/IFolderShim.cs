@@ -5,6 +5,7 @@ public interface IFolderShim
     string GetApplicationFolder();
     string GetArchiveFolder();
     string GetDesktopFolder();
+    string GetDocumentsFolder();
     string CombinePaths(params string[] paths);
     void CreateDirectory(string path);
     string GetFileName(string path);

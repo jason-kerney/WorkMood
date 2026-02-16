@@ -97,6 +97,15 @@ public static class MauiProgram
 		builder.Services.AddSingleton<IBrowserService, BrowserService>();
 		builder.Services.AddTransient<IMoodEntryViewFactory, MoodEntryViewFactory>();
 		
+		// Register migration service for data directory transition
+		builder.Services.AddSingleton<IDataMigrationService>(serviceProvider =>
+		{
+			var folderShim = serviceProvider.GetRequiredService<IFolderShim>();
+			var fileShim = serviceProvider.GetRequiredService<IFileShim>();
+			var loggingService = serviceProvider.GetRequiredService<ILoggingService>();
+			return new DataMigrationService(folderShim, fileShim, loggingService);
+		});
+
 		// Register graph-related services
 		builder.Services.AddSingleton<ILineGraphService, LineGraphService>();
 		
@@ -132,7 +141,25 @@ public static class MauiProgram
 		builder.Services.AddTransient<Main>();
 		builder.Services.AddTransient<MoodRecording>();
 
-		return builder.Build();
+		var app = builder.Build();
+		
+		// Run data migration asynchronously after app startup
+		MainThread.BeginInvokeOnMainThread(async () =>
+		{
+			try
+			{
+				var migrationService = app.Services.GetRequiredService<IDataMigrationService>();
+				await migrationService.MigrateIfNeededAsync();
+			}
+			catch (Exception ex)
+			{
+				var loggingService = app.Services.GetRequiredService<ILoggingService>();
+				loggingService.LogError($"Migration failed: {ex.Message}");
+				// Don't crash app if migration fails
+			}
+		});
+		
+		return app;
 	}
 
 	/// <summary>

@@ -16,6 +16,9 @@ public class FolderShim : IFolderShim
 
     public string GetDesktopFolder() => Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
+    public string GetDocumentsFolder() =>
+        CombinePaths(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "WorkMood");
+
     public string GetFileName(string path) => Path.GetFileName(path);
 
     public string[] GetFiles(string path, string searchPattern) => Directory.GetFiles(path, searchPattern);
