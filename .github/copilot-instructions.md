@@ -124,6 +124,38 @@ Test suite organization and hierarchy guidance for WorkMood. Covers:
 
 **Invoke with:** `/test-organization [test component] [organization question]`
 
+#### Technical Editing for Human Readers
+**Directory:** `.github/skills/technical-editing-human/`
+
+Edit technical documentation for human comprehension. Covers:
+- Clarity, accessibility, and scaffolding explanations
+- Information hierarchy, scanability, and reader-centric structure
+- Simplifying jargon, improving prose, developing examples
+- Tone for technical audiences, accessibility standards
+
+**Invoke with:** `/technical-editing-human [document section] [editing goal/concern]`
+
+#### Technical Editing for AI/LLM Systems
+**Directory:** `.github/skills/technical-editing-ai/`
+
+Edit instructions and specifications for AI system consumption. Covers:
+- Precision, explicitness, and unambiguity in requirements
+- Measurable criteria, conditional logic, edge cases
+- Eliminating implicit assumptions, defining all terms
+- Verifiable success criteria and anti-patterns
+
+**Invoke with:** `/technical-editing-ai [instruction section] [clarity goal/concern]`
+
+#### Creating Agent Skills
+**Directory:** `.github/skills/creating-agent-skills/`
+
+Create new Agent Skills for VS Code using open standard format. Covers:
+- Skill structure, YAML frontmatter, progressive disclosure
+- Content organization, examples, and resources
+- Sharing skills, community contribution, maintenance
+
+**Invoke with:** `/creating-agent-skills [skill concept] [use case/context]`
+
 ### Using Skills in Copilot Chat
 
 **Option 1: Automatic Loading (Recommended)**
@@ -140,6 +172,9 @@ Use the slash command to explicitly invoke a skill:
 /tdd How should I test this MoodDataService method?
 /code-smells I noticed this ViewModel has too many dependencies
 /test-organization Where should tests for the new graph service go?
+/technical-editing-ai Review the DataMigrationService instructions for clarity
+/technical-editing-human Edit this README section for accessibility
+/creating-agent-skills Help me create a new skill for deployment
 ```
 
 **Option 3: Combine with Personas**
@@ -274,17 +309,70 @@ dotnet test                         # All tests
 
 ---
 
-## When Updating Instructions  
+## When Updating Documentation
 
-### Maintenance Triggers
+### Codex Maintenance (CRITICAL)
+
+The AI codexes are **living documentation** that must stay synchronized with actual project state. These are used by AI systems (including Copilot) to understand WorkMood architecture and patterns.
+
+**When codexes become inaccurate, AI guidance becomes unreliable.**
+
+#### AI Codexes Requiring Updates
+
+1. **`.github/ai-codex-architecture.md`**
+   - Update when: New services added, service interfaces change, folder structure modified
+   - Verify: All services documented, interfaces match actual code, DI examples current
+   - Using skill: `/technical-editing-ai [section] Does this match actual implementation?`
+
+2. **`.github/ai-codex-refactoring.md`**
+   - Update when: New shim abstractions created, refactoring patterns evolve, anti-patterns identified
+   - Verify: Factory patterns match actual implementation, examples compile, methodology still valid
+   - Using skill: `/technical-editing-ai [section] Is factory pattern documentation accurate?`
+
+3. **`.github/ai-codex-build-testing.md`**
+   - Update when: Framework versions change, build commands updated, test procedures modified
+   - Verify: All commands execute successfully, framework targeting correct, test examples work
+   - Using skill: Run documented commands; verify success before merging changes
+
+4. **`.github/ai-codex-examples.md`**
+   - Update when: New transformation patterns discovered, historical examples added
+   - Verify: Code examples compile, before/after patterns match actual patterns, metrics are accurate
+   - Using skill: `/technical-editing-ai [example] Does this pattern still represent current practice?`
+
+5. **`.github/ai-codex-documentation.md`**
+   - Update when: Documentation processes change, maintenance procedures evolve
+   - Verify: Process still followed, checklists match current practices, responsibility matrix current
+   - Using skill: `/technical-editing-ai [section] Is this maintenance process being followed?`
+
+#### Update Workflow (MANDATORY)
+
+**Every structural change must include documentation updates in the SAME commit:**
+
+```bash
+# ✅ GOOD: Documentation included
+^f - add IDataMigrationService with architecture codex updates
+# (Updates: service interface list, usage examples, testing patterns)
+
+# ❌ BAD: Documentation deferred
+# ^ Never use "docs TODO" in commit messages
+```
+
+**Before committing any change, ask:**
+1. What documentation describes what I just changed?
+2. Does that documentation still match the code?
+3. Are my updates included in this commit?
+
+### Copilot Instructions Update Triggers
+
 Update `.github/copilot-instructions.md` when making changes that affect:
 
 1. **Project Structure** - Adding/removing projects, new folders, framework changes
 2. **Service Architecture** - New services, interface changes, DI patterns  
 3. **Build Process** - New commands, target frameworks, testing procedures
 4. **Development Workflow** - Tools, dependencies, refactoring patterns, commit conventions
+5. **Skill Changes** - New skills created, existing skills significantly modified
 
-**📚 For comprehensive documentation maintenance guidance**: See `.github/ai-codex-documentation.md` for detailed update processes, validation procedures, responsibility matrix, and maintenance automation.
+**📚 For comprehensive documentation maintenance guidance**: See `.github/ai-codex-documentation.md` for detailed update processes, validation procedures, responsibility matrix, and enforcement mechanisms.
 
 ---
 
@@ -323,6 +411,8 @@ Update `.github/copilot-instructions.md` when making changes that affect:
 - **Proactively check instruction accuracy** - suggest updates when detecting project changes
 - **Flag mismatches** - alert if project state differs from documented instructions  
 - **Suggest instruction updates** when making structural changes
+- **Verify codex accuracy** - catch outdated patterns before they mislead development
+- **Recommend codex updates** when you detect actual behavior diverging from documented patterns
 - Consider MVVM compliance, service injection, platform requirements, data binding, MAUI lifecycle
 - End responses with 🤖 to indicate use of this context
 
@@ -330,5 +420,22 @@ Update `.github/copilot-instructions.md` when making changes that affect:
 1. **Creating Code** → Architecture patterns, existing services, shim abstractions
 2. **Building/Testing** → Framework targeting, test organization, quality gates
 3. **Refactoring** → Incremental methodology, shim factory pattern, commit discipline  
-4. **Committing** → Arlo's notation, risk assessment, single responsibility
-5. **Maintaining** → Instruction updates, project synchronization
+4. **Committing** → Arlo's notation, risk assessment, single responsibility + **codex updates**
+5. **Maintaining** → Instruction updates, codex synchronization, project state accuracy
+
+## Codex Health & Accuracy
+
+**Critical Responsibility**: Keep AI codexes accurate or they become actively harmful to development.
+
+- **Inaccurate codexes** expose wrong patterns to AI systems
+- **Outdated examples** lead to copy-paste errors and anti-patterns
+- **Missing documentation** of new features leaves AI systems unaware of capabilities
+- **Inconsistent factory patterns** between codex and actual code confuse AI guidance
+
+**When you notice:**
+- Code that doesn't match documentation → Flag for codex update
+- New patterns that should be documented → Add to appropriate codex
+- Outdated examples in codexes → Mark for review and replacement
+- Ambiguous instructions that confuse AI → Use technical-editing-ai skill to clarify
+
+**Each commit includes documentation updates** ensures codexes stay in sync with code.

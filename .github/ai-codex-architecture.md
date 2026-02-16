@@ -149,7 +149,11 @@ All code in WorkMood must strictly follow these patterns:
 
 ## Core Service Interfaces
 
+WorkMood uses a layered service architecture: **7 essential business services** handle core features, while **additional service interfaces** support specialized domains (data transformation, navigation, utilities). All services use **constructor injection** through the `MauiProgram.cs` dependency container.
+
 ### Essential Business Services
+
+These 7 core services form the primary application logic layer.
 
 #### IMoodDataService
 **Purpose**: Mood data CRUD operations and persistence
@@ -239,6 +243,79 @@ public interface ILoggingService
 }
 ```
 
+### Additional Service Interfaces
+
+These services support specialized domains and are used alongside the core business services.
+
+#### Data Transformation Services
+
+**IDataMigrationService**
+**Purpose**: Handle data migration from legacy storage to current location
+- Migrate mood data from old folder structure to new standardized location
+- Verify migration completion and handle failed migrations
+- Clean up old locations after successful migration
+- **File**: `Services/IDataMigrationService.cs`, `Services/DataMigrationService.cs`
+
+**IGraphDataTransformer**
+**Purpose**: Transform raw mood data into graph visualization formats
+- Convert MoodEntry collections into plottable data points
+- Calculate trend lines and moving averages
+- Handle date range filtering and grouping
+- **File**: `Services/IGraphDataTransformer.cs`, `Services/GraphDataTransformer.cs`
+
+**ILineGraphGenerator**
+**Purpose**: Generate SkiaSharp bitmap from transformed graph data
+- Render line graphs with axes, labels, and legends
+- Apply styling and color schemes
+- Calculate optimal scaling and positioning
+- **File**: `Services/ILineGraphGenerator.cs`
+
+#### Navigation & UI Services
+
+**IPageNavigationShim**
+**Purpose**: Abstract MAUI Shell navigation for testability
+- Navigate between pages with optional parameters
+- Handle shell routing and backstack management
+- Support query parameters and deep linking
+- **File**: `Shims/IPageNavigationShim.cs`, `Shims/PageNavigationShim.cs`
+- **Note**: Distinct from `INavigationService` (navigation shim is infrastructure abstraction)
+
+**IPageDialogShim**
+**Purpose**: Abstract MAUI alert and dialog display for testability
+- Display alerts, action sheets, and prompts
+- Handle user confirmations and input
+- Mock dialogs in tests without UI framework overhead
+- **File**: `Shims/IPageDialogShim.cs`, `Shims/PageDialogShim.cs`
+
+#### Utility Services
+
+**IUriFactory**
+**Purpose**: Create and validate URIs for application navigation and web links
+- Build navigation URIs with proper encoding
+- Validate URI schemes and parameters
+- Handle platform-specific URI handling
+- **File**: `Services/IUriFactory.cs`
+
+**IDispatcherCommand**
+**Purpose**: Base interface for reminder and scheduler commands
+- Define common interface for scheduled task execution
+- Base for `MorningReminderCommand`, `EveningReminderCommand`
+- Enable dependency injection for scheduled tasks
+- **File**: `Services/IDispatcherCommand.cs`, `Services/MorningReminderCommand.cs`, `Services/EveningReminderCommand.cs`
+
+**IBrowserService**
+**Purpose**: Launch and manage web browser operations
+- Open URLs in system default browser
+- Handle web-based authentication flows
+- **File**: `Services/IBrowserService.cs`
+- **Note**: Different from `IBrowserShim` (service layer vs. infrastructure abstraction)
+
+**WindowActivationService** (Non-interface utility)
+**Purpose**: Handle window activation and focus management
+- Bring application window to foreground on reminders
+- Platform-specific window management
+- **File**: `Services/WindowActivationService.cs`
+
 ### Shim Abstractions (Dependency Injection Ready)
 
 #### File System Abstractions
@@ -276,6 +353,21 @@ public interface ILoggingService
 - Line styles and dash patterns  
 - Shadow and blur effects
 - Custom path transformations
+
+#### Navigation & Dialog Abstractions
+**Purpose**: Abstract MAUI navigation and dialog operations for testability
+
+**IPageNavigationShim** - Page navigation abstraction
+- Navigate to pages with optional parameters
+- Handle navigation stack (push, pop, replace)
+- Support shell routing and query parameters
+- **File**: `Shims/IPageNavigationShim.cs`, `Shims/PageNavigationShim.cs`
+
+**IPageDialogShim** - Dialog display abstraction
+- Display alerts with customizable titles and messages
+- Display action sheets for user selection
+- Display prompts for text input
+- **File**: `Shims/IPageDialogShim.cs`, `Shims/PageDialogShim.cs`
 
 #### Utility Abstractions
 **Purpose**: Abstract common framework dependencies

@@ -34,29 +34,29 @@ private void DrawBackground(SKCanvas canvas, SKRect area)
 The transformed code using factory pattern for dependency injection:
 
 ```csharp
-// Method signature includes factory injection
-private void DrawBackground(SKCanvas canvas, SKRect area)
-{
-    DrawBackground(drawShimFactory.From(canvas), area);  // Convert to shim
-}
+// Fully abstracted - all SkiaSharp dependencies externalized
+private readonly IDrawingShimFactory _drawingFactory;  // Injected factory
 
-// Fully abstracted implementation
 private void DrawBackground(ICanvasShim canvas, SKRect area)
 {
-    using var backgroundPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
+    // Create paint through factory with configuration
+    var paintArgs = new PaintShimArgs
     {
-        Color = drawShimFactory.WhiteColor(),  // Factory-created dependency
-        Style = SKPaintStyle.Fill              // Still enum but via factory context
-    });
-    canvas.DrawRect(area, backgroundPaint);    // Abstracted canvas operations
+        Color = _colorShim.CreateColor(SKColors.White),  // Shim-wrapped color
+        Style = SKPaintStyle.Fill,
+        IsAntialias = true
+    };
+    
+    using var backgroundPaint = _drawingFactory.CreatePaint(paintArgs);
+    canvas.DrawRect(area, backgroundPaint);  // Abstracted canvas operations
 }
 ```
 
 **Benefits of This Approach**:
-- **Complete Testability**: All dependencies can be mocked via factory interfaces
-- **Platform Independence**: Abstracted from specific SkiaSharp implementation
-- **Configuration Flexibility**: Colors and settings centralized in factory
-- **Maintenance Safety**: Changes isolated to factory implementation
+- **Complete Testability**: All factory calls and paint creation are mockable
+- **Platform Independence**: No direct SkiaSharp dependencies in method body
+- **Configuration Flexibility**: Paint properties centralized in factory creation
+- **Maintenance Safety**: Changes to paint creation isolated to factory implementation
 
 ### Pattern 2: Static Method Calls to Service Injection
 
@@ -100,8 +100,8 @@ public async Task<bool> SaveMoodDataAsync(MoodEntry entry)
     var filePath = _environmentShim.CombinePaths(             // Injected service
         appDataPath, "mood-data.json");
     
-    using var file = _fileShimFactory.CreateFile(filePath);  // Factory-created
-    await file.WriteAllTextAsync(json);                      // Abstracted file ops
+    var fileShim = _fileShimFactory.Create();  // Factory-created stateless wrapper
+    await fileShim.WriteAllTextAsync(filePath, json);  // Path passed to method, abstracted file ops
     
     return true;
 }
@@ -161,7 +161,8 @@ public SKBitmap GenerateChart(ChartData data)
     
     using var canvas = _drawingShimFactory.CreateCanvas(bitmap);
     using var linePaint = _drawingShimFactory.CreateLinePaint(config.LineStyle);
-    using var backgroundPaint = _drawingShimFactory.CreateBackgroundPaint(config.BackgroundStyle);
+    var paintArgs = new PaintShimArgs { Color = _colorShim.White(), Style = config.BackgroundStyle, IsAntialias = true };
+    using var backgroundPaint = _drawingShimFactory.CreatePaint(paintArgs);  // Factory with configuration
     
     canvas.DrawRect(config.ChartArea, backgroundPaint);
     // Drawing logic using abstracted operations...
@@ -322,7 +323,7 @@ public async Task<List<MoodEntry>> GetMoodHistoryAsync()
 {
     try
     {
-        using var file = _fileShimFactory.CreateFile("mood-history.json");
+        var fileShim = _fileShimFactory.Create();
         if (!await file.ExistsAsync())
             return new List<MoodEntry>();
             

@@ -207,8 +207,8 @@ public class DataService
     
     public async Task SaveData(string data)
     {
-        var fileShim = _fileFactory.CreateFile("data.json");
-        await fileShim.WriteAllTextAsync(data);
+        var fileShim = _fileFactory.Create();  // Single Create() method, no parameters
+        await fileShim.WriteAllTextAsync("data.json", data);  // Path passed to method
     }
 }
 ```

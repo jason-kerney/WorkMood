@@ -276,12 +276,23 @@ Before committing any structural change, check these documentation locations:
 
 **When Making Changes**:
 ```bash
-# Good: Documentation updated with structural change
+# ✅ PREFERRED: Documentation included in same commit
 ^f - add new mood export feature with documentation updates
+# Updates: export interface, usage examples, testing patterns in architecture codex
 
-# Acceptable: Documentation flagged for separate update  
-^f - add new mood export feature (docs TODO: update export section)
+# ⚠️ AVOID: Deferring documentation to separate commit
+# ❌ Bad: ^f - add new mood export feature (docs TODO: update export section)
+# - Creates documentation debt
+# - Breaks "documentation as part of same commit" principle
+# - Difficult to remember context later
+
+# Only acceptable if:
+# - Documentation impact is genuinely too large for same commit
+# - Urgent production fix requiring immediate deployment
+# - Explicitly flagged as conscious decision with rationale
 ```
+
+**Critical**: Documentation changes should ALWAYS be included in the same commit as structural changes. Using "TODO" comments in commit messages creates technical debt and violates the immediate update workflow.
 
 ### Maintainers (Project Leads)
 **Primary Responsibility**: Ensure documentation accuracy and completeness through review process

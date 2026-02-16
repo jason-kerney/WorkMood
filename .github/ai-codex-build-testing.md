@@ -264,7 +264,7 @@ public async Task ShouldSaveMoodDataCorrectly()
     // Arrange
     var mockFileShim = new Mock<IFileShim>();
     var mockFileFactory = new Mock<IFileShimFactory>();
-    mockFileFactory.Setup(f => f.CreateFile(It.IsAny<string>()))
+    mockFileFactory.Setup(f => f.Create())  // Single Create() method
                .Returns(mockFileShim.Object);
     
     var dataService = new MoodDataService(mockFileFactory.Object);

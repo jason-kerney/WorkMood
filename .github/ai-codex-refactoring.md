@@ -91,37 +91,38 @@ public class FileShim : IFileShim
 
 **Step 3: Create Factory Interface**
 ```csharp
-// Example: File shim factory interface
+// Example: File shim factory interface (actual WorkMood pattern)
 public interface IFileShimFactory
 {
-    IFileShim CreateFile(string filePath);
-    IFileShim CreateTemporaryFile();
-    IFileShim CreateFileWithBackup(string filePath, string backupPath);
+    IFileShim Create();  // Single factory method, no parameters
 }
 ```
 
+**Why single Create() method?**
+- Shim instances are stateless wrappers around framework APIs
+- Paths are passed to shim methods (ReadAllTextAsync, WriteAllTextAsync), not constructor
+- Factory's job: create instances only, not manage paths or configuration
+
 **Step 4: Create Factory Implementation**
 ```csharp
-// Example: File shim factory implementation
+// Example: File shim factory implementation (actual WorkMood pattern)
 public class FileShimFactory : IFileShimFactory
 {
-    public IFileShim CreateFile(string filePath)
+    public IFileShim Create()
     {
-        return new FileShim(filePath);
-    }
-    
-    public IFileShim CreateTemporaryFile()
-    {
-        var tempPath = Path.GetTempFileName();
-        return new FileShim(tempPath);
-    }
-    
-    public IFileShim CreateFileWithBackup(string filePath, string backupPath)
-    {
-        // Could create specialized shim that handles backup logic
-        return new FileShim(filePath);
+        return new FileShim();  // No parameters; shim is stateless wrapper
     }
 }
+```
+
+**Usage Pattern:**
+```csharp
+// Service receives factory
+var fileShim = _fileShimFactory.Create();
+
+// Paths passed to shim methods, not constructor
+await fileShim.WriteAllTextAsync(filePath, contents);
+var text = await fileShim.ReadAllTextAsync(filePath);
 ```
 
 **Step 5: Update Service Constructor**
@@ -149,55 +150,90 @@ Apply this sequence to **each method individually**:
 
 **CRITICAL SEQUENCE** (never deviate):
 
-**Step 1: Add Factory Method**
-Extend factory interface with method needed for current refactoring target:
+**Step 1: Add Factory Method (if needed)**
+Only add factory methods when configuration or complex initialization is required. For simple stateless shims (like FileShim), use the single Create() pattern shown in Step 3-4 above.
+
+If configuration IS needed, extend factory interface:
 ```csharp
-// Add to IDrawingShimFactory for graphics refactoring
+// Example: IDrawingShimFactory DOES need configuration parameters
 public interface IDrawingShimFactory
 {
     // Existing methods...
-    IPaintShim CreateBackgroundPaint(); // Add this for DrawBackground refactoring
+    IPaintShim CreatePaint(PaintShimArgs args);  // Configuration passed as argument
 }
 ```
 
 **Step 2: Implement Factory Method**
-Add concrete implementation to factory:
+Add concrete implementation handling the configuration:
 ```csharp
 public class DrawingShimFactory : IDrawingShimFactory
 {
     // Existing methods...
     
-    public IPaintShim CreateBackgroundPaint()
+    public IPaintShim CreatePaint(PaintShimArgs args)
     {
-        return new PaintShim(new SKPaint
+        var paint = new SKPaint
         {
-            Color = SKColors.White,
-            Style = SKPaintStyle.Fill,
-            IsAntialias = true
-        });
+            Color = args.Color.Raw,
+            Style = args.Style ?? SKPaintStyle.Fill,
+            StrokeWidth = args.StrokeWidth,
+            IsAntialias = args.IsAntialias
+        };
+        return new PaintShim(paint);
     }
 }
 ```
 
+**Configuration vs. No-Config Pattern:**
+- **No configuration** (FileShim): `IFileShimFactory.Create()` returns stateless wrapper
+- **With configuration** (DrawingShims): `IDrawingShimFactory.CreatePaint(PaintShimArgs args)` passes config
+
 **Step 3: Refactor Target Method**
-Transform the specific method to use factory:
+Transform the specific method to use factory.
+
+Example 1 (Simple stateless factory - FileShim pattern):
+```csharp
+// Before: Hard dependency
+public async Task SaveMoodDataAsync(MoodEntry entry)
+{
+    var json = JsonSerializer.Serialize(entry);  // Hard dependency
+    await File.WriteAllTextAsync(path, json);    // Hard dependency
+}
+
+// After: Factory usage
+public async Task SaveMoodDataAsync(MoodEntry entry)
+{
+    var fileShim = _fileShimFactory.Create();  // Factory call - no args
+    var json = JsonConvert.SerializeObject(entry);
+    await fileShim.WriteAllTextAsync(path, json);  // Path passed to method
+}
+```
+
+Example 2 (Configured factory - DrawingShims pattern):
 ```csharp
 // Before: Hard dependency
 private void DrawBackground(SKCanvas canvas, SKRect area)
 {
-    using var backgroundPaint = new SKPaint  // Hard dependency here
+    using var paint = new SKPaint  // Hard dependency
     {
         Color = SKColors.White,
-        Style = SKPaintStyle.Fill
+        Style = SKPaintStyle.Fill,
+        IsAntialias = true
     };
-    canvas.DrawRect(area, backgroundPaint);
+    canvas.DrawRect(area, paint);
 }
 
-// After: Factory usage
+// After: Factory usage with configuration
 private void DrawBackground(SKCanvas canvas, SKRect area)
 {
-    using var backgroundPaint = _drawingShimFactory.CreateBackgroundPaint(); // Factory call
-    canvas.DrawRect(area, backgroundPaint.SKPaint);
+    var args = new PaintShimArgs
+    {
+        Color = _colorShim.White(),
+        Style = SKPaintStyle.Fill,
+        IsAntialias = true
+    };
+    using var paint = _drawingShimFactory.CreatePaint(args);  // Factory call with config
+    canvas.DrawRect(area, paint.Raw);
 }
 ```
 
@@ -289,9 +325,10 @@ public interface IDrawingShimFactory
 - **Usage**: Directory manipulation and file system traversal
 
 #### IFileShimFactory / FileShimFactory
-- **Purpose**: Create file and folder shims
-- **Methods**: CreateFile, CreateFolder, CreateTemporaryFile, CreateBackupFile
-- **Usage**: Centralized file system object creation
+- **Purpose**: Create file shim instances for dependency abstraction
+- **Method**: `Create()` - Single stateless factory method (no parameters)
+- **Usage**: Services receive factory, call `Create()` when needed, pass paths to shim methods
+- **Pattern**: Shims are stateless wrappers; paths passed to methods, not constructor
 
 ### Drawing Shims (SkiaSharp - Implemented in `DrawingShims.cs`)
 **File**: `Shims/DrawingShims.cs`
