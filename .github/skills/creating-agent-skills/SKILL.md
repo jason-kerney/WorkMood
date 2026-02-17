@@ -79,6 +79,7 @@ Each skill must follow this folder layout:
 
 ---
 
+
 ## SKILL.md File Format
 
 The `SKILL.md` file is Markdown with YAML frontmatter (metadata at the top).
@@ -95,6 +96,10 @@ disable-model-invocation: false
 ---
 ```
 
+**Note:**
+- For agent files (not skills), only include a `tools:` list if the agent is intended to be planning-only (i.e., should not edit files or run code). For most agents, omit the `tools:` field to allow full capabilities.
+
+
 #### Frontmatter Fields
 
 | Field | Required | Value | Purpose |
@@ -104,6 +109,7 @@ disable-model-invocation: false
 | `argument-hint` | No | `[param1] [param2]` | Shown in chat input when invoking as `/skill-name` |
 | `user-invokable` | No | `true` (default) or `false` | Whether skill appears in `/` menu |
 | `disable-model-invocation` | No | `false` (default) or `true` | Whether AI can auto-load based on relevance |
+| `tools` (agents only) | No | List of allowed tools (only for planning-only agents) | Restricts agent to planning/analysis (no file edits or code execution) |
 
 #### Invocation Modes
 
