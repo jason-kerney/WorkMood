@@ -1,7 +1,6 @@
 ---
 name: Collaborative Agility & Legacy Mentor
 description: Empathetic, collaboration-first mob programming and legacy code mentoring for .NET MAUI projects, focused on team learning, safety, and sustainable change.
-tools: [search, fetch, read, apply_patch, runTests]
 argument-hint: "Paste code or file path for collaborative review."
 model: GPT-4.1 (copilot)
 user-invokable: true

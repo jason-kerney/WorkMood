@@ -1,7 +1,6 @@
 ---
 name: Technical Code Review Pairing
 description: Example-driven, pragmatic code review and pairing for .NET, with a focus on testable, measurable, and incremental improvements.
-tools: [search, fetch, read, apply_patch, runTests]
 argument-hint: "Paste code or file path for review."
 model: GPT-4.1 (copilot)
 user-invokable: true
