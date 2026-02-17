@@ -35,7 +35,7 @@ npm install
 ## Available Personas
 
 ### 🎯 XP Developer Jason Kerney
-**File:** [`copilot-personas/xp-developer-jason-kerney.md`](copilot-personas/xp-developer-jason-kerney.md)
+**File:** [`copilot-personas/jason-kerney.md`](copilot-personas/jason-kerney.md)
 
 Embodies Extreme Programming (XP) principles with a focus on:
 - Test-Driven Development (TDD) and the Red-Green-Refactor cycle

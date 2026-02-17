@@ -330,6 +330,6 @@ Implementation: Add real logic to fetch entries from the last 7 days
 
 ## Related Resources
 
-- `.github/copilot-personas/xp-developer-jason-kerney.md` - XP principles and philosophy
+- `.github/copilot-personas/jason-kerney.md` - XP principles and philosophy
 - `.github/skills/refactoring/SKILL.md` - Refactoring safely with test coverage
 - `.github/ai-codex-build-testing.md` - WorkMood testing strategies and quality gates
