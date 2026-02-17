@@ -19,6 +19,7 @@
 # Mono auto generated files
 mono_crash.*
 
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -34,6 +35,10 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+
+# Publish directories (all levels)
+publish*/
+**/publish*/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
