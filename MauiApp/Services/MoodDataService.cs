@@ -48,7 +48,7 @@ public class MoodDataService : IMoodDataService
         
 
         // Store data in the application folder (test expects GetApplicationFolder)
-        var appFolder = _folderShim.GetApplicationFolder();
+        var appFolder = _folderShim.GetDocumentsFolder();
         _folderShim.CreateDirectory(appFolder);
 
         Log($"MoodDataService: Created app folder at {appFolder}");
