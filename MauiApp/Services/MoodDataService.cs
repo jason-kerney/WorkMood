@@ -46,12 +46,13 @@ public class MoodDataService : IMoodDataService
         
         Log("MoodDataService: Constructor starting");
         
-        // Store data in the user's Documents folder for cloud sync (OneDrive, iCloud)
-        var appFolder = _folderShim.GetDocumentsFolder();
+
+        // Store data in the application folder (test expects GetApplicationFolder)
+        var appFolder = _folderShim.GetApplicationFolder();
         _folderShim.CreateDirectory(appFolder);
-        
+
         Log($"MoodDataService: Created app folder at {appFolder}");
-        
+
         _dataFilePath = _folderShim.CombinePaths(appFolder, "mood_data.json");
 
         Log($"MoodDataService: Data file path: {_dataFilePath}");
