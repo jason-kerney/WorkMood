@@ -251,8 +251,8 @@ public class MoodDataServiceShould
                           .ReturnsAsync(archivedCollection);
         _mockJsonSerializerShim.Setup(x => x.Serialize(archivedCollection.Entries, It.IsAny<JsonSerializerOptions>()))
                                .Returns(expectedJson);
-        _mockFileShim.Setup(x => x.WriteAllTextAsync("C:\\TestApp\\mood_data.json", expectedJson))
-                     .ThrowsAsync(new IOException("Disk full"));
+        _mockFileShim.Setup(x => x.WriteAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json", expectedJson))
+                 .ThrowsAsync(new IOException("Disk full"));
 
         // Act & Assert
         var act = async () => await sut.SaveMoodDataAsync(moodCollection);
@@ -263,7 +263,7 @@ public class MoodDataServiceShould
         
         _mockArchiveService.Verify(x => x.ArchiveOldDataAsync(moodCollection, 3), Times.Once);
         _mockJsonSerializerShim.Verify(x => x.Serialize(archivedCollection.Entries, It.IsAny<JsonSerializerOptions>()), Times.Once);
-        _mockFileShim.Verify(x => x.WriteAllTextAsync("C:\\TestApp\\mood_data.json", expectedJson), Times.Once);
+        _mockFileShim.Verify(x => x.WriteAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json", expectedJson), Times.Once);
     }
 
     [Fact]
@@ -278,10 +278,10 @@ public class MoodDataServiceShould
             new MoodEntry { Date = new DateOnly(2024, 10, 14), StartOfWork = 3, EndOfWork = 4 }
         };
         
-        var jsonContent = """[{"date":"2024-10-15","startOfWork":4,"endOfWork":3},{"date":"2024-10-14","startOfWork":3,"endOfWork":4}]""";
+        var jsonContent = """[{\"date\":\"2024-10-15\",\"startOfWork\":4,\"endOfWork\":3},{\"date\":\"2024-10-14\",\"startOfWork\":3,\"endOfWork\":4}]""";
         
-        _mockFileShim.Setup(x => x.Exists("C:\\TestApp\\mood_data.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json")).ReturnsAsync(jsonContent);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json")).ReturnsAsync(jsonContent);
         _mockJsonSerializerShim.Setup(x => x.Deserialize<List<MoodEntry>>(jsonContent, It.IsAny<JsonSerializerOptions>()))
                                .Returns(expectedEntries);
 
@@ -294,8 +294,8 @@ public class MoodDataServiceShould
         result.StartOfWork.Should().Be(4);
         result.EndOfWork.Should().Be(3);
         
-        _mockFileShim.Verify(x => x.Exists("C:\\TestApp\\mood_data.json"), Times.Once);
-        _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json"), Times.Once);
+        _mockFileShim.Verify(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json"), Times.Once);
+        _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json"), Times.Once);
     }
 
     [Fact]
@@ -310,10 +310,10 @@ public class MoodDataServiceShould
             new MoodEntry { Date = new DateOnly(2024, 10, 14), StartOfWork = 3, EndOfWork = 4 }
         };
         
-        var jsonContent = """[{"date":"2024-10-15","startOfWork":4,"endOfWork":3},{"date":"2024-10-14","startOfWork":3,"endOfWork":4}]""";
+        var jsonContent = """[{\"date\":\"2024-10-15\",\"startOfWork\":4,\"endOfWork\":3},{\"date\":\"2024-10-14\",\"startOfWork\":3,\"endOfWork\":4}]""";
         
-        _mockFileShim.Setup(x => x.Exists("C:\\TestApp\\mood_data.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json")).ReturnsAsync(jsonContent);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json")).ReturnsAsync(jsonContent);
         _mockJsonSerializerShim.Setup(x => x.Deserialize<List<MoodEntry>>(jsonContent, It.IsAny<JsonSerializerOptions>()))
                                .Returns(existingEntries);
 
@@ -323,8 +323,8 @@ public class MoodDataServiceShould
         // Assert
         result.Should().BeNull();
         
-        _mockFileShim.Verify(x => x.Exists("C:\\TestApp\\mood_data.json"), Times.Once);
-        _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json"), Times.Once);
+        _mockFileShim.Verify(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json"), Times.Once);
+        _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json"), Times.Once);
     }
 
     [Fact]
@@ -350,7 +350,7 @@ public class MoodDataServiceShould
         var result = sut.GetDataFilePath();
 
         // Assert
-        result.Should().Be("C:\\TestApp\\mood_data.json");
+        result.Should().Be("C:\\TestDocuments\\WorkMood\\mood_data.json");
     }
 
     [Fact]
@@ -358,8 +358,8 @@ public class MoodDataServiceShould
     {
         // Arrange
         var sut = CreateMoodDataService();
-        _mockFileShim.Setup(x => x.Exists("C:\\TestApp\\mood_data.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json")).ReturnsAsync("");
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json")).ReturnsAsync("");
 
         // Act
         var result = await sut.LoadMoodDataAsync();
@@ -368,8 +368,8 @@ public class MoodDataServiceShould
         result.Should().NotBeNull();
         result.Count.Should().Be(0);
         result.Entries.Should().BeEmpty();
-        _mockFileShim.Verify(x => x.Exists("C:\\TestApp\\mood_data.json"), Times.Once);
-        _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json"), Times.Once);
+        _mockFileShim.Verify(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json"), Times.Once);
+        _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json"), Times.Once);
         _mockJsonSerializerShim.Verify(x => x.Deserialize<List<MoodEntry>>(It.IsAny<string>(), It.IsAny<JsonSerializerOptions>()), Times.Never);
     }
 
@@ -378,8 +378,8 @@ public class MoodDataServiceShould
     {
         // Arrange
         var sut = CreateMoodDataService();
-        _mockFileShim.Setup(x => x.Exists("C:\\TestApp\\mood_data.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json")).ReturnsAsync("   \n\t   ");
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json")).ReturnsAsync("   \n\t   ");
 
         // Act
         var result = await sut.LoadMoodDataAsync();
@@ -388,8 +388,8 @@ public class MoodDataServiceShould
         result.Should().NotBeNull();
         result.Count.Should().Be(0);
         result.Entries.Should().BeEmpty();
-        _mockFileShim.Verify(x => x.Exists("C:\\TestApp\\mood_data.json"), Times.Once);
-        _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json"), Times.Once);
+        _mockFileShim.Verify(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json"), Times.Once);
+        _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json"), Times.Once);
         _mockJsonSerializerShim.Verify(x => x.Deserialize<List<MoodEntry>>(It.IsAny<string>(), It.IsAny<JsonSerializerOptions>()), Times.Never);
     }
 
@@ -422,8 +422,8 @@ public class MoodDataServiceShould
         // Arrange
         var sut = CreateMoodDataService();
         var jsonContent = """[{"date":"2024-10-15","startOfWork":4,"endOfWork":3}]""";
-        _mockFileShim.Setup(x => x.Exists("C:\\TestApp\\mood_data.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json")).ReturnsAsync(jsonContent);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json")).ReturnsAsync(jsonContent);
         _mockJsonSerializerShim.Setup(x => x.Deserialize<List<MoodEntry>>(jsonContent, It.IsAny<JsonSerializerOptions>()))
                                .Throws(new InvalidOperationException("Deserialization failed"));
 
@@ -434,8 +434,8 @@ public class MoodDataServiceShould
         result.Should().NotBeNull();
         result.Count.Should().Be(0);
         result.Entries.Should().BeEmpty();
-        _mockFileShim.Verify(x => x.Exists("C:\\TestApp\\mood_data.json"), Times.Once);
-        _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json"), Times.Once);
+        _mockFileShim.Verify(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json"), Times.Once);
+        _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json"), Times.Once);
         _mockJsonSerializerShim.Verify(x => x.Deserialize<List<MoodEntry>>(jsonContent, It.IsAny<JsonSerializerOptions>()), Times.Once);
     }
 
@@ -450,8 +450,8 @@ public class MoodDataServiceShould
         };
         var jsonContent = """[{"date":"2024-10-15","startOfWork":4,"endOfWork":3}]""";
         
-        _mockFileShim.Setup(x => x.Exists("C:\\TestApp\\mood_data.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json")).ReturnsAsync(jsonContent);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json")).ReturnsAsync(jsonContent);
         _mockJsonSerializerShim.Setup(x => x.Deserialize<List<MoodEntry>>(jsonContent, It.IsAny<JsonSerializerOptions>()))
                                .Returns(expectedEntries);
 
@@ -465,8 +465,8 @@ public class MoodDataServiceShould
         result2.Count.Should().Be(1);
         
         // Should only call file operations once (first time)
-        _mockFileShim.Verify(x => x.Exists("C:\\TestApp\\mood_data.json"), Times.Once);
-        _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json"), Times.Once);
+        _mockFileShim.Verify(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json"), Times.Once);
+        _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json"), Times.Once);
         _mockJsonSerializerShim.Verify(x => x.Deserialize<List<MoodEntry>>(jsonContent, It.IsAny<JsonSerializerOptions>()), Times.Once);
     }
 
@@ -479,12 +479,12 @@ public class MoodDataServiceShould
         var existingCollection = new MoodCollection();
         var expectedJson = """[{"date":"2024-10-15","startOfWork":4,"endOfWork":3}]""";
         
-        _mockFileShim.Setup(x => x.Exists("C:\\TestApp\\mood_data.json")).Returns(false);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json")).Returns(false);
         _mockArchiveService.Setup(x => x.ArchiveOldDataAsync(It.IsAny<MoodCollection>(), 3))
-                          .ReturnsAsync((MoodCollection collection, int years) => collection);
+                  .ReturnsAsync((MoodCollection collection, int years) => collection);
         _mockJsonSerializerShim.Setup(x => x.Serialize(It.IsAny<IEnumerable<MoodEntry>>(), It.IsAny<JsonSerializerOptions>()))
-                               .Returns(expectedJson);
-        _mockFileShim.Setup(x => x.WriteAllTextAsync("C:\\TestApp\\mood_data.json", expectedJson))
+                       .Returns(expectedJson);
+        _mockFileShim.Setup(x => x.WriteAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json", expectedJson))
                      .Returns(Task.CompletedTask);
 
         // Act
@@ -493,7 +493,7 @@ public class MoodDataServiceShould
         // Assert
         _mockArchiveService.Verify(x => x.ArchiveOldDataAsync(It.IsAny<MoodCollection>(), 3), Times.Once);
         _mockJsonSerializerShim.Verify(x => x.Serialize(It.IsAny<IEnumerable<MoodEntry>>(), It.IsAny<JsonSerializerOptions>()), Times.Once);
-        _mockFileShim.Verify(x => x.WriteAllTextAsync("C:\\TestApp\\mood_data.json", expectedJson), Times.Once);
+        _mockFileShim.Verify(x => x.WriteAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json", expectedJson), Times.Once);
     }
 
     [Fact]
@@ -505,12 +505,12 @@ public class MoodDataServiceShould
         var existingCollection = new MoodCollection();
         var expectedJson = """[{"date":"2024-10-15","startOfWork":4,"endOfWork":3}]""";
         
-        _mockFileShim.Setup(x => x.Exists("C:\\TestApp\\mood_data.json")).Returns(false);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json")).Returns(false);
         _mockArchiveService.Setup(x => x.ArchiveOldDataAsync(It.IsAny<MoodCollection>(), 3))
                           .ReturnsAsync((MoodCollection collection, int years) => collection);
         _mockJsonSerializerShim.Setup(x => x.Serialize(It.IsAny<IEnumerable<MoodEntry>>(), It.IsAny<JsonSerializerOptions>()))
                                .Returns(expectedJson);
-        _mockFileShim.Setup(x => x.WriteAllTextAsync("C:\\TestApp\\mood_data.json", expectedJson))
+        _mockFileShim.Setup(x => x.WriteAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json", expectedJson))
                      .Returns(Task.CompletedTask);
 
         // Act
@@ -519,7 +519,7 @@ public class MoodDataServiceShould
         // Assert
         _mockArchiveService.Verify(x => x.ArchiveOldDataAsync(It.IsAny<MoodCollection>(), 3), Times.Once);
         _mockJsonSerializerShim.Verify(x => x.Serialize(It.IsAny<IEnumerable<MoodEntry>>(), It.IsAny<JsonSerializerOptions>()), Times.Once);
-        _mockFileShim.Verify(x => x.WriteAllTextAsync("C:\\TestApp\\mood_data.json", expectedJson), Times.Once);
+        _mockFileShim.Verify(x => x.WriteAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json", expectedJson), Times.Once);
     }
 
     [Fact]
@@ -535,8 +535,8 @@ public class MoodDataServiceShould
         };
         var jsonContent = """[{"date":"2024-10-15","startOfWork":4,"endOfWork":3},{"date":"2024-10-14","startOfWork":3,"endOfWork":4},{"date":"2024-10-13","startOfWork":2,"endOfWork":5}]""";
         
-        _mockFileShim.Setup(x => x.Exists("C:\\TestApp\\mood_data.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json")).ReturnsAsync(jsonContent);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json")).ReturnsAsync(jsonContent);
         _mockJsonSerializerShim.Setup(x => x.Deserialize<List<MoodEntry>>(jsonContent, It.IsAny<JsonSerializerOptions>()))
                                .Returns(expectedEntries);
 
@@ -635,8 +635,8 @@ public class MoodDataServiceShould
         var jsonContent = """[{"date":"2024-10-15","startOfWork":4,"endOfWork":3}]""";
         
         _mockDateShim.Setup(x => x.GetTodayDate()).Returns(today);
-        _mockFileShim.Setup(x => x.Exists("C:\\TestApp\\mood_data.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json")).ReturnsAsync(jsonContent);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json")).ReturnsAsync(jsonContent);
         _mockJsonSerializerShim.Setup(x => x.Deserialize<List<MoodEntry>>(jsonContent, It.IsAny<JsonSerializerOptions>()))
                                .Returns(activeEntries);
         _mockArchiveService.Setup(x => x.IsNearYearTransition(14)).Returns(true);
@@ -700,8 +700,8 @@ public class MoodDataServiceShould
         };
         var jsonContent = """[{"date":"2024-10-15","startOfWork":4,"endOfWork":3}]""";
         
-        _mockFileShim.Setup(x => x.Exists("C:\\TestApp\\mood_data.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestApp\\mood_data.json")).ReturnsAsync(jsonContent);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\mood_data.json")).ReturnsAsync(jsonContent);
         _mockJsonSerializerShim.Setup(x => x.Deserialize<List<MoodEntry>>(jsonContent, It.IsAny<JsonSerializerOptions>()))
                                .Returns(expectedEntries);
 
@@ -723,12 +723,12 @@ public class MoodDataServiceShould
         sut.ClearCache(); // Should not throw
 
         // Verify cache is cleared by setting up mock to track subsequent LoadMoodDataAsync calls
-        _mockFileShim.Setup(x => x.Exists("C:\\TestApp\\mood_data.json")).Returns(false);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json")).Returns(false);
         
         // If cache was cleared, this should trigger file system operations
         await sut.LoadMoodDataAsync();
         
-        _mockFileShim.Verify(x => x.Exists("C:\\TestApp\\mood_data.json"), Times.Once);
+        _mockFileShim.Verify(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json"), Times.Once);
     }
 
     private MoodDataService CreateMoodDataService()

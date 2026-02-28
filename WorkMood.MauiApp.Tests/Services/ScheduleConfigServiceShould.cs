@@ -26,8 +26,9 @@ public class ScheduleConfigServiceShould
         _mockLoggingService = new Mock<ILoggingService>();
 
         // Setup default folder behavior
-        _mockFolderShim.Setup(x => x.GetApplicationFolder()).Returns("/test/app");
-        _mockFolderShim.Setup(x => x.CombinePaths("/test/app", "schedule_config.json")).Returns("/test/app/schedule_config.json");
+        _mockFolderShim.Setup(x => x.GetDocumentsFolder()).Returns("C:\\TestDocuments\\WorkMood");
+        _mockFolderShim.Setup(x => x.CombinePaths("C:\\TestDocuments\\WorkMood", "schedule_config.json"))
+            .Returns("C:\\TestDocuments\\WorkMood\\schedule_config.json");
 
         _expectedJsonOptions = new JsonSerializerOptions
         {
@@ -113,8 +114,9 @@ public class ScheduleConfigServiceShould
     {
         // Arrange - Use fresh mocks to avoid interference from other tests
         var freshMockFolderShim = new Mock<IFolderShim>();
-        freshMockFolderShim.Setup(x => x.GetApplicationFolder()).Returns("/test/app");
-        freshMockFolderShim.Setup(x => x.CombinePaths("/test/app", "schedule_config.json")).Returns("/test/app/schedule_config.json");
+        freshMockFolderShim.Setup(x => x.GetDocumentsFolder()).Returns("C:\\TestDocuments\\WorkMood");
+        freshMockFolderShim.Setup(x => x.CombinePaths("C:\\TestDocuments\\WorkMood", "schedule_config.json"))
+            .Returns("C:\\TestDocuments\\WorkMood\\schedule_config.json");
         
         // Act
         var service = new ScheduleConfigService(
@@ -125,9 +127,9 @@ public class ScheduleConfigServiceShould
             _mockLoggingService.Object);
 
         // Assert
-        freshMockFolderShim.Verify(x => x.GetApplicationFolder(), Times.Once);
-        freshMockFolderShim.Verify(x => x.CreateDirectory("/test/app"), Times.Once);
-        freshMockFolderShim.Verify(x => x.CombinePaths("/test/app", "schedule_config.json"), Times.Once);
+        freshMockFolderShim.Verify(x => x.GetDocumentsFolder(), Times.Once);
+        freshMockFolderShim.Verify(x => x.CreateDirectory("C:\\TestDocuments\\WorkMood"), Times.Once);
+        freshMockFolderShim.Verify(x => x.CombinePaths("C:\\TestDocuments\\WorkMood", "schedule_config.json"), Times.Once);
         Assert.NotNull(service);
     }
 
@@ -142,8 +144,8 @@ public class ScheduleConfigServiceShould
         var expectedConfig = new ScheduleConfig(TimeSpan.FromHours(9), TimeSpan.FromHours(17));
         
         // Load once to cache
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("/test/app/schedule_config.json")).ReturnsAsync("{}");
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json")).ReturnsAsync("{}");
         _mockJsonSerializerShim.Setup(x => x.Deserialize<ScheduleConfig>("{}", It.IsAny<JsonSerializerOptions>()))
             .Returns(expectedConfig);
         
@@ -162,7 +164,7 @@ public class ScheduleConfigServiceShould
     public async Task LoadScheduleConfigAsync_ShouldReturnDefaultConfig_WhenFileDoesNotExist()
     {
         // Arrange
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(false);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(false);
 
         // Act
         var result = await _service.LoadScheduleConfigAsync();
@@ -171,7 +173,7 @@ public class ScheduleConfigServiceShould
         Assert.NotNull(result);
         Assert.Equal(new TimeSpan(8, 20, 0), result.MorningTime);
         Assert.Equal(new TimeSpan(17, 20, 0), result.EveningTime);
-        _mockFileShim.Verify(x => x.Exists("/test/app/schedule_config.json"), Times.Once);
+        _mockFileShim.Verify(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json"), Times.Once);
         _mockFileShim.Verify(x => x.ReadAllTextAsync(It.IsAny<string>()), Times.Never);
     }
 
@@ -179,8 +181,8 @@ public class ScheduleConfigServiceShould
     public async Task LoadScheduleConfigAsync_ShouldReturnDefaultConfig_WhenFileIsEmpty()
     {
         // Arrange
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("/test/app/schedule_config.json")).ReturnsAsync("");
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json")).ReturnsAsync("");
 
         // Act
         var result = await _service.LoadScheduleConfigAsync();
@@ -189,7 +191,7 @@ public class ScheduleConfigServiceShould
         Assert.NotNull(result);
         Assert.Equal(new TimeSpan(8, 20, 0), result.MorningTime);
         Assert.Equal(new TimeSpan(17, 20, 0), result.EveningTime);
-        _mockFileShim.Verify(x => x.ReadAllTextAsync("/test/app/schedule_config.json"), Times.Once);
+        _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json"), Times.Once);
         _mockJsonSerializerShim.Verify(x => x.Deserialize<ScheduleConfig>(It.IsAny<string>(), It.IsAny<JsonSerializerOptions>()), Times.Never);
     }
 
@@ -197,8 +199,8 @@ public class ScheduleConfigServiceShould
     public async Task LoadScheduleConfigAsync_ShouldReturnDefaultConfig_WhenFileIsWhiteSpace()
     {
         // Arrange
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("/test/app/schedule_config.json")).ReturnsAsync("   \n\t  ");
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json")).ReturnsAsync("   \n\t  ");
 
         // Act
         var result = await _service.LoadScheduleConfigAsync();
@@ -217,8 +219,8 @@ public class ScheduleConfigServiceShould
         var expectedConfig = new ScheduleConfig(TimeSpan.FromHours(8), TimeSpan.FromHours(18));
         var jsonContent = "{\"morningTime\":\"08:00:00\",\"eveningTime\":\"18:00:00\"}";
         
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("/test/app/schedule_config.json")).ReturnsAsync(jsonContent);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json")).ReturnsAsync(jsonContent);
         _mockJsonSerializerShim.Setup(x => x.Deserialize<ScheduleConfig>(jsonContent, It.IsAny<JsonSerializerOptions>()))
             .Returns(expectedConfig);
 
@@ -236,8 +238,8 @@ public class ScheduleConfigServiceShould
         // Arrange
         var jsonContent = "{}";
         
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("/test/app/schedule_config.json")).ReturnsAsync(jsonContent);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json")).ReturnsAsync(jsonContent);
         _mockJsonSerializerShim.Setup(x => x.Deserialize<ScheduleConfig>(jsonContent, It.IsAny<JsonSerializerOptions>()))
             .Returns((ScheduleConfig?)null);
 
@@ -254,8 +256,8 @@ public class ScheduleConfigServiceShould
     public async Task LoadScheduleConfigAsync_ShouldReturnDefaultConfig_WhenFileReadThrowsException()
     {
         // Arrange
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("/test/app/schedule_config.json")).ThrowsAsync(new IOException("File access denied"));
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json")).ThrowsAsync(new IOException("File access denied"));
 
         // Act
         var result = await _service.LoadScheduleConfigAsync();
@@ -273,8 +275,8 @@ public class ScheduleConfigServiceShould
         // Arrange
         var jsonContent = "invalid json";
         
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("/test/app/schedule_config.json")).ReturnsAsync(jsonContent);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json")).ReturnsAsync(jsonContent);
         _mockJsonSerializerShim.Setup(x => x.Deserialize<ScheduleConfig>(jsonContent, It.IsAny<JsonSerializerOptions>()))
             .Throws(new JsonException("Invalid JSON"));
 
@@ -307,7 +309,7 @@ public class ScheduleConfigServiceShould
 
         // Assert
         _mockJsonSerializerShim.Verify(x => x.Serialize(config, It.IsAny<JsonSerializerOptions>()), Times.Once);
-        _mockFileShim.Verify(x => x.WriteAllTextAsync("/test/app/schedule_config.json", serializedJson), Times.Once);
+        _mockFileShim.Verify(x => x.WriteAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json", serializedJson), Times.Once);
         // LogDebug verification removed
     }
 
@@ -355,7 +357,7 @@ public class ScheduleConfigServiceShould
         
         _mockJsonSerializerShim.Setup(x => x.Serialize(config, It.IsAny<JsonSerializerOptions>()))
             .Returns(serializedJson);
-        _mockFileShim.Setup(x => x.WriteAllTextAsync("/test/app/schedule_config.json", serializedJson))
+        _mockFileShim.Setup(x => x.WriteAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json", serializedJson))
             .ThrowsAsync(new IOException("Disk full"));
 
         // Act & Assert
@@ -376,7 +378,7 @@ public class ScheduleConfigServiceShould
         var eveningTime = TimeSpan.FromHours(18);
         var currentConfig = new ScheduleConfig();
         
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(false);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(false);
         _mockDateShim.Setup(x => x.GetTodayDate()).Returns(new DateOnly(2023, 10, 15));
 
         // Act
@@ -385,7 +387,7 @@ public class ScheduleConfigServiceShould
         // Assert
         Assert.Equal(morningTime, result.MorningTime);
         Assert.Equal(eveningTime, result.EveningTime);
-        _mockFileShim.Verify(x => x.Exists("/test/app/schedule_config.json"), Times.Once);
+        _mockFileShim.Verify(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json"), Times.Once);
     }
 
     [Fact]
@@ -397,7 +399,7 @@ public class ScheduleConfigServiceShould
         var overrideDate = new DateOnly(2023, 10, 20);
         var newOverride = new ScheduleOverride(overrideDate, TimeSpan.FromHours(10), TimeSpan.FromHours(16));
         
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(false);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(false);
         _mockDateShim.Setup(x => x.GetTodayDate()).Returns(new DateOnly(2023, 10, 15));
 
         // Act
@@ -419,7 +421,7 @@ public class ScheduleConfigServiceShould
         var overrideDate = new DateOnly(2023, 10, 20);
         var newOverride = new ScheduleOverride(overrideDate); // No override times set
         
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(false);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(false);
         _mockDateShim.Setup(x => x.GetTodayDate()).Returns(new DateOnly(2023, 10, 15));
 
         // Act
@@ -444,8 +446,8 @@ public class ScheduleConfigServiceShould
         currentConfig.SetOverride(new DateOnly(2023, 10, 20), TimeSpan.FromHours(8), TimeSpan.FromHours(16)); // Future
         
         var jsonContent = "{}";
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("/test/app/schedule_config.json")).ReturnsAsync(jsonContent);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json")).ReturnsAsync(jsonContent);
         _mockJsonSerializerShim.Setup(x => x.Deserialize<ScheduleConfig>(jsonContent, It.IsAny<JsonSerializerOptions>()))
             .Returns(currentConfig);
         _mockDateShim.Setup(x => x.GetTodayDate()).Returns(today);
@@ -475,8 +477,8 @@ public class ScheduleConfigServiceShould
         var newOverride = new ScheduleOverride(new DateOnly(2023, 10, 25), TimeSpan.FromHours(9), TimeSpan.FromHours(15));
         
         var jsonContent = "{}";
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("/test/app/schedule_config.json")).ReturnsAsync(jsonContent);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json")).ReturnsAsync(jsonContent);
         _mockJsonSerializerShim.Setup(x => x.Deserialize<ScheduleConfig>(jsonContent, It.IsAny<JsonSerializerOptions>()))
             .Returns(currentConfig);
         _mockDateShim.Setup(x => x.GetTodayDate()).Returns(today);
@@ -497,7 +499,7 @@ public class ScheduleConfigServiceShould
         var morningTime = TimeSpan.FromHours(8);
         var eveningTime = TimeSpan.FromHours(18);
         
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(false);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(false);
         _mockDateShim.Setup(x => x.GetTodayDate()).Returns(new DateOnly(2023, 10, 15));
 
         // Act
@@ -516,7 +518,7 @@ public class ScheduleConfigServiceShould
         var eveningTime = TimeSpan.FromHours(18);
         var serializedJson = "{}";
         
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(false);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(false);
         _mockDateShim.Setup(x => x.GetTodayDate()).Returns(new DateOnly(2023, 10, 15));
         _mockJsonSerializerShim.Setup(x => x.Serialize(It.IsAny<ScheduleConfig>(), It.IsAny<JsonSerializerOptions>()))
             .Returns(serializedJson);
@@ -526,7 +528,7 @@ public class ScheduleConfigServiceShould
 
         // Assert
         _mockJsonSerializerShim.Verify(x => x.Serialize(It.IsAny<ScheduleConfig>(), It.IsAny<JsonSerializerOptions>()), Times.Once);
-        _mockFileShim.Verify(x => x.WriteAllTextAsync("/test/app/schedule_config.json", serializedJson), Times.Once);
+        _mockFileShim.Verify(x => x.WriteAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json", serializedJson), Times.Once);
     }
 
     #endregion
@@ -540,8 +542,8 @@ public class ScheduleConfigServiceShould
         var expectedConfig = new ScheduleConfig(TimeSpan.FromHours(8), TimeSpan.FromHours(18));
         var jsonContent = "{}";
         
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("/test/app/schedule_config.json")).ReturnsAsync(jsonContent);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json")).ReturnsAsync(jsonContent);
         _mockJsonSerializerShim.Setup(x => x.Deserialize<ScheduleConfig>(jsonContent, It.IsAny<JsonSerializerOptions>()))
             .Returns(expectedConfig);
 
@@ -600,8 +602,8 @@ public class ScheduleConfigServiceShould
         var config = new ScheduleConfig(TimeSpan.FromHours(8), TimeSpan.FromHours(18));
         var jsonContent = "{}";
         
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("/test/app/schedule_config.json")).ReturnsAsync(jsonContent);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json")).ReturnsAsync(jsonContent);
         _mockJsonSerializerShim.Setup(x => x.Deserialize<ScheduleConfig>(jsonContent, It.IsAny<JsonSerializerOptions>()))
             .Returns(config);
 
@@ -613,8 +615,8 @@ public class ScheduleConfigServiceShould
         await _service.LoadScheduleConfigAsync();
 
         // Assert
-        _mockFileShim.Verify(x => x.Exists("/test/app/schedule_config.json"), Times.Exactly(2));
-        _mockFileShim.Verify(x => x.ReadAllTextAsync("/test/app/schedule_config.json"), Times.Exactly(2));
+        _mockFileShim.Verify(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json"), Times.Exactly(2));
+        _mockFileShim.Verify(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json"), Times.Exactly(2));
     }
 
     #endregion
@@ -636,7 +638,7 @@ public class ScheduleConfigServiceShould
         var config = new ScheduleConfig();
         var serializedJson = "{}";
         
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(false);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(false);
         _mockJsonSerializerShim.Setup(x => x.Serialize(config, It.IsAny<JsonSerializerOptions>()))
             .Returns(serializedJson);
         _mockDateShim.Setup(x => x.GetTodayDate()).Returns(new DateOnly(2023, 10, 15));
@@ -664,8 +666,8 @@ public class ScheduleConfigServiceShould
     public async Task LoadScheduleConfigAsync_ShouldHandleVariousEmptyFileContents(string? fileContent)
     {
         // Arrange
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("/test/app/schedule_config.json")).ReturnsAsync(fileContent!);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json")).ReturnsAsync(fileContent!);
 
         // Act
         var result = await _service.LoadScheduleConfigAsync();
@@ -691,8 +693,8 @@ public class ScheduleConfigServiceShould
     public async Task UpdateScheduleConfigAsync_ShouldHandleExceptionDuringLoad()
     {
         // Arrange
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(true);
-        _mockFileShim.Setup(x => x.ReadAllTextAsync("/test/app/schedule_config.json")).ThrowsAsync(new IOException("File read error"));
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json")).ThrowsAsync(new IOException("File read error"));
         _mockDateShim.Setup(x => x.GetTodayDate()).Returns(new DateOnly(2023, 10, 15));
 
         // Act
@@ -708,7 +710,7 @@ public class ScheduleConfigServiceShould
     public async Task UpdateScheduleConfigAsync_ShouldPropagateException_WhenSaveFails()
     {
         // Arrange
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(false);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(false);
         _mockDateShim.Setup(x => x.GetTodayDate()).Returns(new DateOnly(2023, 10, 15));
         _mockJsonSerializerShim.Setup(x => x.Serialize(It.IsAny<ScheduleConfig>(), It.IsAny<JsonSerializerOptions>()))
             .Throws(new JsonException("Serialization error"));
@@ -722,7 +724,7 @@ public class ScheduleConfigServiceShould
     public async Task LoadScheduleConfigAsync_ShouldLogAllOperations()
     {
         // Arrange
-        _mockFileShim.Setup(x => x.Exists("/test/app/schedule_config.json")).Returns(false);
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(false);
 
         // Act
         await _service.LoadScheduleConfigAsync();
