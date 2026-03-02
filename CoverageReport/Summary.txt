@@ -1,25 +1,25 @@
 Summary
-  Generated on: 11/25/2025 - 1:39:24 PM
-  Coverage date: 11/25/2025 - 1:39:23 PM
+  Generated on: 3/2/2026 - 2:33:59 PM
+  Coverage date: 3/2/2026 - 2:33:56 PM
   Parser: Cobertura
   Assemblies: 1
-  Classes: 113
-  Files: 74
-  Line coverage: 33.8%
-  Covered lines: 2150
-  Uncovered lines: 4198
-  Coverable lines: 6348
-  Total lines: 12286
-  Branch coverage: 31.9% (553 of 1731)
-  Covered branches: 553
-  Total branches: 1731
-  Method coverage: 34.6% (358 of 1034)
-  Full method coverage: 32.7% (339 of 1034)
-  Covered methods: 358
-  Fully covered methods: 339
-  Total methods: 1034
+  Classes: 114
+  Files: 75
+  Line coverage: 34.6%
+  Covered lines: 2260
+  Uncovered lines: 4254
+  Coverable lines: 6514
+  Total lines: 12550
+  Branch coverage: 32.5% (574 of 1763)
+  Covered branches: 574
+  Total branches: 1763
+  Method coverage: 35.5% (371 of 1045)
+  Full method coverage: 33.3% (348 of 1045)
+  Covered methods: 371
+  Fully covered methods: 348
+  Total methods: 1045
 
-WorkMood.MauiApp                                                        33.8%
+WorkMood.MauiApp                                                        34.6%
   WorkMood.MauiApp.Adapters.VisualizationDataAdapter                     100%
   WorkMood.MauiApp.App                                                     0%
   WorkMood.MauiApp.AppShell                                                0%
@@ -68,6 +68,7 @@ WorkMood.MauiApp                                                        33.8%
   WorkMood.MauiApp.Services.CommandResult                                100%
   WorkMood.MauiApp.Services.DailyMoodValue                               100%
   WorkMood.MauiApp.Services.DataArchiveService                            96%
+  WorkMood.MauiApp.Services.DataMigrationService                        74.6%
   WorkMood.MauiApp.Services.DateChangeEventArgs                            0%
   WorkMood.MauiApp.Services.DateOnlyJsonConverter                        100%
   WorkMood.MauiApp.Services.EveningReminderCommand                      97.6%
@@ -100,7 +101,7 @@ WorkMood.MauiApp                                                        33.8%
   WorkMood.MauiApp.Shims.DrawShimFactory                                 100%
   WorkMood.MauiApp.Shims.FileShim                                         40%
   WorkMood.MauiApp.Shims.FileShimFactory                                 100%
-  WorkMood.MauiApp.Shims.FolderShim                                     62.5%
+  WorkMood.MauiApp.Shims.FolderShim                                       90%
   WorkMood.MauiApp.Shims.FontFaceShim                                    100%
   WorkMood.MauiApp.Shims.FontShimFactory                                 100%
   WorkMood.MauiApp.Shims.FontStyleShim                                   100%
