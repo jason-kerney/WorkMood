@@ -7,8 +7,8 @@
 - .NET 9.0 SDK (confirm with `dotnet --version`)
 - NuGet package source configured (verify with `dotnet nuget list source` - should include nuget.org)
 - MAUI workload: `dotnet workload install maui`
-- (Windows) Windows 10 1903+ / Windows 11; optional Visual Studio 2022 with MAUI workload
-- (macOS) Xcode + Mac Catalyst toolchain (only if building on macOS)
+- (Windows) Windows 10 1809+ / Windows 11; optional Visual Studio 2022 with MAUI workload
+- (macOS) macOS 15.0+ with Xcode + Mac Catalyst toolchain (only if building on macOS)
 
 <!-- (dl (## Clone the Repository)) -->
 
@@ -113,8 +113,8 @@ For published builds, navigate to the publish folder and run the executable dire
 
 WorkMood stores your mood data locally:
 
-- **Windows**: `%APPDATA%\WorkMood` or `%USERPROFILE%\.workmood`
-- **macOS**: `~/Library/Application Support/WorkMood` or `~/.workmood`
+- **Windows**: `%LOCALAPPDATA%\WorkMood`
+- **macOS**: `~/Library/Application Support/WorkMood`
 
 Your data persists across different builds and updates.
 

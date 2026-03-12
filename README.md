@@ -24,8 +24,8 @@ The application allows you to record your mood at the beginning and end of your 
 
 #### Platform Support ####
 
-- **Windows 10** (version 1903 or later) and **Windows 11**
-- **macOS Big Sur** (11.0) or later
+- **Windows 10** (version 1809 or later) and **Windows 11**
+- **macOS** 15.0 or later (Mac Catalyst)
 - Built with .NET 9.0 and MAUI for reliable cross-platform performance
 
 ## Key-Features ##
@@ -41,7 +41,7 @@ The application allows you to record your mood at the beginning and end of your 
 
 - **Automatic calculations**: Analyzes mood changes throughout your work day
 - **Flexible scheduling**: Configure reminders based on your actual work hours
-- **Data export**: Generate reports for personal analysis or sharing with healthcare providers
+- **Graph export and sharing**: Export mood visualizations as PNG images and share them
 - **Clean interface**: Designed for quick daily use without complexity
 
 ## Getting-Started ##
@@ -53,8 +53,8 @@ The application allows you to record your mood at the beginning and end of your 
 - .NET 9.0 SDK (confirm with `dotnet --version`)
 - NuGet package source configured (verify with `dotnet nuget list source` - should include nuget.org)
 - MAUI workload: `dotnet workload install maui`
-- (Windows) Windows 10 1903+ / Windows 11; optional Visual Studio 2022 with MAUI workload
-- (macOS) Xcode + Mac Catalyst toolchain (only if building on macOS)
+- (Windows) Windows 10 1809+ / Windows 11; optional Visual Studio 2022 with MAUI workload
+- (macOS) macOS 15.0+ with Xcode + Mac Catalyst toolchain (only if building on macOS)
 
 #### Clone the Repository ####
 
@@ -159,8 +159,8 @@ For published builds, navigate to the publish folder and run the executable dire
 
 WorkMood stores your mood data locally:
 
-- **Windows**: `%APPDATA%\WorkMood` or `%USERPROFILE%\.workmood`
-- **macOS**: `~/Library/Application Support/WorkMood` or `~/.workmood`
+- **Windows**: `%LOCALAPPDATA%\WorkMood`
+- **macOS**: `~/Library/Application Support/WorkMood`
 
 Your data persists across different builds and updates.
 

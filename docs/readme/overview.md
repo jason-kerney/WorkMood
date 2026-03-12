@@ -6,6 +6,6 @@ The application allows you to record your mood at the beginning and end of your 
 
 <!-- (dl (## Platform Support)) -->
 
-- **Windows 10** (version 1903 or later) and **Windows 11**
-- **macOS Big Sur** (11.0) or later
+- **Windows 10** (version 1809 or later) and **Windows 11**
+- **macOS** 15.0 or later (Mac Catalyst)
 - Built with .NET 9.0 and MAUI for reliable cross-platform performance
