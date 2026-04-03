@@ -18,17 +18,64 @@ public class GraphDataTransformer : IGraphDataTransformer
     /// <returns>Complete graph data including data points, title, axis information, and rendering metadata</returns>
     public GraphData TransformMoodEntries(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRangeInfo)
     {
-        // Apply date range filtering based on the provided date range info
-        var entriesInRange = moodEntries.Where(entry => entry.Date >= dateRangeInfo.StartDate && entry.Date <= dateRangeInfo.EndDate);
+        var entriesInRange = moodEntries
+            .Where(entry => entry.Date >= dateRangeInfo.StartDate && entry.Date <= dateRangeInfo.EndDate)
+            .OrderBy(entry => entry.Date)
+            .ThenBy(entry => entry.CreatedAt)
+            .ToList();
 
-        var filteredEntries = FilterEntriesForGraphMode(entriesInRange, graphMode);
-
-        IEnumerable<FilledGraphDataPoint> dataPoints;
-
-        // Special handling for RawData mode - each entry produces two data points
-        if (graphMode == GraphMode.RawData)
+        var dataPoints = graphMode switch
         {
-            dataPoints = filteredEntries.SelectMany(entry =>
+            GraphMode.Impact => CreateSinglePointPerEntryData(entriesInRange, GraphMode.Impact),
+            GraphMode.GeneralImpact => CreateGeneralImpactData(entriesInRange),
+            GraphMode.Average => CreateSinglePointPerEntryData(entriesInRange, GraphMode.Average),
+            GraphMode.RawData => CreateRawData(entriesInRange),
+            _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, "Unsupported graph mode")
+        };
+
+        return CreateGraphData(dataPoints, graphMode, dateRangeInfo);
+    }
+
+    private static IEnumerable<FilledGraphDataPoint> CreateSinglePointPerEntryData(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
+    {
+        return moodEntries
+            .Where(entry => HasValueForMode(entry, graphMode))
+            .Select(entry => new FilledGraphDataPoint(
+                entry.Date.ToDateTime(TimeOnly.MinValue),
+                GetValueForMode(entry, graphMode)))
+            .OrderBy(point => point.Timestamp);
+    }
+
+    private static IEnumerable<FilledGraphDataPoint> CreateGeneralImpactData(IEnumerable<MoodEntry> moodEntries)
+    {
+        var validEntries = moodEntries
+            .Where(entry => entry.StartOfWork.HasValue)
+            .OrderBy(entry => entry.Date)
+            .ThenBy(entry => entry.CreatedAt)
+            .ToList();
+
+        for (int index = 1; index < validEntries.Count; index++)
+        {
+            var previousEntry = validEntries[index - 1];
+            var currentEntry = validEntries[index];
+            var previousMood = previousEntry.EndOfWork ?? previousEntry.StartOfWork;
+
+            if (!previousMood.HasValue || !currentEntry.StartOfWork.HasValue)
+            {
+                continue;
+            }
+
+            yield return new FilledGraphDataPoint(
+                currentEntry.Date.ToDateTime(TimeOnly.MinValue),
+                currentEntry.StartOfWork.Value - previousMood.Value);
+        }
+    }
+
+    private static IEnumerable<FilledGraphDataPoint> CreateRawData(IEnumerable<MoodEntry> moodEntries)
+    {
+        return moodEntries
+            .Where(entry => entry.StartOfWork.HasValue || entry.EndOfWork.HasValue)
+            .SelectMany(entry =>
             {
                 var startOfWork = entry.StartOfWork.GetValueOrDefault();
                 return new[]
@@ -36,46 +83,30 @@ public class GraphDataTransformer : IGraphDataTransformer
                     new FilledGraphDataPoint(entry.CreatedAt, startOfWork),
                     new FilledGraphDataPoint(entry.LastModified, entry.EndOfWork.GetValueOrDefault(startOfWork))
                 };
-            }).OrderBy(point => point.Timestamp);
-        }
-        else
-        {
-            // Standard handling for Impact and Average modes - one data point per entry
-            dataPoints = filteredEntries
-                .Select(entry => new FilledGraphDataPoint(
-                    entry.Date.ToDateTime(TimeOnly.MinValue),
-                    GetValueForMode(entry, graphMode)
-                ))
-                .OrderBy(point => point.Timestamp);
-        }
-
-        return CreateGraphData(dataPoints, graphMode, dateRangeInfo);
+            })
+            .OrderBy(point => point.Timestamp);
     }
-    
-    /// <summary>
-    /// Filters mood entries based on the selected graph mode
-    /// </summary>
-    private static IEnumerable<MoodEntry> FilterEntriesForGraphMode(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
+
+    private static bool HasValueForMode(MoodEntry entry, GraphMode graphMode)
     {
         return graphMode switch
         {
-            GraphMode.Impact => moodEntries.Where(e => e.Value.HasValue),
-            GraphMode.Average => moodEntries.Where(e => e.GetAdjustedAverageMood().HasValue),
-            GraphMode.RawData => moodEntries.Where(e => e.StartOfWork.HasValue || e.EndOfWork.HasValue),
+            GraphMode.Impact => entry.Value.HasValue,
+            GraphMode.GeneralImpact => entry.StartOfWork.HasValue,
+            GraphMode.Average => entry.GetAdjustedAverageMood().HasValue,
+            GraphMode.RawData => entry.StartOfWork.HasValue || entry.EndOfWork.HasValue,
             _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, null)
         };
     }
 
-    /// <summary>
-    /// Gets the value for a mood entry based on the graph mode
-    /// </summary>
     private static float GetValueForMode(MoodEntry entry, GraphMode graphMode)
     {
         return (float)(graphMode switch
         {
             GraphMode.Impact => entry.Value ?? 0,
+            GraphMode.GeneralImpact => 0,
             GraphMode.Average => entry.GetAdjustedAverageMood() ?? 0,
-            GraphMode.RawData => entry.StartOfWork ?? 0, // For RawData, this method isn't used in the main transform but kept for compatibility
+            GraphMode.RawData => entry.StartOfWork ?? 0,
             _ => entry.Value ?? 0
         });
     }
@@ -88,8 +119,6 @@ public class GraphDataTransformer : IGraphDataTransformer
         return GetValueForMode(entry, graphMode);
     }
 
-
-
     /// <summary>
     /// Creates a GraphData object with appropriate metadata based on the graph mode and date range info
     /// </summary>
@@ -98,6 +127,7 @@ public class GraphDataTransformer : IGraphDataTransformer
         var baseTitle = graphMode switch
         {
             GraphMode.Impact => "Mood Change Over Time",
+            GraphMode.GeneralImpact => "General Impact Over Time",
             GraphMode.Average => "Average Mood Over Time",
             GraphMode.RawData => "Raw Mood Data Over Time",
             _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, "Unsupported graph mode")
@@ -118,6 +148,18 @@ public class GraphDataTransformer : IGraphDataTransformer
                 IsRawData = false,
                 YAxisLabelStep = 3,
                 Description = "Shows the daily impact on mood relative to neutral (0). Positive values indicate mood improvement, negative values indicate mood decline."
+            },
+            GraphMode.GeneralImpact => new GraphData
+            {
+                DataPoints = dataPoints,
+                Title = title,
+                YAxisRange = AxisRange.Impact,
+                CenterLineValue = 0,
+                YAxisLabel = "Impact",
+                XAxisLabel = "Date",
+                IsRawData = false,
+                YAxisLabelStep = 3,
+                Description = "Shows how mood changes between recorded work periods by comparing the current start-of-work mood to the previous available end-of-work mood, or previous start-of-work mood when no end-of-work mood was recorded."
             },
             GraphMode.Average => new GraphData
             {

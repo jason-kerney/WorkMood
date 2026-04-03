@@ -131,6 +131,90 @@ public class GraphDataTransformerTests
     #region Average Mode Tests
 
     [Fact]
+    public void TransformMoodEntries_GeneralImpactMode_WithSequentialData_ShouldReturnPreviousToCurrentStartDelta()
+    {
+        // Arrange
+        var moodEntries = new List<MoodEntry>
+        {
+            new()
+            {
+                Date = new DateOnly(2025, 1, 1),
+                StartOfWork = 5,
+                EndOfWork = 7,
+                CreatedAt = new DateTime(2025, 1, 1, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 1, 17, 0, 0)
+            },
+            new()
+            {
+                Date = new DateOnly(2025, 1, 2),
+                StartOfWork = 4,
+                EndOfWork = 6,
+                CreatedAt = new DateTime(2025, 1, 2, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 2, 17, 0, 0)
+            },
+            new()
+            {
+                Date = new DateOnly(2025, 1, 3),
+                StartOfWork = 8,
+                EndOfWork = null,
+                CreatedAt = new DateTime(2025, 1, 3, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 3, 17, 0, 0)
+            }
+        };
+
+        // Act
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.GeneralImpact, CreateDateRangeInfo(DateRange.Last3Years));
+
+        // Assert
+        Assert.Equal("General Impact Over Time", result.Title);
+        Assert.Equal(AxisRange.Impact, result.YAxisRange);
+        Assert.Equal(0, result.CenterLineValue);
+        Assert.Equal("Impact", result.YAxisLabel);
+        Assert.Equal("Date", result.XAxisLabel);
+        Assert.False(result.IsRawData);
+        Assert.Equal(3, result.YAxisLabelStep);
+
+        var dataPoints = result.DataPoints.ToList();
+        Assert.Equal(2, dataPoints.Count);
+        Assert.Equal(-3, dataPoints[0].Value); // 4 - 7 = -3
+        Assert.Equal(2, dataPoints[1].Value);  // 8 - 6 = 2
+    }
+
+    [Fact]
+    public void TransformMoodEntries_GeneralImpactMode_ShouldSkipFirstMatchingEntryAndFallbackToPreviousStart()
+    {
+        // Arrange
+        var moodEntries = new List<MoodEntry>
+        {
+            new()
+            {
+                Date = new DateOnly(2025, 1, 1),
+                StartOfWork = 6,
+                EndOfWork = null,
+                CreatedAt = new DateTime(2025, 1, 1, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 1, 17, 0, 0)
+            },
+            new()
+            {
+                Date = new DateOnly(2025, 1, 5),
+                StartOfWork = 8,
+                EndOfWork = 9,
+                CreatedAt = new DateTime(2025, 1, 5, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 5, 17, 0, 0)
+            }
+        };
+
+        // Act
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.GeneralImpact, CreateDateRangeInfo(DateRange.Last3Years));
+
+        // Assert
+        var dataPoints = result.DataPoints.ToList();
+        Assert.Single(dataPoints);
+        Assert.Equal(2, dataPoints[0].Value); // 8 - 6 = 2
+        Assert.Equal(new DateTime(2025, 1, 5, 0, 0, 0), dataPoints[0].Timestamp);
+    }
+
+    [Fact]
     public void TransformMoodEntries_AverageMode_WithValidData_ShouldReturnCorrectGraphData()
     {
         // Arrange
@@ -483,6 +567,10 @@ public class GraphDataTransformerTests
             {
                 Assert.Equal(2, result.DataPoints.Count()); // Start and end points
             }
+            else if (mode == GraphMode.GeneralImpact)
+            {
+                Assert.Empty(result.DataPoints); // Needs a previous matching entry
+            }
             else
             {
                 Assert.Single(result.DataPoints); // One data point per entry
@@ -587,6 +675,24 @@ public class GraphDataTransformerTests
     }
 
     [Fact]
+    public void GetValueForMoodEntry_GeneralImpactMode_ShouldReturnZeroBecauseSequenceContextIsRequired()
+    {
+        // Arrange
+        var moodEntry = new MoodEntry
+        {
+            StartOfWork = 7,
+            EndOfWork = 5,
+            Date = new DateOnly(2025, 1, 1)
+        };
+
+        // Act
+        var result = _transformer.GetValueForMoodEntry(moodEntry, GraphMode.GeneralImpact);
+
+        // Assert
+        Assert.Equal(0, result);
+    }
+
+    [Fact]
     public void GetValueForMoodEntry_WithNullValues_ShouldReturnZero()
     {
         // Arrange
@@ -611,6 +717,7 @@ public class GraphDataTransformerTests
 
     [Theory]
     [InlineData(GraphMode.Impact, "Mood Change Over Time", 0f, "Impact", "Date", false, 3)]
+    [InlineData(GraphMode.GeneralImpact, "General Impact Over Time", 0f, "Impact", "Date", false, 3)]
     [InlineData(GraphMode.Average, "Average Mood Over Time", 0f, "Average Mood", "Date", false, 3)]
     [InlineData(GraphMode.RawData, "Raw Mood Data Over Time", 5.5f, "Mood Level", "Time", true, 2)]
     public void TransformMoodEntries_ShouldSetCorrectMetadataForEachMode(
@@ -635,6 +742,7 @@ public class GraphDataTransformerTests
         var expectedAxisRange = mode switch
         {
             GraphMode.Impact => AxisRange.Impact,
+            GraphMode.GeneralImpact => AxisRange.Impact,
             GraphMode.Average => AxisRange.Average,
             GraphMode.RawData => AxisRange.RawData,
             _ => throw new ArgumentOutOfRangeException(nameof(mode))

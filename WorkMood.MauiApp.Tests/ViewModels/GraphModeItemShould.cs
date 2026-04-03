@@ -23,6 +23,7 @@ public class GraphModeItemShould
 
     [Theory]
     [InlineData(GraphMode.Impact, "Impact (Change Over Day)")]
+    [InlineData(GraphMode.GeneralImpact, "General Impact (Outside Work)")]
     [InlineData(GraphMode.Average, "Average (Daily Mood Level)")]
     [InlineData(GraphMode.RawData, "Raw Data (Individual Recordings)")]
     public void Constructor_WithAllGraphModeValues_CreatesValidObject(GraphMode graphMode, string displayName)
@@ -86,6 +87,7 @@ public class GraphModeItemShould
 
     [Theory]
     [InlineData(GraphMode.Impact)]
+    [InlineData(GraphMode.GeneralImpact)]
     [InlineData(GraphMode.Average)]
     [InlineData(GraphMode.RawData)]
     public void Constructor_WithAllEnumValues_HandlesAllGraphModes(GraphMode graphMode)
@@ -203,12 +205,16 @@ public class GraphModeItemShould
     {
         // Arrange & Act - Replicate actual GraphViewModel.InitializeGraphModes() method
         var impactItem = new GraphModeItem(GraphMode.Impact, "Impact (Change Over Day)");
+        var generalImpactItem = new GraphModeItem(GraphMode.GeneralImpact, "General Impact (Outside Work)");
         var averageItem = new GraphModeItem(GraphMode.Average, "Average (Daily Mood Level)");
         var rawDataItem = new GraphModeItem(GraphMode.RawData, "Raw Data (Individual Recordings)");
 
         // Assert - Verify matches real GraphViewModel usage
         Assert.Equal(GraphMode.Impact, impactItem.GraphMode);
         Assert.Equal("Impact (Change Over Day)", impactItem.DisplayName);
+
+        Assert.Equal(GraphMode.GeneralImpact, generalImpactItem.GraphMode);
+        Assert.Equal("General Impact (Outside Work)", generalImpactItem.DisplayName);
         
         Assert.Equal(GraphMode.Average, averageItem.GraphMode);
         Assert.Equal("Average (Daily Mood Level)", averageItem.DisplayName);
@@ -242,7 +248,7 @@ public class GraphModeItemShould
     {
         // Arrange & Act
         var item1 = new GraphModeItem(GraphMode.Impact, "Impact Display");
-        var item2 = new GraphModeItem(GraphMode.Average, "Average Display");
+        var item2 = new GraphModeItem(GraphMode.GeneralImpact, "General Impact Display");
 
         // Assert
         Assert.NotSame(item1, item2); // Different instances
@@ -288,7 +294,7 @@ public class GraphModeItemShould
     public void Constructor_WithAllCombinations_HandlesAllEnumStringPairs()
     {
         // Arrange
-        var graphModes = new[] { GraphMode.Impact, GraphMode.Average, GraphMode.RawData };
+        var graphModes = new[] { GraphMode.Impact, GraphMode.GeneralImpact, GraphMode.Average, GraphMode.RawData };
         var displayNames = new[] { "Short", "Medium Length Name", "Very Long Display Name With Lots Of Words" };
 
         // Act & Assert

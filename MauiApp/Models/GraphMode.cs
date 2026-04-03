@@ -13,6 +13,14 @@ public enum GraphMode
     Impact,
 
     /// <summary>
+    /// Shows the impact on mood between recorded work periods.
+    /// Formula: Current StartOfWork - (Previous EndOfWork ?? Previous StartOfWork)
+    /// The first matching day is omitted because no previous comparison point exists.
+    /// Range: -9 to +9
+    /// </summary>
+    GeneralImpact,
+
+    /// <summary>
     /// Shows the average mood for the day, adjusted to a -5 to +5 scale
     /// Formula: ((StartOfWork + (EndOfWork ?? StartOfWork)) / 2) - 5
     /// Range: -4 to +5 (since mood values are 1-10)

@@ -69,6 +69,7 @@ namespace WorkMood.MauiApp.Tests.Services
 
         [Theory]
         [InlineData(GraphMode.Impact)]
+        [InlineData(GraphMode.GeneralImpact)]
         [InlineData(GraphMode.Average)]
         [InlineData(GraphMode.RawData)]
         public async Task GenerateGraphAsync_WithWhiteBackground_ShouldCallTransformerWithCorrectGraphMode(GraphMode graphMode)
@@ -121,6 +122,7 @@ namespace WorkMood.MauiApp.Tests.Services
 
         [Theory]
         [InlineData(GraphMode.Impact)]
+        [InlineData(GraphMode.GeneralImpact)]
         [InlineData(GraphMode.Average)]
         [InlineData(GraphMode.RawData)]
         public async Task GenerateGraphAsync_WithCustomBackground_ShouldCallTransformerWithCorrectGraphMode(GraphMode graphMode)
@@ -175,6 +177,7 @@ namespace WorkMood.MauiApp.Tests.Services
 
         [Theory]
         [InlineData(GraphMode.Impact)]
+        [InlineData(GraphMode.GeneralImpact)]
         [InlineData(GraphMode.Average)]
         [InlineData(GraphMode.RawData)]
         public async Task SaveGraphAsync_WithWhiteBackground_ShouldCallTransformerAndGeneratorCorrectly(GraphMode graphMode)
@@ -227,6 +230,7 @@ namespace WorkMood.MauiApp.Tests.Services
 
         [Theory]
         [InlineData(GraphMode.Impact)]
+        [InlineData(GraphMode.GeneralImpact)]
         [InlineData(GraphMode.Average)]  
         [InlineData(GraphMode.RawData)]
         public async Task SaveGraphAsync_WithCustomBackground_ShouldCallTransformerAndGeneratorCorrectly(GraphMode graphMode)

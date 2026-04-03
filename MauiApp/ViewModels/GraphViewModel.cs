@@ -316,7 +316,7 @@ public class GraphViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Selected graph mode (Impact or Average)
+    /// Selected graph mode
     /// </summary>
     public GraphMode SelectedGraphMode
     {
@@ -665,7 +665,7 @@ public class GraphViewModel : ViewModelBase
         var endDate = dateRange.EndDate;
 
         return entries
-            .Where(e => e.Date >= startDate && e.Date <= endDate && e.Value.HasValue)
+            .Where(e => e.Date >= startDate && e.Date <= endDate)
             .OrderBy(e => e.Date)
             .ToList();
     }
@@ -688,6 +688,7 @@ public class GraphViewModel : ViewModelBase
     private void InitializeGraphModes()
     {
         GraphModes.Add(new GraphModeItem(GraphMode.Impact, "Impact (Change Over Day)"));
+        GraphModes.Add(new GraphModeItem(GraphMode.GeneralImpact, "General Impact (Outside Work)"));
         GraphModes.Add(new GraphModeItem(GraphMode.Average, "Average (Daily Mood Level)"));
         GraphModes.Add(new GraphModeItem(GraphMode.RawData, "Raw Data (Individual Recordings)"));
     }
