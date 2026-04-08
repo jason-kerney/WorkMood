@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:WorkMood.MauiApp.Converters"
+             x:Class="WorkMood.MauiApp.Pages.StorageSettingsPage"
+             Title="Storage Settings">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:InvertedBoolConverter x:Key="InvertedBoolConverter"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <Label Text="Mood Data Storage Location"
+                   FontSize="18"
+                   FontAttributes="Bold" />
+
+            <Label Text="Current location:" />
+            <Label Text="{Binding CurrentPath}"
+                   FontFamily="Monospace"
+                   TextColor="Gray"
+                   LineBreakMode="CharacterWrap" />
+
+            <BoxView HeightRequest="1" Color="LightGray" />
+
+            <Label Text="Select a new location:" />
+
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="{Binding SelectedPath}"
+                       VerticalOptions="Center"
+                       LineBreakMode="CharacterWrap"
+                       HorizontalOptions="FillAndExpand" />
+                <Button Text="Browse..."
+                        Command="{Binding BrowseCommand}"
+                        IsEnabled="{Binding IsMigrating, Converter={StaticResource InvertedBoolConverter}}" />
+            </HorizontalStackLayout>
+
+            <Label Text="{Binding ValidationMessage}">
+                <Label.Triggers>
+                    <DataTrigger TargetType="Label" Binding="{Binding IsSelectedPathValid}" Value="True">
+                        <Setter Property="TextColor" Value="Green" />
+                    </DataTrigger>
+                    <DataTrigger TargetType="Label" Binding="{Binding IsSelectedPathValid}" Value="False">
+                        <Setter Property="TextColor" Value="Red" />
+                    </DataTrigger>
+                </Label.Triggers>
+            </Label>
+
+            <Button Text="Migrate Data to New Location"
+                    Command="{Binding MigrateCommand}"
+                    IsEnabled="{Binding IsSelectedPathValid}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

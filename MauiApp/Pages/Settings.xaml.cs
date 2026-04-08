@@ -94,4 +94,11 @@ public partial class Settings : ContentPage
             _viewModel.EveningTime = EveningTimePicker.Time;
         }
     }
+
+    private async void OnStorageSettingsClicked(object sender, EventArgs e)
+    {
+        var page = Handler?.MauiContext?.Services?.GetService<StorageSettingsPage>();
+        if (page != null)
+            await Navigation.PushAsync(page);
+    }
 }

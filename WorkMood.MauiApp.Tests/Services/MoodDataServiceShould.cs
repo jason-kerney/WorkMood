@@ -16,6 +16,7 @@ public class MoodDataServiceShould
     private readonly Mock<IDateShim> _mockDateShim;
     private readonly Mock<IFileShim> _mockFileShim;
     private readonly Mock<IJsonSerializerShim> _mockJsonSerializerShim;
+    private readonly Mock<IScheduleConfigService> _mockScheduleConfigService;
 
     public MoodDataServiceShould()
     {
@@ -24,6 +25,7 @@ public class MoodDataServiceShould
         _mockDateShim = new Mock<IDateShim>();
         _mockFileShim = new Mock<IFileShim>();
         _mockJsonSerializerShim = new Mock<IJsonSerializerShim>();
+        _mockScheduleConfigService = new Mock<IScheduleConfigService>();
 
         // Setup folder operations to match implementation (Documents folder)
         _mockFolderShim.Setup(x => x.GetDocumentsFolder()).Returns("C:\\TestDocuments\\WorkMood");
@@ -729,6 +731,118 @@ public class MoodDataServiceShould
         await sut.LoadMoodDataAsync();
         
         _mockFileShim.Verify(x => x.Exists("C:\\TestDocuments\\WorkMood\\mood_data.json"), Times.Once);
+    }
+
+    [Fact]
+    public void GetMoodDataDirectory_ReturnsDirectoryOfActiveFilePath()
+    {
+        // Arrange
+        var sut = CreateMigratableMoodDataService(@"C:\TestDocuments\WorkMood\mood_data.json");
+
+        // Act
+        var result = sut.GetMoodDataDirectory();
+
+        // Assert
+        result.Should().Be(@"C:\TestDocuments\WorkMood");
+    }
+
+    [Fact]
+    public async Task MigrateMoodDataAsync_SuccessfulMigration_UpdatesActiveDirectory()
+    {
+        // Arrange
+        const string originalFilePath = @"C:\TestDocuments\WorkMood\mood_data.json";
+        const string newDir = @"C:\CustomStorage\WorkMood";
+        const string newFilePath = @"C:\CustomStorage\WorkMood\mood_data.json";
+
+        _mockFolderShim.Setup(x => x.CombinePaths(newDir, "mood_data.json")).Returns(newFilePath);
+        _mockFolderShim.Setup(x => x.CreateDirectory(newDir));
+        _mockFileShim.Setup(x => x.Exists(originalFilePath)).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync(originalFilePath)).ReturnsAsync("[{\"date\":\"2024-01-01\"}]");
+        _mockFileShim.Setup(x => x.WriteAllTextAsync(newFilePath, It.IsAny<string>())).Returns(Task.CompletedTask);
+        _mockScheduleConfigService.Setup(x => x.LoadScheduleConfigAsync()).ReturnsAsync(new ScheduleConfig());
+        _mockScheduleConfigService.Setup(x => x.SaveScheduleConfigAsync(It.IsAny<ScheduleConfig>())).Returns(Task.CompletedTask);
+
+        var sut = CreateMigratableMoodDataService(originalFilePath);
+
+        // Act
+        await sut.MigrateMoodDataAsync(newDir);
+
+        // Assert
+        sut.GetMoodDataDirectory().Should().Be(newDir);
+        _mockFileShim.Verify(x => x.WriteAllTextAsync(newFilePath, It.IsAny<string>()), Times.Once);
+        _mockScheduleConfigService.Verify(
+            x => x.SaveScheduleConfigAsync(It.Is<ScheduleConfig>(c => c.CustomMoodDataPath == newDir)),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task MigrateMoodDataAsync_WhenConfigSaveFails_ThrowsAndDoesNotChangeActiveDirectory()
+    {
+        // Arrange
+        const string originalFilePath = @"C:\TestDocuments\WorkMood\mood_data.json";
+        const string newDir = @"C:\CustomStorage\WorkMood";
+        const string newFilePath = @"C:\CustomStorage\WorkMood\mood_data.json";
+
+        _mockFolderShim.Setup(x => x.CombinePaths(newDir, "mood_data.json")).Returns(newFilePath);
+        _mockFolderShim.Setup(x => x.CreateDirectory(newDir));
+        _mockFileShim.Setup(x => x.Exists(originalFilePath)).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync(originalFilePath)).ReturnsAsync("[]");
+        _mockFileShim.Setup(x => x.WriteAllTextAsync(newFilePath, It.IsAny<string>())).Returns(Task.CompletedTask);
+        _mockFileShim.Setup(x => x.Exists(newFilePath)).Returns(true);
+        _mockScheduleConfigService.Setup(x => x.LoadScheduleConfigAsync()).ReturnsAsync(new ScheduleConfig());
+        _mockScheduleConfigService.Setup(x => x.SaveScheduleConfigAsync(It.IsAny<ScheduleConfig>()))
+            .ThrowsAsync(new IOException("Disk full"));
+
+        var sut = CreateMigratableMoodDataService(originalFilePath);
+
+        // Act
+        var act = async () => await sut.MigrateMoodDataAsync(newDir);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Migration failed*");
+        sut.GetMoodDataDirectory().Should().Be(@"C:\TestDocuments\WorkMood"); // unchanged
+    }
+
+    [Fact]
+    public async Task MigrateMoodDataAsync_RelativePath_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var sut = CreateMigratableMoodDataService();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => sut.MigrateMoodDataAsync("relative/path"));
+    }
+
+    [Fact]
+    public async Task MigrateMoodDataAsync_SamePath_DoesNotCopyOrSaveConfig()
+    {
+        // Arrange
+        const string samePath = @"C:\TestDocuments\WorkMood";
+        _mockFolderShim.Setup(x => x.CombinePaths(samePath, "mood_data.json"))
+            .Returns(@"C:\TestDocuments\WorkMood\mood_data.json");
+
+        var sut = CreateMigratableMoodDataService(@"C:\TestDocuments\WorkMood\mood_data.json");
+
+        // Act
+        await sut.MigrateMoodDataAsync(samePath);
+
+        // Assert — no file I/O or config save
+        _mockFileShim.Verify(x => x.WriteAllTextAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _mockScheduleConfigService.Verify(x => x.SaveScheduleConfigAsync(It.IsAny<ScheduleConfig>()), Times.Never);
+    }
+
+    private MoodDataService CreateMigratableMoodDataService(string initialFilePath = @"C:\TestDocuments\WorkMood\mood_data.json")
+    {
+        return new MoodDataService(
+            initialFilePath,
+            _mockArchiveService.Object,
+            _mockFolderShim.Object,
+            _mockDateShim.Object,
+            _mockFileShim.Object,
+            _mockJsonSerializerShim.Object,
+            new Mock<ILoggingService>().Object,
+            _mockScheduleConfigService.Object);
     }
 
     private MoodDataService CreateMoodDataService()

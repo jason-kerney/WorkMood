@@ -729,6 +729,61 @@ To receive reminders, ensure WorkMood has notification permissions:
 - **First Launch**: App may request permission when first setting reminders
 - **System Integration**: Reminders appear in your system's notification center
 
+### Storage Configuration ###
+
+Customize where WorkMood stores your mood tracking data with the **Storage** settings section.
+
+![Storage Settings](./images/settings-storage.png)
+*Figure 6: Storage settings with custom folder selection*
+
+#### Default Data Storage ####
+
+By default, WorkMood stores your mood data in your system's user data folder:
+
+- **Windows**: `%APPDATA%\WorkMood` (typically `C:\Users\YourUsername\AppData\Roaming\WorkMood`)
+- **macOS**: `~/Library/Application Support/WorkMood`
+
+Your data persists in these locations across app updates and rebuilds.
+
+#### Custom Storage Location ####
+
+You can choose a custom folder to store your mood data:
+
+1. **Open Storage Settings**: Navigate to the Settings tab and scroll to the **Storage** section
+2. **Click "Browse" or "Select Folder"**: Opens a folder picker dialog
+3. **Choose Your Location**: Select any accessible folder (external drive, shared folder, cloud-synced directory, etc.)
+4. **Confirm Migration**: WorkMood will automatically migrate your existing mood data to the new location
+5. **Verify Success**: After migration, you'll see the new path displayed in the Storage settings
+
+#### When to Use Custom Storage ####
+
+Consider custom storage if you want to:
+
+- **Backup to External Drive**: Store mood data on an external USB drive for off-site backup
+- **Share Across Computers**: Place data in a cloud-synced folder (Google Drive, OneDrive, Dropbox) to access from multiple machines
+- **Organize Your Files**: Keep mood data in a dedicated personal archive folder
+- **Protect Important Data**: Store data in a location with specific backup or encryption settings
+- **Multi-User Systems**: Use separate custom folders for different users on the same computer
+
+#### Data Migration ####
+
+When you change your storage location:
+
+- **Automatic Transfer**: All existing mood entries are automatically moved to the new location
+- **No Data Loss**: Every mood entry, mood chart entry, and stored configuration follows your data
+- **Seamless Transition**: The app continues working immediately after migration
+- **Folder Requirements**: The folder must be writable and accessible from your computer
+- **Path Validation**: WorkMood checks that the selected path is valid before migrating
+
+#### Storage Best Practices ####
+
+- **Stable Locations**: Choose fixed folders rather than temporary storage
+- **Accessible Paths**: Ensure the folder path won't become inaccessible (avoid network drives that disconnect)
+- **Sufficient Space**: Verify there's enough free space in your chosen location (mood entries are small, but plan ahead)
+- **Backup Consideration**: If storing on external drive, ensure regular backups of that drive
+- **Cloud Sync Caution**: Cloud-synced folders work well but can occasionally experience sync delays
+- **Permission Check**: Ensure your user account has full read/write permissions to the chosen folder
+
 ### Additional Settings ###
 
 #### Data Management ####

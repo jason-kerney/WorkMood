@@ -13,6 +13,9 @@ public class ScheduleConfig
     [JsonPropertyName("overrides")]
     public List<ScheduleOverride> Overrides { get; set; }
 
+    [JsonPropertyName("customMoodDataPath")]
+    public string? CustomMoodDataPath { get; set; }
+
     public ScheduleConfig()
     {
         // Default values

@@ -312,6 +312,10 @@
                         FontSize="16"
                         Padding="15"
                         CornerRadius="10" />
+
+                <Button Text="Configure Storage Location..."
+                        Clicked="OnStorageSettingsClicked"
+                        Margin="0,16,0,0" />
             </StackLayout>
             
         </Grid>

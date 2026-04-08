@@ -76,4 +76,18 @@ public interface IMoodDataService
     /// </summary>
     /// <returns>The data file path</returns>
     string GetDataFilePath();
+
+    /// <summary>
+    /// Returns the absolute directory path where mood_data.json is currently stored.
+    /// </summary>
+    string GetMoodDataDirectory();
+
+    /// <summary>
+    /// Copies mood_data.json to newPath/mood_data.json, saves newPath to schedule config,
+    /// then (on success) deletes the original file. On any failure after the copy, deletes
+    /// the copy and leaves the original untouched.
+    /// Throws InvalidOperationException if newPath is not an absolute path.
+    /// Throws InvalidOperationException if newPath is not writable.
+    /// </summary>
+    Task MigrateMoodDataAsync(string newPath);
 }

@@ -54,7 +54,18 @@ public static class MauiProgram
 			var fileShim = serviceProvider.GetRequiredService<IFileShim>();
 			var jsonSerializerShim = serviceProvider.GetRequiredService<IJsonSerializerShim>();
 			var loggingService = serviceProvider.GetRequiredService<ILoggingService>();
-			return new MoodDataService(archiveService, folderShim, dateShim, fileShim, jsonSerializerShim, loggingService);
+			var scheduleConfigService = serviceProvider.GetRequiredService<IScheduleConfigService>();
+			var initialFilePath = folderShim.CombinePaths(folderShim.GetDocumentsFolder(), "mood_data.json");
+
+			return new MoodDataService(
+				initialFilePath,
+				archiveService,
+				folderShim,
+				dateShim,
+				fileShim,
+				jsonSerializerShim,
+				loggingService,
+				scheduleConfigService);
 		});
 		builder.Services.AddSingleton<IMoodDataService>(provider => provider.GetRequiredService<MoodDataService>());
 		builder.Services.AddSingleton<ScheduleConfigService>(serviceProvider => 
@@ -87,6 +98,8 @@ public static class MauiProgram
 		builder.Services.AddSingleton<IDateShim, DateShim>();
 		builder.Services.AddSingleton<IFileShim, FileShim>();
 		builder.Services.AddSingleton<IJsonSerializerShim, JsonSerializerShim>();
+		builder.Services.AddSingleton<IPathValidationShim, PathValidationShim>();
+		builder.Services.AddSingleton<IFolderPickerShim, FolderPickerShim>();
 		
 		// Register new infrastructure services
 		builder.Services.AddSingleton<ILoggingService>(serviceProvider =>
@@ -117,10 +130,12 @@ public static class MauiProgram
 		// Register ViewModels
 		builder.Services.AddTransient<AboutViewModel>();
 		builder.Services.AddTransient<GraphViewModel>();
+		builder.Services.AddTransient<StorageSettingsViewModel>();
 		
 		// Register Pages
 		builder.Services.AddTransient<About>();
 		builder.Services.AddTransient<Graph>();
+		builder.Services.AddTransient<StorageSettingsPage>();
 		
 		// Register dispatcher service with all commands
 		builder.Services.AddSingleton<MoodDispatcherService>(serviceProvider =>

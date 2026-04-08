@@ -11,5 +11,6 @@
 
 - **Automatic calculations**: Analyzes mood changes throughout your work day
 - **Flexible scheduling**: Configure reminders based on your actual work hours  
+- **Custom data storage**: Store your mood data anywhere on your system—external drives, shared folders, or custom locations
 - **Graph export and sharing**: Export mood visualizations as PNG images and share them
 - **Clean interface**: Designed for quick daily use without complexity

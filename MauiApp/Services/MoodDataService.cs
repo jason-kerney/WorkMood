@@ -10,7 +10,7 @@ namespace WorkMood.MauiApp.Services;
 /// </summary>
 public class MoodDataService : IMoodDataService
 {
-    private readonly string _dataFilePath;
+    private string _dataFilePath;
     private readonly JsonSerializerOptions _jsonOptions;
     private readonly IDataArchiveService _archiveService;
     private readonly IFolderShim _folderShim;
@@ -18,6 +18,7 @@ public class MoodDataService : IMoodDataService
     private readonly IFileShim _fileShim;
     private readonly IJsonSerializerShim _jsonSerializerShim;
     private readonly ILoggingService _loggingService;
+    private readonly IScheduleConfigService? _scheduleConfigService;
     private MoodCollection? _cachedCollection;
 
     /// <summary>
@@ -68,6 +69,47 @@ public class MoodDataService : IMoodDataService
     }
 
     /// <summary>
+    /// Creates a new mood data service with an explicit initial file path and schedule config service (supports migration)
+    /// </summary>
+    public MoodDataService(
+        string initialMoodDataFilePath,
+        IDataArchiveService archiveService,
+        IFolderShim folderShim,
+        IDateShim dateShim,
+        IFileShim fileShim,
+        IJsonSerializerShim jsonSerializerShim,
+        ILoggingService loggingService,
+        IScheduleConfigService scheduleConfigService)
+    {
+        _archiveService = archiveService ?? throw new ArgumentNullException(nameof(archiveService));
+        _folderShim = folderShim ?? throw new ArgumentNullException(nameof(folderShim));
+        _dateShim = dateShim ?? throw new ArgumentNullException(nameof(dateShim));
+        _fileShim = fileShim ?? throw new ArgumentNullException(nameof(fileShim));
+        _jsonSerializerShim = jsonSerializerShim ?? throw new ArgumentNullException(nameof(jsonSerializerShim));
+        _loggingService = loggingService ?? throw new ArgumentNullException(nameof(loggingService));
+        _scheduleConfigService = scheduleConfigService ?? throw new ArgumentNullException(nameof(scheduleConfigService));
+
+        Log("MoodDataService (overload): Constructor starting");
+
+        var dir = Path.GetDirectoryName(initialMoodDataFilePath)
+                  ?? throw new ArgumentException("initialMoodDataFilePath must be an absolute path", nameof(initialMoodDataFilePath));
+
+        _folderShim.CreateDirectory(dir);
+        _dataFilePath = initialMoodDataFilePath;
+
+        Log($"MoodDataService (overload): Data file path: {_dataFilePath}");
+
+        _jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = true,
+            Converters = { new DateOnlyJsonConverter() }
+        };
+
+        Log("MoodDataService (overload): Constructor completed");
+    }
+
+    /// <summary>
     /// Creates a new mood data service with default shims (for backwards compatibility)
     /// </summary>
     public MoodDataService() : this(
@@ -89,6 +131,25 @@ public class MoodDataService : IMoodDataService
     private void Log(string message)
     {
         _loggingService.LogDebug(message);
+    }
+
+    public void InitializeDataFilePath(string? customMoodDataPath)
+    {
+        var activeDirectory = string.IsNullOrWhiteSpace(customMoodDataPath)
+            ? _folderShim.GetDocumentsFolder()
+            : customMoodDataPath;
+
+        _folderShim.CreateDirectory(activeDirectory);
+
+        var configuredFilePath = _folderShim.CombinePaths(activeDirectory, "mood_data.json");
+        if (string.Equals(_dataFilePath, configuredFilePath, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _dataFilePath = configuredFilePath;
+        _cachedCollection = null;
+        Log($"InitializeDataFilePath: Active data file path set to {_dataFilePath}");
     }
 
     /// <summary>
@@ -368,6 +429,81 @@ public class MoodDataService : IMoodDataService
     /// Gets the path where mood data is stored
     /// </summary>
     public string GetDataFilePath() => _dataFilePath;
+
+    /// <summary>
+    /// Returns the absolute directory path where mood_data.json is currently stored.
+    /// </summary>
+    public string GetMoodDataDirectory()
+    {
+        return Path.GetDirectoryName(_dataFilePath)
+               ?? _folderShim.GetDocumentsFolder();
+    }
+
+    /// <summary>
+    /// Migrates mood_data.json to a new directory, updating the config and clearing the cache.
+    /// </summary>
+    public async Task MigrateMoodDataAsync(string newPath)
+    {
+        if (_scheduleConfigService == null)
+            throw new InvalidOperationException(
+                "MigrateMoodDataAsync requires IScheduleConfigService. " +
+                "Use the 8-parameter constructor overload to enable migration.");
+
+        if (string.IsNullOrWhiteSpace(newPath) || !Path.IsPathRooted(newPath))
+            throw new InvalidOperationException(
+                $"newPath must be a non-empty absolute path. Received: '{newPath}'");
+
+        var newFilePath = _folderShim.CombinePaths(newPath, "mood_data.json");
+
+        if (string.Equals(_dataFilePath, newFilePath, StringComparison.OrdinalIgnoreCase))
+        {
+            Log("MigrateMoodDataAsync: newPath is the same as current path. No action taken.");
+            return;
+        }
+
+        // Step 1: Ensure destination directory exists
+        _folderShim.CreateDirectory(newPath);
+
+        // Step 2: Copy file content to new location using shims
+        var originalContent = _fileShim.Exists(_dataFilePath)
+            ? await _fileShim.ReadAllTextAsync(_dataFilePath)
+            : "[]";
+        await _fileShim.WriteAllTextAsync(newFilePath, originalContent);
+
+        // Step 3: Attempt config save. If it fails, rollback by deleting the copy.
+        try
+        {
+            var config = await _scheduleConfigService.LoadScheduleConfigAsync();
+            config.CustomMoodDataPath = newPath;
+            await _scheduleConfigService.SaveScheduleConfigAsync(config);
+        }
+        catch (Exception ex)
+        {
+            Log($"MigrateMoodDataAsync: Config save failed ({ex.Message}). Rolling back copy.");
+            try { if (_fileShim.Exists(newFilePath)) File.Delete(newFilePath); }
+            catch (Exception rollbackEx) { Log($"MigrateMoodDataAsync: Rollback delete failed: {rollbackEx.Message}"); }
+            throw new InvalidOperationException(
+                $"Migration failed: could not save configuration. Original data is unchanged. Details: {ex.Message}", ex);
+        }
+
+        // Step 4: Config saved — commit migration: update path, clear cache, delete original
+        var originalFilePath = _dataFilePath;
+        _dataFilePath = newFilePath;
+        _cachedCollection = null;
+
+        try
+        {
+            if (_fileShim.Exists(originalFilePath))
+                File.Delete(originalFilePath);
+        }
+        catch (Exception ex)
+        {
+            // Original delete failed. Both copies exist, but config points to new location. Non-fatal.
+            Log($"MigrateMoodDataAsync: Could not delete original at '{originalFilePath}': {ex.Message}. Non-fatal.");
+        }
+
+        Log($"MigrateMoodDataAsync: Migration complete. Active path is now '{_dataFilePath}'.");
+    }
 }
 
 /// <summary>
