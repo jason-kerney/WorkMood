@@ -42,6 +42,7 @@ The application allows you to record your mood at the beginning and end of your 
 - **Automatic calculations**: Analyzes mood changes throughout your work day
 - **Flexible scheduling**: Configure reminders based on your actual work hours
 - **Custom data storage**: Store your mood data anywhere on your system—external drives, shared folders, or custom locations
+- **One-time configuration import**: Import a schedule configuration JSON file from any location when needed
 - **One-time configuration backup**: Create a backup copy of your schedule configuration in any folder you choose
 - **Graph export and sharing**: Export mood visualizations as PNG images and share them
 - **Clean interface**: Designed for quick daily use without complexity
@@ -171,8 +172,9 @@ Your data persists across different builds and updates.
 1. **Record your first mood**: Open the "Record Mood" tab and log how you're feeling at work right now
 2. **Explore the interface**: Check out History, Visualization, and Settings tabs to understand the app
 3. **Set your schedule**: Configure your work start/end times in Settings for reminder notifications
-4. **Back up your configuration (optional)**: Use the one-time backup action in Settings to save a copy of your schedule configuration to a folder you choose
-5. **Start tracking**: Record your mood at the beginning and end of work days to see patterns
+4. **Import configuration (optional)**: Use the one-time import action in Settings to load schedule configuration from a JSON file
+5. **Back up your configuration (optional)**: Use the one-time backup action in Settings to save a copy of your schedule configuration to a folder you choose
+6. **Start tracking**: Record your mood at the beginning and end of work days to see patterns
 
 ##### Usage Tips for Developers #####
 

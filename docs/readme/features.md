@@ -12,6 +12,7 @@
 - **Automatic calculations**: Analyzes mood changes throughout your work day
 - **Flexible scheduling**: Configure reminders based on your actual work hours  
 - **Custom data storage**: Store your mood data anywhere on your system—external drives, shared folders, or custom locations
+- **One-time configuration import**: Import a schedule configuration JSON file from any location when needed
 - **One-time configuration backup**: Create a backup copy of your schedule configuration in any folder you choose
 - **Graph export and sharing**: Export mood visualizations as PNG images and share them
 - **Clean interface**: Designed for quick daily use without complexity

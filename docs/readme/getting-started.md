@@ -123,8 +123,9 @@ Your data persists across different builds and updates.
 1. **Record your first mood**: Open the "Record Mood" tab and log how you're feeling at work right now
 2. **Explore the interface**: Check out History, Visualization, and Settings tabs to understand the app
 3. **Set your schedule**: Configure your work start/end times in Settings for reminder notifications
-4. **Back up your configuration (optional)**: Use the one-time backup action in Settings to save a copy of your schedule configuration to a folder you choose
-5. **Start tracking**: Record your mood at the beginning and end of work days to see patterns
+4. **Import configuration (optional)**: Use the one-time import action in Settings to load schedule configuration from a JSON file
+5. **Back up your configuration (optional)**: Use the one-time backup action in Settings to save a copy of your schedule configuration to a folder you choose
+6. **Start tracking**: Record your mood at the beginning and end of work days to see patterns
 
 <!-- (dl (### Usage Tips for Developers)) -->
 

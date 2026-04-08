@@ -368,6 +368,78 @@ public class ScheduleConfigServiceShould
 
     #endregion
 
+    #region ImportScheduleConfigAsync Tests
+
+    [Fact]
+    public async Task ImportScheduleConfigAsync_ShouldImportAndSaveConfiguration_WhenSourceIsValid()
+    {
+        // Arrange
+        const string sourceFilePath = "C:\\Imports\\schedule_config.json";
+        const string sourceJson = "{\"morningTime\":\"09:00:00\",\"eveningTime\":\"18:00:00\"}";
+        const string savedJson = "{\"morningTime\":\"09:00:00\",\"eveningTime\":\"18:00:00\",\"overrides\":[]}";
+        var importedConfig = new ScheduleConfig(TimeSpan.FromHours(9), TimeSpan.FromHours(18));
+
+        _mockFileShim.Setup(x => x.Exists(sourceFilePath)).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync(sourceFilePath)).ReturnsAsync(sourceJson);
+        _mockJsonSerializerShim.Setup(x => x.Deserialize<ScheduleConfig>(sourceJson, It.IsAny<JsonSerializerOptions>()))
+            .Returns(importedConfig);
+        _mockJsonSerializerShim.Setup(x => x.Serialize(importedConfig, It.IsAny<JsonSerializerOptions>()))
+            .Returns(savedJson);
+
+        // Act
+        await _service.ImportScheduleConfigAsync(sourceFilePath);
+
+        // Assert
+        _mockFileShim.Verify(x => x.WriteAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json", savedJson), Times.Once);
+        Assert.Equal(importedConfig, _service.GetCachedConfig());
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public async Task ImportScheduleConfigAsync_ShouldThrowArgumentException_WhenSourceIsEmpty(string? sourceFilePath)
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _service.ImportScheduleConfigAsync(sourceFilePath!));
+    }
+
+    [Fact]
+    public async Task ImportScheduleConfigAsync_ShouldThrowArgumentException_WhenSourceIsRelative()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _service.ImportScheduleConfigAsync("relative\\schedule_config.json"));
+    }
+
+    [Fact]
+    public async Task ImportScheduleConfigAsync_ShouldThrowFileNotFoundException_WhenSourceDoesNotExist()
+    {
+        // Arrange
+        const string sourceFilePath = "C:\\Imports\\missing_schedule_config.json";
+        _mockFileShim.Setup(x => x.Exists(sourceFilePath)).Returns(false);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<FileNotFoundException>(() => _service.ImportScheduleConfigAsync(sourceFilePath));
+    }
+
+    [Fact]
+    public async Task ImportScheduleConfigAsync_ShouldThrowInvalidDataException_WhenSourceIsInvalid()
+    {
+        // Arrange
+        const string sourceFilePath = "C:\\Imports\\schedule_config.json";
+        const string sourceJson = "{invalid-json}";
+
+        _mockFileShim.Setup(x => x.Exists(sourceFilePath)).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync(sourceFilePath)).ReturnsAsync(sourceJson);
+        _mockJsonSerializerShim.Setup(x => x.Deserialize<ScheduleConfig>(sourceJson, It.IsAny<JsonSerializerOptions>()))
+            .Returns((ScheduleConfig?)null);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.ImportScheduleConfigAsync(sourceFilePath));
+    }
+
+    #endregion
+
     #region BackupScheduleConfigAsync Tests
 
     [Fact]

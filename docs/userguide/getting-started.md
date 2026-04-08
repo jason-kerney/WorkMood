@@ -84,7 +84,8 @@ WorkMood uses a **tabbed interface** with the following main sections:
 1. Go to the **"Settings"** tab
 2. Configure your work schedule reminder times
 3. Add date-specific overrides if needed
-4. Optionally create a **one-time configuration backup** to a folder you choose
+4. Optionally run a **one-time configuration import** from a JSON file
+5. Optionally create a **one-time configuration backup** to a folder you choose
 
 **Flexible Schedules:** Many developers have non-standard hours. Set reminders that match when you actually start and finish your coding work, whether that's early morning, late night, or varying daily schedules.
 

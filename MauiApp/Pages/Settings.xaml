@@ -313,6 +313,15 @@
                         Padding="15"
                         CornerRadius="10" />
 
+                    <Button Text="Import One-Time Config File..."
+                        Command="{Binding ImportConfigCommand}"
+                        BackgroundColor="{StaticResource Tertiary}"
+                        TextColor="White"
+                        FontSize="16"
+                        Padding="15"
+                        CornerRadius="10"
+                        Margin="0,8,0,0" />
+
                 <Button Text="Create One-Time Config Backup..."
                     Command="{Binding BackupConfigCommand}"
                     BackgroundColor="{StaticResource Secondary}"

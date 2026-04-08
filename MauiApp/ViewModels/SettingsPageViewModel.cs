@@ -103,6 +103,7 @@ public class SettingsPageViewModel : ViewModelBase
     // Commands
     public ICommand SaveCommand { get; }
     public ICommand CancelCommand { get; }
+    public ICommand ImportConfigCommand { get; }
     public ICommand BackupConfigCommand { get; }
     public ICommand EditOverrideCommand { get; }
     public ICommand DeleteOverrideCommand { get; }
@@ -124,6 +125,7 @@ public class SettingsPageViewModel : ViewModelBase
         // Initialize commands
         SaveCommand = new RelayCommand(async () => await SaveSettingsAsync());
         CancelCommand = new RelayCommand(async () => await CancelChangesAsync());
+        ImportConfigCommand = new RelayCommand(async () => await ImportConfigAsync());
         BackupConfigCommand = new RelayCommand(async () => await BackupConfigAsync());
         EditOverrideCommand = new RelayCommand<ScheduleOverride>(async (overrideItem) => await EditOverrideAsync(overrideItem));
         DeleteOverrideCommand = new RelayCommand<ScheduleOverride>(async (overrideItem) => await DeleteOverrideAsync(overrideItem));
@@ -329,6 +331,47 @@ public class SettingsPageViewModel : ViewModelBase
             
             await _navigationService.ShowAlertAsync("Success", "Override deleted successfully.", "OK");
         }
+    }
+
+    /// <summary>
+    /// Imports schedule configuration from a user-selected file as a one-time operation.
+    /// </summary>
+    private async Task ImportConfigAsync()
+    {
+        try
+        {
+            var sourceFilePath = await PickConfigFileAsync();
+            if (string.IsNullOrWhiteSpace(sourceFilePath))
+            {
+                return;
+            }
+
+            await _scheduleConfigService.ImportScheduleConfigAsync(sourceFilePath);
+            await LoadConfigurationAsync();
+            await _navigationService.ShowAlertAsync("Success", "Configuration imported successfully.", "OK");
+        }
+        catch (Exception ex)
+        {
+            await _navigationService.ShowAlertAsync("Error", $"Failed to import configuration: {ex.Message}", "OK");
+        }
+    }
+
+    private static async Task<string?> PickConfigFileAsync()
+    {
+        var fileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+        {
+            { DevicePlatform.WinUI, new[] { ".json" } },
+            { DevicePlatform.macOS, new[] { "json" } }
+        });
+
+        var pickOptions = new PickOptions
+        {
+            PickerTitle = "Select Configuration File",
+            FileTypes = fileTypes
+        };
+
+        var file = await FilePicker.PickAsync(pickOptions);
+        return file?.FullPath;
     }
 
     /// <summary>

@@ -33,4 +33,10 @@ public interface IScheduleConfigService
     /// </summary>
     /// <param name="destinationFolderPath">Absolute destination folder path for the backup file</param>
     Task BackupScheduleConfigAsync(string destinationFolderPath);
+
+    /// <summary>
+    /// Imports schedule configuration from a user-selected file as a one-time operation.
+    /// </summary>
+    /// <param name="sourceFilePath">Absolute path to the source configuration file</param>
+    Task ImportScheduleConfigAsync(string sourceFilePath);
 }

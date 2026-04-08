@@ -105,7 +105,8 @@ WorkMood uses a **tabbed interface** with the following main sections:
 1. Go to the **"Settings"** tab
 2. Configure your work schedule reminder times
 3. Add date-specific overrides if needed
-4. Optionally create a **one-time configuration backup** to a folder you choose
+4. Optionally run a **one-time configuration import** from a JSON file
+5. Optionally create a **one-time configuration backup** to a folder you choose
 
 **Flexible Schedules:** Many developers have non-standard hours. Set reminders that match when you actually start and finish your coding work, whether that's early morning, late night, or varying daily schedules.
 
@@ -648,7 +649,7 @@ The Settings page is organized around **mood tracking schedule configuration**:
 - **Morning Reminders**: Configure when you want morning mood prompts
 - **Evening Reminders**: Set up end-of-day mood tracking reminders
 - **Schedule Overrides**: Configure date-specific reminder times
-- **Storage and Backup Options**: Manage mood data location and create one-time config backups
+- **Storage and Config File Tools**: Manage mood data location, one-time config imports, and one-time config backups
 
 ### Morning Reminder Configuration ###
 
@@ -811,6 +812,20 @@ Important behavior:
 - The backup location is **not** saved for later
 - Backups are **manual only** (no automatic schedule)
 - This action backs up **schedule configuration**
+
+#### One-Time Configuration Import ####
+
+WorkMood includes a one-time import action for schedule configuration.
+
+1. On the Settings page, click **Import One-Time Config File...**
+2. Choose a source JSON file
+3. WorkMood validates the file and imports schedule configuration
+
+Important behavior:
+
+- The source file location is **not** saved for later
+- Imports are **manual only** (no automatic schedule)
+- This action imports **schedule configuration** only
 
 ### Privacy and Security ###
 

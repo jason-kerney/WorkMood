@@ -237,4 +237,43 @@ public class ScheduleConfigService : IScheduleConfigService
         await _fileShim.WriteAllTextAsync(backupFilePath, backupJson);
         Log($"BackupScheduleConfigAsync: Backup completed at {backupFilePath}");
     }
+
+    /// <summary>
+    /// Imports schedule configuration from a source file path as a one-time operation.
+    /// </summary>
+    /// <param name="sourceFilePath">Absolute path to the source configuration file</param>
+    public async Task ImportScheduleConfigAsync(string sourceFilePath)
+    {
+        if (string.IsNullOrWhiteSpace(sourceFilePath))
+        {
+            throw new ArgumentException("Source file path is required.", nameof(sourceFilePath));
+        }
+
+        if (!Path.IsPathRooted(sourceFilePath))
+        {
+            throw new ArgumentException("Source file path must be absolute.", nameof(sourceFilePath));
+        }
+
+        if (!_fileShim.Exists(sourceFilePath))
+        {
+            throw new FileNotFoundException("Source configuration file was not found.", sourceFilePath);
+        }
+
+        Log($"ImportScheduleConfigAsync: Starting import from {sourceFilePath}");
+
+        var json = await _fileShim.ReadAllTextAsync(sourceFilePath);
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            throw new InvalidDataException("Source configuration file is empty.");
+        }
+
+        var importedConfig = _jsonSerializerShim.Deserialize<ScheduleConfig>(json, _jsonOptions);
+        if (importedConfig == null)
+        {
+            throw new InvalidDataException("Source configuration file is invalid.");
+        }
+
+        await SaveScheduleConfigAsync(importedConfig);
+        Log("ImportScheduleConfigAsync: Import completed successfully");
+    }
 }

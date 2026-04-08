@@ -13,7 +13,7 @@ The Settings page is organized around **mood tracking schedule configuration**:
 - **Morning Reminders**: Configure when you want morning mood prompts
 - **Evening Reminders**: Set up end-of-day mood tracking reminders
 - **Schedule Overrides**: Configure date-specific reminder times
-- **Storage and Backup Options**: Manage mood data location and create one-time config backups
+- **Storage and Config File Tools**: Manage mood data location, one-time config imports, and one-time config backups
 
 <!-- (dl (# Morning Reminder Configuration)) -->
 
@@ -176,6 +176,20 @@ Important behavior:
 - The backup location is **not** saved for later
 - Backups are **manual only** (no automatic schedule)
 - This action backs up **schedule configuration**
+
+<!-- (dl (## One-Time Configuration Import)) -->
+
+WorkMood includes a one-time import action for schedule configuration.
+
+1. On the Settings page, click **Import One-Time Config File...**
+2. Choose a source JSON file
+3. WorkMood validates the file and imports schedule configuration
+
+Important behavior:
+
+- The source file location is **not** saved for later
+- Imports are **manual only** (no automatic schedule)
+- This action imports **schedule configuration** only
 
 <!-- (dl (# Privacy and Security)) -->
 
