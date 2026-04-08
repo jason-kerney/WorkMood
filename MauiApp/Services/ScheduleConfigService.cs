@@ -207,4 +207,34 @@ public class ScheduleConfigService : IScheduleConfigService
         Log("UpdateScheduleConfigAsync: Configuration updated successfully");
         return updatedConfig;
     }
+
+    /// <summary>
+    /// Creates a one-time backup copy of the current schedule configuration in the specified folder.
+    /// </summary>
+    /// <param name="destinationFolderPath">Absolute destination folder path for the backup file</param>
+    public async Task BackupScheduleConfigAsync(string destinationFolderPath)
+    {
+        if (string.IsNullOrWhiteSpace(destinationFolderPath))
+        {
+            throw new ArgumentException("Destination folder path is required.", nameof(destinationFolderPath));
+        }
+
+        if (!Path.IsPathRooted(destinationFolderPath))
+        {
+            throw new ArgumentException("Destination folder path must be absolute.", nameof(destinationFolderPath));
+        }
+
+        Log($"BackupScheduleConfigAsync: Starting backup to {destinationFolderPath}");
+
+        var config = await LoadScheduleConfigAsync();
+        var backupJson = _jsonSerializerShim.Serialize(config, _jsonOptions);
+
+        _folderShim.CreateDirectory(destinationFolderPath);
+
+        var backupFileName = $"schedule_config_backup_{DateTime.Now:yyyyMMdd_HHmmss}.json";
+        var backupFilePath = _folderShim.CombinePaths(destinationFolderPath, backupFileName);
+
+        await _fileShim.WriteAllTextAsync(backupFilePath, backupJson);
+        Log($"BackupScheduleConfigAsync: Backup completed at {backupFilePath}");
+    }
 }

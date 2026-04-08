@@ -1,6 +1,7 @@
 using WorkMood.MauiApp.ViewModels;
 using WorkMood.MauiApp.Services;
 using WorkMood.MauiApp.Pages;
+using WorkMood.MauiApp.Shims;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace WorkMood.MauiApp.Pages;
@@ -74,13 +75,16 @@ public partial class Main : ContentPage
     {
         // Get the schedule config service from DI if available
         var scheduleConfigService = Handler?.MauiContext?.Services.GetService<ScheduleConfigService>();
-        if (scheduleConfigService != null)
+        var folderPickerShim = Handler?.MauiContext?.Services.GetService<IFolderPickerShim>();
+        var pathValidationShim = Handler?.MauiContext?.Services.GetService<IPathValidationShim>();
+
+        if (scheduleConfigService != null && folderPickerShim != null && pathValidationShim != null)
         {
-            await _navigationService.NavigateAsync(() => new Settings(scheduleConfigService));
+            await _navigationService.NavigateAsync(() => new Settings(scheduleConfigService, folderPickerShim, pathValidationShim));
         }
         else
         {
-            await _navigationService.ShowErrorAsync("Failed to get schedule configuration service");
+            await _navigationService.ShowErrorAsync("Failed to get required settings services");
         }
     }
 

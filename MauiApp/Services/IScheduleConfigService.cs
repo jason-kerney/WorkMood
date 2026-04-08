@@ -27,4 +27,10 @@ public interface IScheduleConfigService
     /// <param name="newOverride">Optional new override to add</param>
     /// <returns>The updated configuration</returns>
     Task<ScheduleConfig> UpdateScheduleConfigAsync(TimeSpan morningTime, TimeSpan eveningTime, ScheduleOverride? newOverride = null);
+
+    /// <summary>
+    /// Creates a one-time backup copy of the current schedule configuration in the specified folder.
+    /// </summary>
+    /// <param name="destinationFolderPath">Absolute destination folder path for the backup file</param>
+    Task BackupScheduleConfigAsync(string destinationFolderPath);
 }

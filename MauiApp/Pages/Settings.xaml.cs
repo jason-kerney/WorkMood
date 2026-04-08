@@ -1,6 +1,7 @@
 using WorkMood.MauiApp.Models;
 using WorkMood.MauiApp.Services;
 using WorkMood.MauiApp.ViewModels;
+using WorkMood.MauiApp.Shims;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Shapes;
 
@@ -16,7 +17,10 @@ public partial class Settings : ContentPage
     // Keep the old fields temporarily for compatibility during transition
     private readonly ScheduleConfigService _scheduleConfigService;
 
-    public Settings(ScheduleConfigService scheduleConfigService)
+    public Settings(
+        ScheduleConfigService scheduleConfigService,
+        IFolderPickerShim folderPickerShim,
+        IPathValidationShim pathValidationShim)
     {
         _scheduleConfigService = scheduleConfigService;
         
@@ -26,7 +30,7 @@ public partial class Settings : ContentPage
     var navigationService = new NavigationService(this);
         
         // Create and set the ViewModel
-        _viewModel = new SettingsPageViewModel(scheduleConfigService, navigationService);
+        _viewModel = new SettingsPageViewModel(scheduleConfigService, navigationService, folderPickerShim, pathValidationShim);
         BindingContext = _viewModel;
     }
 
@@ -39,7 +43,11 @@ public partial class Settings : ContentPage
         // Fallback constructor for design-time or when DI is not available
     var navigationService = new NavigationService(this);
         
-        _viewModel = new SettingsPageViewModel(_scheduleConfigService, navigationService);
+        _viewModel = new SettingsPageViewModel(
+            _scheduleConfigService,
+            navigationService,
+            new FolderPickerShim(),
+            new PathValidationShim());
         BindingContext = _viewModel;
     }
 

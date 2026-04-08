@@ -368,6 +368,77 @@ public class ScheduleConfigServiceShould
 
     #endregion
 
+    #region BackupScheduleConfigAsync Tests
+
+    [Fact]
+    public async Task BackupScheduleConfigAsync_ShouldCreateBackupFile_WhenDestinationIsValid()
+    {
+        // Arrange
+        const string destinationFolder = "C:\\Backup";
+        const string backupFilePath = "C:\\Backup\\schedule_config_backup_20260101_120000.json";
+        const string serializedJson = "{\"morningTime\":\"08:20:00\",\"eveningTime\":\"17:20:00\"}";
+
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(false);
+        _mockJsonSerializerShim.Setup(x => x.Serialize(It.IsAny<ScheduleConfig>(), It.IsAny<JsonSerializerOptions>()))
+            .Returns(serializedJson);
+        _mockFolderShim.Setup(x => x.CombinePaths(destinationFolder, It.Is<string>(name =>
+            name.StartsWith("schedule_config_backup_") && name.EndsWith(".json"))))
+            .Returns(backupFilePath);
+
+        // Act
+        await _service.BackupScheduleConfigAsync(destinationFolder);
+
+        // Assert
+        _mockFolderShim.Verify(x => x.CreateDirectory(destinationFolder), Times.Once);
+        _mockFolderShim.Verify(x => x.CombinePaths(destinationFolder, It.Is<string>(name =>
+            name.StartsWith("schedule_config_backup_") && name.EndsWith(".json"))), Times.Once);
+        _mockFileShim.Verify(x => x.WriteAllTextAsync(backupFilePath, serializedJson), Times.Once);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public async Task BackupScheduleConfigAsync_ShouldThrowArgumentException_WhenDestinationIsEmpty(string? destinationFolderPath)
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.BackupScheduleConfigAsync(destinationFolderPath!));
+    }
+
+    [Fact]
+    public async Task BackupScheduleConfigAsync_ShouldThrowArgumentException_WhenDestinationIsRelative()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.BackupScheduleConfigAsync("relative\\backup"));
+    }
+
+    [Fact]
+    public async Task BackupScheduleConfigAsync_ShouldPropagateException_WhenFileWriteFails()
+    {
+        // Arrange
+        const string destinationFolder = "C:\\Backup";
+        const string backupFilePath = "C:\\Backup\\schedule_config_backup_20260101_120000.json";
+        const string serializedJson = "{}";
+
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(false);
+        _mockJsonSerializerShim.Setup(x => x.Serialize(It.IsAny<ScheduleConfig>(), It.IsAny<JsonSerializerOptions>()))
+            .Returns(serializedJson);
+        _mockFolderShim.Setup(x => x.CombinePaths(destinationFolder, It.Is<string>(name =>
+            name.StartsWith("schedule_config_backup_") && name.EndsWith(".json"))))
+            .Returns(backupFilePath);
+        _mockFileShim.Setup(x => x.WriteAllTextAsync(backupFilePath, serializedJson))
+            .ThrowsAsync(new IOException("Disk full"));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<IOException>(() =>
+            _service.BackupScheduleConfigAsync(destinationFolder));
+        Assert.Equal("Disk full", exception.Message);
+    }
+
+    #endregion
+
     #region UpdateScheduleConfigAsync Tests
 
     [Fact]

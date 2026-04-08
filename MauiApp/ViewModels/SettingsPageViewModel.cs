@@ -3,6 +3,7 @@ using System.Windows.Input;
 using WorkMood.MauiApp.Infrastructure;
 using WorkMood.MauiApp.Models;
 using WorkMood.MauiApp.Services;
+using WorkMood.MauiApp.Shims;
 
 namespace WorkMood.MauiApp.ViewModels;
 
@@ -13,6 +14,8 @@ public class SettingsPageViewModel : ViewModelBase
 {
     private readonly IScheduleConfigService _scheduleConfigService;
     private readonly INavigationService _navigationService;
+    private readonly IFolderPickerShim _folderPickerShim;
+    private readonly IPathValidationShim _pathValidationShim;
     private ScheduleConfig _currentConfig;
 
     // Private backing fields
@@ -100,13 +103,20 @@ public class SettingsPageViewModel : ViewModelBase
     // Commands
     public ICommand SaveCommand { get; }
     public ICommand CancelCommand { get; }
+    public ICommand BackupConfigCommand { get; }
     public ICommand EditOverrideCommand { get; }
     public ICommand DeleteOverrideCommand { get; }
 
-    public SettingsPageViewModel(IScheduleConfigService scheduleConfigService, INavigationService navigationService)
+    public SettingsPageViewModel(
+        IScheduleConfigService scheduleConfigService,
+        INavigationService navigationService,
+        IFolderPickerShim folderPickerShim,
+        IPathValidationShim pathValidationShim)
     {
         _scheduleConfigService = scheduleConfigService ?? throw new ArgumentNullException(nameof(scheduleConfigService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        _folderPickerShim = folderPickerShim ?? throw new ArgumentNullException(nameof(folderPickerShim));
+        _pathValidationShim = pathValidationShim ?? throw new ArgumentNullException(nameof(pathValidationShim));
         
         _currentConfig = new ScheduleConfig();
         _existingOverrides = new ObservableCollection<ScheduleOverride>();
@@ -114,6 +124,7 @@ public class SettingsPageViewModel : ViewModelBase
         // Initialize commands
         SaveCommand = new RelayCommand(async () => await SaveSettingsAsync());
         CancelCommand = new RelayCommand(async () => await CancelChangesAsync());
+        BackupConfigCommand = new RelayCommand(async () => await BackupConfigAsync());
         EditOverrideCommand = new RelayCommand<ScheduleOverride>(async (overrideItem) => await EditOverrideAsync(overrideItem));
         DeleteOverrideCommand = new RelayCommand<ScheduleOverride>(async (overrideItem) => await DeleteOverrideAsync(overrideItem));
 
@@ -317,6 +328,40 @@ public class SettingsPageViewModel : ViewModelBase
             RefreshExistingOverrides();
             
             await _navigationService.ShowAlertAsync("Success", "Override deleted successfully.", "OK");
+        }
+    }
+
+    /// <summary>
+    /// Creates a one-time backup copy of the current schedule configuration in a user-selected folder.
+    /// </summary>
+    private async Task BackupConfigAsync()
+    {
+        try
+        {
+            var destinationFolderPath = await _folderPickerShim.PickFolderAsync();
+            if (string.IsNullOrWhiteSpace(destinationFolderPath))
+            {
+                return;
+            }
+
+            if (!_pathValidationShim.IsAbsolutePath(destinationFolderPath))
+            {
+                await _navigationService.ShowAlertAsync("Error", "Selected folder path is invalid.", "OK");
+                return;
+            }
+
+            if (!_pathValidationShim.HasWritePermission(destinationFolderPath))
+            {
+                await _navigationService.ShowAlertAsync("Error", "Cannot write to the selected folder.", "OK");
+                return;
+            }
+
+            await _scheduleConfigService.BackupScheduleConfigAsync(destinationFolderPath);
+            await _navigationService.ShowAlertAsync("Success", "Configuration backup created successfully.", "OK");
+        }
+        catch (Exception ex)
+        {
+            await _navigationService.ShowAlertAsync("Error", $"Failed to create configuration backup: {ex.Message}", "OK");
         }
     }
 }

@@ -41,8 +41,8 @@ When you first launch WorkMood, you'll see the main dashboard with a clean, intu
 
 **Data Location:** WorkMood stores your mood tracking data locally on your system:
 
-- **Windows**: `%APPDATA%\WorkMood` or `%USERPROFILE%\.workmood`  
-- **macOS**: `~/Library/Application Support/WorkMood` or `~/.workmood`
+- **Windows**: `%USERPROFILE%\Documents\WorkMood`
+- **macOS**: `~/Documents/WorkMood`
 
 Your mood data persists between app updates and different builds, so you can maintain a continuous tracking history as you use the application for your daily work mood monitoring.
 
@@ -64,7 +64,7 @@ WorkMood uses a **tabbed interface** with the following main sections:
 1. Click on the **"Record Mood"** tab
 2. Record your **morning work mood** using the slider or buttons (how you feel starting work)
 3. At the end of your work day, record your **evening work mood** (how you feel finishing work)
-4. Click **"Save Entry"** to record your work mood data
+4. Click **"Save Morning Mood"** and **"Save Evening Mood"** to record your work mood data
 
 ![Mood Recording Interface](./images/mood-recording-interface.png)
 *Figure 2: Recording your first work mood entry*
@@ -82,10 +82,9 @@ WorkMood uses a **tabbed interface** with the following main sections:
 <!-- (dl (## Step 3: Set Up Work Schedule Reminders \(Optional\))) -->
 
 1. Go to the **"Settings"** tab
-2. Configure your **work start time** for morning mood reminders (match your actual schedule)
-3. Configure your **work end time** for evening mood reminders
-4. Set your preferred notification preferences
-5. Enable auto-save if desired
+2. Configure your work schedule reminder times
+3. Add date-specific overrides if needed
+4. Optionally create a **one-time configuration backup** to a folder you choose
 
 **Flexible Schedules:** Many developers have non-standard hours. Set reminders that match when you actually start and finish your coding work, whether that's early morning, late night, or varying daily schedules.
 

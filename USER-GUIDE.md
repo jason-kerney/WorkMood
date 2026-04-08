@@ -62,8 +62,8 @@ When you first launch WorkMood, you'll see the main dashboard with a clean, intu
 
 **Data Location:** WorkMood stores your mood tracking data locally on your system:
 
-- **Windows**: `%APPDATA%\WorkMood` or `%USERPROFILE%\.workmood`
-- **macOS**: `~/Library/Application Support/WorkMood` or `~/.workmood`
+- **Windows**: `%USERPROFILE%\Documents\WorkMood`
+- **macOS**: `~/Documents/WorkMood`
 
 Your mood data persists between app updates and different builds, so you can maintain a continuous tracking history as you use the application for your daily work mood monitoring.
 
@@ -85,7 +85,7 @@ WorkMood uses a **tabbed interface** with the following main sections:
 1. Click on the **"Record Mood"** tab
 2. Record your **morning work mood** using the slider or buttons (how you feel starting work)
 3. At the end of your work day, record your **evening work mood** (how you feel finishing work)
-4. Click **"Save Entry"** to record your work mood data
+4. Click **"Save Morning Mood"** and **"Save Evening Mood"** to record your work mood data
 
 ![Mood Recording Interface](./images/mood-recording-interface.png)
 *Figure 2: Recording your first work mood entry*
@@ -103,10 +103,9 @@ WorkMood uses a **tabbed interface** with the following main sections:
 #### Step 3: Set Up Work Schedule Reminders (Optional) ####
 
 1. Go to the **"Settings"** tab
-2. Configure your **work start time** for morning mood reminders (match your actual schedule)
-3. Configure your **work end time** for evening mood reminders
-4. Set your preferred notification preferences
-5. Enable auto-save if desired
+2. Configure your work schedule reminder times
+3. Add date-specific overrides if needed
+4. Optionally create a **one-time configuration backup** to a folder you choose
 
 **Flexible Schedules:** Many developers have non-standard hours. Set reminders that match when you actually start and finish your coding work, whether that's early morning, late night, or varying daily schedules.
 
@@ -648,7 +647,8 @@ The Settings page is organized around **mood tracking schedule configuration**:
 - **Header**: Settings icon ⚙️ and clear page description
 - **Morning Reminders**: Configure when you want morning mood prompts
 - **Evening Reminders**: Set up end-of-day mood tracking reminders
-- **Additional Options**: Data management and app preferences
+- **Schedule Overrides**: Configure date-specific reminder times
+- **Storage and Backup Options**: Manage mood data location and create one-time config backups
 
 ### Morning Reminder Configuration ###
 
@@ -662,14 +662,14 @@ Configure when you want to be reminded to record your morning mood.
 - **Visual Theme**: 🌅 Sunrise emoji with warm secondary color scheme
 - **Time Picker**: Intuitive time selection interface
 - **Clear Description**: Explains the purpose of morning reminders
-- **Persistent Settings**: Your time preference is saved automatically
+- **Save Control**: Time changes are applied when you tap **Save Settings**
 
 #### Setting Your Morning Time ####
 
 1. **Locate Morning Section**: Find the sunrise-themed reminder section
 2. **Use Time Picker**: Click on the time picker control
 3. **Select Time**: Choose your preferred morning reminder time
-4. **Auto-Save**: Settings are saved immediately when changed
+4. **Save Settings**: Click **Save Settings** at the bottom of the page to persist your changes
 
 #### Morning Reminder Best Practices ####
 
@@ -697,7 +697,7 @@ Set up reminders for recording your evening mood before bedtime.
 1. **Find Evening Section**: Locate the sunset-themed reminder section
 2. **Click Time Picker**: Access the time selection interface
 3. **Choose Time**: Select your preferred evening reminder time
-4. **Automatic Save**: Settings persist immediately upon selection
+4. **Save Settings**: Click **Save Settings** at the bottom of the page to persist your changes
 
 #### Evening Reminder Best Practices ####
 
@@ -740,8 +740,8 @@ Customize where WorkMood stores your mood tracking data with the **Storage** set
 
 By default, WorkMood stores your mood data in your system's user data folder:
 
-- **Windows**: `%APPDATA%\WorkMood` (typically `C:\Users\YourUsername\AppData\Roaming\WorkMood`)
-- **macOS**: `~/Library/Application Support/WorkMood`
+- **Windows**: `%USERPROFILE%\Documents\WorkMood`
+- **macOS**: `~/Documents/WorkMood`
 
 Your data persists in these locations across app updates and rebuilds.
 
@@ -786,26 +786,31 @@ When you change your storage location:
 
 ### Additional Settings ###
 
-#### Data Management ####
+#### Schedule Overrides ####
 
-Access data-related settings and options:
+Use **Schedule Overrides** when a specific date needs a different reminder time.
 
-- **Auto-Save**: Automatically save mood entries when recorded
-- **Backup Settings**: Configure automatic data backup options
-- **Export Data**: Quick access to data export functionality
-- **Clear Data**: Option to reset all mood tracking data (with confirmation)
+1. Enable **Add New Override**
+2. Pick the date to override
+3. Choose whether to override start of work time, end of work time, or both
+4. Set the override time values
+5. Click **Save Settings** to apply changes
 
-![Data Management Settings](./images/settings-data-management.png)
-*Figure 5: Data management and backup options*
+You can also edit or delete existing overrides directly from the list.
 
-#### Application Preferences ####
+#### One-Time Configuration Backup ####
 
-Customize general app behavior:
+WorkMood includes a one-time backup action for your schedule configuration.
 
-- **Theme Settings**: Choose between light/dark themes (if available)
-- **Language Options**: Select your preferred language
-- **Units and Formats**: Configure date/time display formats
-- **Startup Behavior**: Set which page opens when launching the app
+1. On the Settings page, click **Create One-Time Config Backup...**
+2. Choose a destination folder
+3. WorkMood writes a timestamped JSON backup file to that folder
+
+Important behavior:
+
+- The backup location is **not** saved for later
+- Backups are **manual only** (no automatic schedule)
+- This action backs up **schedule configuration**
 
 ### Privacy and Security ###
 
@@ -820,12 +825,7 @@ WorkMood respects your privacy with the following practices:
 
 #### Data Security ####
 
-Your mood tracking data is protected:
-
-- **Encrypted Storage**: Mood data is encrypted on your device
-- **No Network Transmission**: Data doesn't leave your device unless you export it
-- **Access Control**: Only you have access to your mood tracking data
-- **Secure Export**: Exported data uses secure file formats
+WorkMood keeps your data on your machine and does not transmit entries to external services by default.
 
 ### Settings Management ###
 
@@ -834,7 +834,7 @@ Your mood tracking data is protected:
 - **Test Reminders**: After setting up, wait for the next scheduled reminder to verify it works
 - **Adjust as Needed**: Don't hesitate to modify reminder times if your schedule changes
 - **Weekend Considerations**: Consider if you want different weekend reminder times
-- **Backup Regularly**: Use export features to backup your configuration and data
+- **Backup Regularly**: Use the one-time configuration backup action after important schedule updates
 
 #### Troubleshooting Settings ####
 
@@ -845,15 +845,6 @@ If reminders aren't working:
 3. **App Updates**: Make sure you're running the latest version of WorkMood
 4. **Restart App**: Close and reopen WorkMood to refresh settings
 5. **Reset Reminders**: Try setting new reminder times to refresh the system
-
-#### Settings Backup ####
-
-Your settings are automatically saved but consider:
-
-- **Export Configuration**: Include settings in your data exports
-- **Document Preferences**: Keep a note of your preferred reminder times
-- **Regular Backups**: Export data regularly to preserve both data and settings
-- **Multiple Devices**: If using WorkMood on multiple devices, manually sync your preferred settings
 
 ## About WorkMood ##
 
