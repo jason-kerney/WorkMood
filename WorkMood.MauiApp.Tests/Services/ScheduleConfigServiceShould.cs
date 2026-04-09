@@ -636,6 +636,33 @@ public class ScheduleConfigServiceShould
     }
 
     [Fact]
+    public async Task UpdateScheduleConfigAsync_ShouldPreserveCustomMoodDataPath()
+    {
+        // Arrange
+        var morningTime = TimeSpan.FromHours(8);
+        var eveningTime = TimeSpan.FromHours(18);
+        var existingPath = "D:\\MoodData";
+
+        var currentConfig = new ScheduleConfig(TimeSpan.FromHours(7), TimeSpan.FromHours(17))
+        {
+            CustomMoodDataPath = existingPath
+        };
+
+        var jsonContent = "{}";
+        _mockFileShim.Setup(x => x.Exists("C:\\TestDocuments\\WorkMood\\schedule_config.json")).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync("C:\\TestDocuments\\WorkMood\\schedule_config.json")).ReturnsAsync(jsonContent);
+        _mockJsonSerializerShim.Setup(x => x.Deserialize<ScheduleConfig>(jsonContent, It.IsAny<JsonSerializerOptions>()))
+            .Returns(currentConfig);
+        _mockDateShim.Setup(x => x.GetTodayDate()).Returns(new DateOnly(2023, 10, 15));
+
+        // Act
+        var result = await _service.UpdateScheduleConfigAsync(morningTime, eveningTime);
+
+        // Assert
+        Assert.Equal(existingPath, result.CustomMoodDataPath);
+    }
+
+    [Fact]
     public async Task UpdateScheduleConfigAsync_ShouldCallCleanupOldOverrides_OnUpdatedConfig()
     {
         // Arrange

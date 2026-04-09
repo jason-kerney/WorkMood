@@ -177,8 +177,11 @@ public class ScheduleConfigService : IScheduleConfigService
         // Load current configuration
         var currentConfig = await LoadScheduleConfigAsync();
         
-        // Create updated configuration
-        var updatedConfig = new ScheduleConfig(morningTime, eveningTime);
+        // Create updated configuration while preserving storage location preference
+        var updatedConfig = new ScheduleConfig(morningTime, eveningTime)
+        {
+            CustomMoodDataPath = currentConfig.CustomMoodDataPath
+        };
         
         // Copy existing overrides first
         updatedConfig.Overrides.AddRange(currentConfig.Overrides);
