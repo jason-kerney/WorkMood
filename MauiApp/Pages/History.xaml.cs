@@ -14,6 +14,7 @@ namespace WorkMood.MauiApp.Pages;
 public partial class History : ContentPage
 {
     private readonly HistoryViewModel _viewModel;
+    private readonly IMoodDataService _moodDataService;
     private readonly IMoodEntryViewFactory _viewFactory;
     private readonly INavigationService _navigationService;
     private readonly ILoggingService? _loggingService;
@@ -23,11 +24,12 @@ public partial class History : ContentPage
     /// </summary>
     /// <param name="viewModel">The view model for this page</param>
     /// <param name="viewFactory">Factory for creating mood entry views</param>
-    public History(HistoryViewModel viewModel, IMoodEntryViewFactory viewFactory)
+    public History(HistoryViewModel viewModel, IMoodEntryViewFactory viewFactory, IMoodDataService moodDataService)
     {
         InitializeComponent();
         
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+        _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
         _viewFactory = viewFactory ?? throw new ArgumentNullException(nameof(viewFactory));
         _navigationService = new NavigationService(this);
         
@@ -45,7 +47,7 @@ public partial class History : ContentPage
     /// </summary>
     /// <param name="moodDataService">The mood data service (for backwards compatibility)</param>
     /// <param name="loggingService">The logging service (for unified logging)</param>
-    public History(MoodDataService? moodDataService = null, ILoggingService? loggingService = null)
+    public History(IMoodDataService? moodDataService = null, ILoggingService? loggingService = null)
     {
         InitializeComponent();
         
@@ -54,6 +56,7 @@ public partial class History : ContentPage
         var navigationService = new NavigationService(this);
         var logService = loggingService ?? new LoggingService();
         _viewFactory = new MoodEntryViewFactory();
+        _moodDataService = dataService;
         
         _viewModel = new HistoryViewModel(dataService, navigationService, logService);
         BindingContext = _viewModel;
@@ -94,9 +97,8 @@ public partial class History : ContentPage
     /// </summary>
     public async Task HandleVisualizationNavigationAsync()
     {
-        // For backwards compatibility, create the visualization page with the service
-        var moodDataService = new MoodDataService(); // In DI, this would be injected
-        await _navigationService.NavigateAsync(() => new Visualization(moodDataService));
+        // Use the same mood data service instance so visualization reads the active data location.
+        await _navigationService.NavigateAsync(() => new Visualization(_moodDataService));
     }
 
     private void LogHistoryUI(string message)

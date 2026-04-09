@@ -53,9 +53,10 @@ public partial class Main : ContentPage
 
     private async void OnNavigateToHistory(object? sender, EventArgs e)
     {
-        // Get the singleton LoggingService from DI to ensure unified logging
+        // Get singleton services from DI to ensure consistent data path and unified logging
+        var moodDataService = _serviceProvider.GetRequiredService<IMoodDataService>();
         var loggingService = _serviceProvider.GetRequiredService<ILoggingService>();
-        await _navigationService.NavigateAsync(() => new History(loggingService: loggingService));
+        await _navigationService.NavigateAsync(() => new History(moodDataService, loggingService));
     }
 
     private async void OnNavigateToGraph(object? sender, EventArgs e)

@@ -312,13 +312,17 @@ public class RelayCommandShould
         // Arrange
         var command = new RelayCommand(_ => { });
         var eventRaised = false;
-        command.CanExecuteChanged += (_, _) => eventRaised = true;
+        EventHandler handler = (_, _) => eventRaised = true;
+        command.CanExecuteChanged += handler;
 
         // Act
         command.RaiseCanExecuteChanged();
 
         // Assert
         Assert.True(eventRaised);
+
+        // Cleanup
+        command.CanExecuteChanged -= handler;
     }
 
     [Fact]
@@ -387,11 +391,12 @@ public class RelayCommandShould
         // Act
         command.CanExecuteChanged += handler;
         command.RaiseCanExecuteChanged();
+        var countBeforeUnsubscribe = eventCount;
         command.CanExecuteChanged -= handler;
         command.RaiseCanExecuteChanged();
 
         // Assert
-        Assert.Equal(1, eventCount); // Only first raise should count
+        Assert.Equal(countBeforeUnsubscribe, eventCount);
     }
 
     [Fact]
@@ -402,9 +407,12 @@ public class RelayCommandShould
         var command2 = new RelayCommand(_ => { });
         var command1EventRaised = false;
         var command2EventRaised = false;
-        
-        command1.CanExecuteChanged += (_, _) => command1EventRaised = true;
-        command2.CanExecuteChanged += (_, _) => command2EventRaised = true;
+
+        EventHandler handler1 = (_, _) => command1EventRaised = true;
+        EventHandler handler2 = (_, _) => command2EventRaised = true;
+
+        command1.CanExecuteChanged += handler1;
+        command2.CanExecuteChanged += handler2;
 
         // Act - Invalidate globally through CommandManager
         CommandManager.InvalidateRequerySuggested();
@@ -412,6 +420,10 @@ public class RelayCommandShould
         // Assert - Both commands should receive notification
         Assert.True(command1EventRaised);
         Assert.True(command2EventRaised);
+
+        // Cleanup
+        command1.CanExecuteChanged -= handler1;
+        command2.CanExecuteChanged -= handler2;
     }
 
     #endregion

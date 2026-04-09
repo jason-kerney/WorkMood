@@ -832,6 +832,77 @@ public class MoodDataServiceShould
         _mockScheduleConfigService.Verify(x => x.SaveScheduleConfigAsync(It.IsAny<ScheduleConfig>()), Times.Never);
     }
 
+    [Fact]
+    public async Task MigrateMoodDataAsync_LoadMoodDataAsync_ReadsFromMigratedFilePath()
+    {
+        // Arrange
+        const string originalFilePath = @"C:\TestDocuments\WorkMood\mood_data.json";
+        const string newDir = @"C:\CustomStorage\WorkMood";
+        const string newFilePath = @"C:\CustomStorage\WorkMood\mood_data.json";
+        const string json = "[{\"date\":\"2024-10-15\",\"startOfWork\":4,\"endOfWork\":3}]";
+
+        _mockFolderShim.Setup(x => x.CombinePaths(newDir, "mood_data.json")).Returns(newFilePath);
+        _mockFolderShim.Setup(x => x.CreateDirectory(newDir));
+
+        _mockFileShim.Setup(x => x.Exists(originalFilePath)).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync(originalFilePath)).ReturnsAsync(json);
+        _mockFileShim.Setup(x => x.WriteAllTextAsync(newFilePath, json)).Returns(Task.CompletedTask);
+
+        _mockScheduleConfigService.Setup(x => x.LoadScheduleConfigAsync()).ReturnsAsync(new ScheduleConfig());
+        _mockScheduleConfigService.Setup(x => x.SaveScheduleConfigAsync(It.IsAny<ScheduleConfig>())).Returns(Task.CompletedTask);
+
+        _mockFileShim.Setup(x => x.Exists(newFilePath)).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync(newFilePath)).ReturnsAsync(json);
+        _mockJsonSerializerShim.Setup(x => x.Deserialize<List<MoodEntry>>(json, It.IsAny<JsonSerializerOptions>()))
+            .Returns(new List<MoodEntry>
+            {
+                new MoodEntry { Date = new DateOnly(2024, 10, 15), StartOfWork = 4, EndOfWork = 3 }
+            });
+
+        var sut = CreateMigratableMoodDataService(originalFilePath);
+
+        // Act
+        await sut.MigrateMoodDataAsync(newDir);
+        var loaded = await sut.LoadMoodDataAsync();
+
+        // Assert
+        loaded.Count.Should().Be(1);
+        _mockFileShim.Verify(x => x.ReadAllTextAsync(originalFilePath), Times.Once); // copy source during migration
+        _mockFileShim.Verify(x => x.ReadAllTextAsync(newFilePath), Times.Once); // active read after migration
+    }
+
+    [Fact]
+    public async Task InitializeDataFilePath_WithCustomDirectory_LoadMoodDataAsync_UsesCustomPath()
+    {
+        // Arrange
+        const string defaultPath = @"C:\TestDocuments\WorkMood\mood_data.json";
+        const string customDir = @"D:\MoodStorage";
+        const string customPath = @"D:\MoodStorage\mood_data.json";
+        const string json = "[{\"date\":\"2024-10-16\",\"startOfWork\":3,\"endOfWork\":4}]";
+
+        _mockFolderShim.Setup(x => x.CombinePaths(customDir, "mood_data.json")).Returns(customPath);
+        _mockFolderShim.Setup(x => x.CreateDirectory(customDir));
+        _mockFileShim.Setup(x => x.Exists(customPath)).Returns(true);
+        _mockFileShim.Setup(x => x.ReadAllTextAsync(customPath)).ReturnsAsync(json);
+        _mockJsonSerializerShim.Setup(x => x.Deserialize<List<MoodEntry>>(json, It.IsAny<JsonSerializerOptions>()))
+            .Returns(new List<MoodEntry>
+            {
+                new MoodEntry { Date = new DateOnly(2024, 10, 16), StartOfWork = 3, EndOfWork = 4 }
+            });
+
+        var sut = CreateMoodDataService();
+
+        // Act
+        sut.InitializeDataFilePath(customDir);
+        var loaded = await sut.LoadMoodDataAsync();
+
+        // Assert
+        loaded.Count.Should().Be(1);
+        _mockFileShim.Verify(x => x.Exists(customPath), Times.Once);
+        _mockFileShim.Verify(x => x.ReadAllTextAsync(customPath), Times.Once);
+        _mockFileShim.Verify(x => x.Exists(defaultPath), Times.Never);
+    }
+
     private MoodDataService CreateMigratableMoodDataService(string initialFilePath = @"C:\TestDocuments\WorkMood\mood_data.json")
     {
         return new MoodDataService(
