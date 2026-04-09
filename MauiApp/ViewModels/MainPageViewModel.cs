@@ -2,6 +2,7 @@ using System.Windows.Input;
 using WorkMood.MauiApp.Infrastructure;
 using WorkMood.MauiApp.Services;
 using WorkMood.MauiApp.Models;
+using WhatsYourVersion;
 
 namespace WorkMood.MauiApp.ViewModels;
 
@@ -16,8 +17,10 @@ public class MainPageViewModel : ViewModelBase, IDisposable
     private readonly IWindowActivationService _windowActivationService;
     private readonly ILoggingService _loggingService;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IVersionRetriever _versionRetriever;
 
     private string _currentDate = string.Empty;
+    private string _trackerSubtitle = "Daily Mood Tracker";
     private bool _isInitialized = false;
 
     public MainPageViewModel(
@@ -26,7 +29,8 @@ public class MainPageViewModel : ViewModelBase, IDisposable
         ScheduleConfigService scheduleConfigService,
         IWindowActivationService windowActivationService,
         ILoggingService loggingService,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        IVersionRetriever versionRetriever)
     {
         _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
         _dispatcherService = dispatcherService ?? throw new ArgumentNullException(nameof(dispatcherService));
@@ -34,9 +38,11 @@ public class MainPageViewModel : ViewModelBase, IDisposable
         _windowActivationService = windowActivationService ?? throw new ArgumentNullException(nameof(windowActivationService));
         _loggingService = loggingService ?? throw new ArgumentNullException(nameof(loggingService));
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        _versionRetriever = versionRetriever ?? throw new ArgumentNullException(nameof(versionRetriever));
 
         InitializeCommands();
         UpdateCurrentDate();
+        InitializeTrackerSubtitle();
     }
 
     #region Properties
@@ -48,6 +54,15 @@ public class MainPageViewModel : ViewModelBase, IDisposable
     {
         get => _currentDate;
         private set => SetProperty(ref _currentDate, value);
+    }
+
+    /// <summary>
+    /// Main page subtitle including app version.
+    /// </summary>
+    public string TrackerSubtitle
+    {
+        get => _trackerSubtitle;
+        private set => SetProperty(ref _trackerSubtitle, value);
     }
 
     #endregion
@@ -145,6 +160,21 @@ public class MainPageViewModel : ViewModelBase, IDisposable
     private void UpdateCurrentDate()
     {
         CurrentDate = DateTime.Today.ToString("dddd, MMMM dd, yyyy");
+    }
+
+    private void InitializeTrackerSubtitle()
+    {
+        try
+        {
+            var versionInfo = _versionRetriever.GetVersion();
+            var version = string.IsNullOrWhiteSpace(versionInfo.Version) ? "0.1.0" : versionInfo.Version;
+            TrackerSubtitle = $"Daily Mood Tracker v{version}";
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogException(ex, "MainPageViewModel: Error retrieving app version");
+            TrackerSubtitle = "Daily Mood Tracker v0.1.0";
+        }
     }
 
     private async Task LoadScheduleConfigurationAsync()

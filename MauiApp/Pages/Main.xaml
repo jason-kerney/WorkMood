@@ -17,7 +17,7 @@
                    HorizontalOptions="Center"
                    SemanticProperties.HeadingLevel="Level1" />
             
-            <Label Text="Daily Mood Tracker" 
+                 <Label Text="{Binding TrackerSubtitle}" 
                    Style="{StaticResource SubHeadline}"
                    FontSize="18"
                    HorizontalOptions="Center"
