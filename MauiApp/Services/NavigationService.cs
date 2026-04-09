@@ -39,6 +39,18 @@ public class NavigationService : INavigationService
         }
     }
 
+    public async Task GoToRootAsync()
+    {
+        try
+        {
+            await _navigationShim.PopToRootAsync();
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorAsync("Failed to navigate to root", ex);
+        }
+    }
+
     public async Task NavigateAsync(Page page)
     {
         try

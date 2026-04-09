@@ -8,6 +8,7 @@ namespace WorkMood.MauiApp.ViewModels;
 public class StorageSettingsViewModel : ViewModelBase
 {
     private readonly IMoodDataService _moodDataService;
+    private readonly INavigationService _navigationService;
     private readonly IFolderPickerShim _folderPickerShim;
     private readonly IPathValidationShim _pathValidationShim;
 
@@ -56,10 +57,12 @@ public class StorageSettingsViewModel : ViewModelBase
 
     public StorageSettingsViewModel(
         IMoodDataService moodDataService,
+        INavigationService navigationService,
         IFolderPickerShim folderPickerShim,
         IPathValidationShim pathValidationShim)
     {
         _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
+        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _folderPickerShim = folderPickerShim ?? throw new ArgumentNullException(nameof(folderPickerShim));
         _pathValidationShim = pathValidationShim ?? throw new ArgumentNullException(nameof(pathValidationShim));
 
@@ -82,15 +85,19 @@ public class StorageSettingsViewModel : ViewModelBase
     {
         if (string.IsNullOrWhiteSpace(SelectedPath))
         {
-            ValidationMessage = string.Empty;
-            IsSelectedPathValid = false;
+            SetValidationState(string.Empty, false);
+            return;
+        }
+
+        if (string.Equals(SelectedPath, CurrentPath, StringComparison.OrdinalIgnoreCase))
+        {
+            SetValidationState("Selected path is already the current location.", false);
             return;
         }
 
         if (!_pathValidationShim.IsAbsolutePath(SelectedPath))
         {
-            ValidationMessage = "Path must be an absolute (non-relative) path.";
-            IsSelectedPathValid = false;
+            SetValidationState("Path must be an absolute (non-relative) path.", false);
             return;
         }
 
@@ -99,14 +106,11 @@ public class StorageSettingsViewModel : ViewModelBase
 
         if (!_pathValidationShim.HasWritePermission(SelectedPath))
         {
-            ValidationMessage = "Cannot write to this location. Check permissions.";
-            IsSelectedPathValid = false;
+            SetValidationState("Cannot write to this location. Check permissions.", false);
             return;
         }
 
-        ValidationMessage = "Path is valid and writable.";
-        IsSelectedPathValid = true;
-        CommandManager.InvalidateRequerySuggested();
+        SetValidationState("Path is valid and writable.", true);
     }
 
     private async Task ExecuteMigrateAsync()
@@ -122,6 +126,7 @@ public class StorageSettingsViewModel : ViewModelBase
             CurrentPath = _moodDataService.GetMoodDataDirectory();
             SelectedPath = string.Empty;
             ValidationMessage = "Migration complete.";
+            await _navigationService.GoToRootAsync();
         }
         catch (Exception ex)
         {
@@ -132,5 +137,12 @@ public class StorageSettingsViewModel : ViewModelBase
             IsMigrating = false;
             CommandManager.InvalidateRequerySuggested();
         }
+    }
+
+    private void SetValidationState(string message, bool isValid)
+    {
+        ValidationMessage = message;
+        IsSelectedPathValid = isValid;
+        CommandManager.InvalidateRequerySuggested();
     }
 }

@@ -27,6 +27,12 @@ public class PageNavigationShim : IPageNavigationShim
     }
 
     /// <inheritdoc/>
+    public async Task PopToRootAsync()
+    {
+        await _page.Navigation.PopToRootAsync();
+    }
+
+    /// <inheritdoc/>
     public async Task PushAsync(Page page)
     {
         await _page.Navigation.PushAsync(page);

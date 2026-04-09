@@ -111,6 +111,36 @@ public class NavigationServiceTests
         _mockDialogShim.Verify(x => x.DisplayAlertAsync("Error", It.Is<string>(s => s.Contains("Failed to navigate back")), "OK"), Times.Once);
     }
 
+    [Fact]
+    public async Task GoToRootAsync_WhenNavigationSucceeds_ShouldCallPopToRootAsync()
+    {
+        // Arrange
+        _mockNavigationShim.Setup(x => x.PopToRootAsync()).Returns(Task.CompletedTask);
+
+        // Act
+        await _service.GoToRootAsync();
+
+        // Assert
+        _mockNavigationShim.Verify(x => x.PopToRootAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task GoToRootAsync_WhenNavigationFails_ShouldShowErrorDialog()
+    {
+        // Arrange
+        var expectedException = new InvalidOperationException("Navigation failed");
+        _mockNavigationShim.Setup(x => x.PopToRootAsync()).ThrowsAsync(expectedException);
+
+        _mockDialogShim.Setup(x => x.DisplayAlertAsync("Error", "Failed to navigate to root: Navigation failed", "OK"))
+                      .Returns(Task.CompletedTask);
+
+        // Act
+        await _service.GoToRootAsync();
+
+        // Assert
+        _mockDialogShim.Verify(x => x.DisplayAlertAsync("Error", "Failed to navigate to root: Navigation failed", "OK"), Times.Once);
+    }
+
     #endregion
 
     #region NavigateAsync(Page) Tests

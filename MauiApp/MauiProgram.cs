@@ -130,7 +130,6 @@ public static class MauiProgram
 		// Register ViewModels
 		builder.Services.AddTransient<AboutViewModel>();
 		builder.Services.AddTransient<GraphViewModel>();
-		builder.Services.AddTransient<StorageSettingsViewModel>();
 		
 		// Register Pages
 		builder.Services.AddTransient<About>();

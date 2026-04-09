@@ -15,6 +15,12 @@ public interface IPageNavigationShim
     Task PopAsync();
 
     /// <summary>
+    /// Navigates back to the root page in the current navigation stack.
+    /// </summary>
+    /// <returns>A task representing the asynchronous navigation operation.</returns>
+    Task PopToRootAsync();
+
+    /// <summary>
     /// Navigates forward by pushing a new page onto the navigation stack.
     /// </summary>
     /// <param name="page">The page to navigate to.</param>

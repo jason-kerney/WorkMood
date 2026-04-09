@@ -12,6 +12,11 @@ public interface INavigationService
     Task GoBackAsync();
 
     /// <summary>
+    /// Navigates back to the root page in the current navigation stack.
+    /// </summary>
+    Task GoToRootAsync();
+
+    /// <summary>
     /// Navigates to the specified page instance
     /// </summary>
     Task NavigateAsync(Page page);

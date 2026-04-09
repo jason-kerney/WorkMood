@@ -210,11 +210,13 @@ public interface IScheduleConfigService
 ```csharp
 public interface INavigationService
 {
-    Task NavigateToAsync(string pageName, Dictionary<string, object>? parameters = null);
-    Task NavigateBackAsync();
-    Task NavigateToRootAsync();
-    Task<bool> CanNavigateBackAsync();
-    void RegisterPage<TPage>(string pageName) where TPage : Page;
+    Task GoBackAsync();
+    Task GoToRootAsync();
+    Task NavigateAsync(Page page);
+    Task NavigateAsync(Func<Page> pageFactory);
+    Task ShowAlertAsync(string title, string message, string accept);
+    Task<bool> ShowConfirmationAsync(string title, string message, string accept, string cancel);
+    Task ShowErrorAsync(string message, Exception? exception = null);
 }
 ```
 

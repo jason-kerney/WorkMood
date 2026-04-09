@@ -4,6 +4,7 @@ using WorkMood.MauiApp.ViewModels;
 using WorkMood.MauiApp.Shims;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace WorkMood.MauiApp.Pages;
 
@@ -105,7 +106,7 @@ public partial class Settings : ContentPage
 
     private async void OnStorageSettingsClicked(object sender, EventArgs e)
     {
-        var page = Handler?.MauiContext?.Services?.GetService<StorageSettingsPage>();
+        var page = Handler?.MauiContext?.Services?.GetRequiredService<StorageSettingsPage>();
         if (page != null)
             await Navigation.PushAsync(page);
     }
