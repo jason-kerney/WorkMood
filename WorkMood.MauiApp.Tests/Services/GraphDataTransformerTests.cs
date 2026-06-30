@@ -268,6 +268,65 @@ public class GraphDataTransformerTests
         Assert.Empty(result.DataPoints);
     }
 
+    [Fact]
+    public void TransformMoodEntries_EndOfDayMode_WithValidData_ShouldReturnClosingMoodPerDay()
+    {
+        // Arrange
+        var moodEntries = new List<MoodEntry>
+        {
+            new()
+            {
+                Date = new DateOnly(2025, 1, 1),
+                StartOfWork = 4,
+                EndOfWork = 7,
+                CreatedAt = new DateTime(2025, 1, 1, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 1, 17, 0, 0)
+            },
+            new()
+            {
+                Date = new DateOnly(2025, 1, 2),
+                StartOfWork = 6,
+                EndOfWork = null,
+                CreatedAt = new DateTime(2025, 1, 2, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 2, 17, 0, 0)
+            }
+        };
+
+        // Act
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.EndOfDay, CreateDateRangeInfo(DateRange.Last3Years));
+
+        // Assert
+        Assert.Equal("Closing Mood Over Time", result.Title);
+        Assert.Equal(AxisRange.RawData, result.YAxisRange);
+        Assert.Equal(5.5f, result.CenterLineValue);
+        Assert.Equal("Mood Level", result.YAxisLabel);
+        Assert.Equal("Date", result.XAxisLabel);
+        Assert.False(result.IsRawData);
+        Assert.Equal(2, result.YAxisLabelStep);
+
+        var dataPoints = result.DataPoints.ToList();
+        Assert.Equal(2, dataPoints.Count);
+        Assert.Equal(7, dataPoints[0].Value); // EndOfWork
+        Assert.Equal(6, dataPoints[1].Value); // Fallback to StartOfWork
+    }
+
+    [Fact]
+    public void TransformMoodEntries_EndOfDayMode_WithNoValidData_ShouldReturnEmptyDataPoints()
+    {
+        // Arrange
+        var moodEntries = new List<MoodEntry>
+        {
+            new() { Date = new DateOnly(2025, 1, 1), StartOfWork = null, EndOfWork = null }
+        };
+
+        // Act
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.EndOfDay, CreateDateRangeInfo(DateRange.Last3Years));
+
+        // Assert
+        Assert.Equal("Closing Mood Over Time", result.Title);
+        Assert.Empty(result.DataPoints);
+    }
+
     #endregion
 
     #region RawData Mode Tests
@@ -675,6 +734,33 @@ public class GraphDataTransformerTests
     }
 
     [Fact]
+    public void GetValueForMoodEntry_EndOfDayMode_ShouldPreferEndOfWorkAndFallbackToStartOfWork()
+    {
+        // Arrange
+        var withEndOfWork = new MoodEntry
+        {
+            StartOfWork = 6,
+            EndOfWork = 8,
+            Date = new DateOnly(2025, 1, 1)
+        };
+
+        var withoutEndOfWork = new MoodEntry
+        {
+            StartOfWork = 5,
+            EndOfWork = null,
+            Date = new DateOnly(2025, 1, 2)
+        };
+
+        // Act
+        var withEndResult = _transformer.GetValueForMoodEntry(withEndOfWork, GraphMode.EndOfDay);
+        var withoutEndResult = _transformer.GetValueForMoodEntry(withoutEndOfWork, GraphMode.EndOfDay);
+
+        // Assert
+        Assert.Equal(8, withEndResult);
+        Assert.Equal(5, withoutEndResult);
+    }
+
+    [Fact]
     public void GetValueForMoodEntry_GeneralImpactMode_ShouldReturnZeroBecauseSequenceContextIsRequired()
     {
         // Arrange
@@ -719,6 +805,7 @@ public class GraphDataTransformerTests
     [InlineData(GraphMode.Impact, "Mood Change Over Time", 0f, "Impact", "Date", false, 3)]
     [InlineData(GraphMode.GeneralImpact, "General Impact Over Time", 0f, "Impact", "Date", false, 3)]
     [InlineData(GraphMode.Average, "Average Mood Over Time", 0f, "Average Mood", "Date", false, 3)]
+    [InlineData(GraphMode.EndOfDay, "Closing Mood Over Time", 5.5f, "Mood Level", "Date", false, 2)]
     [InlineData(GraphMode.RawData, "Raw Mood Data Over Time", 5.5f, "Mood Level", "Time", true, 2)]
     public void TransformMoodEntries_ShouldSetCorrectMetadataForEachMode(
         GraphMode mode, 
@@ -744,6 +831,7 @@ public class GraphDataTransformerTests
             GraphMode.Impact => AxisRange.Impact,
             GraphMode.GeneralImpact => AxisRange.Impact,
             GraphMode.Average => AxisRange.Average,
+            GraphMode.EndOfDay => AxisRange.RawData,
             GraphMode.RawData => AxisRange.RawData,
             _ => throw new ArgumentOutOfRangeException(nameof(mode))
         };

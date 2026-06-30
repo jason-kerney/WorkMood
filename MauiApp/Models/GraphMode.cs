@@ -28,6 +28,13 @@ public enum GraphMode
     Average,
 
     /// <summary>
+    /// Shows one closing mood value per day.
+    /// Formula: EndOfWork ?? StartOfWork
+    /// Range: 1 to 10 (raw mood values)
+    /// </summary>
+    EndOfDay,
+
+    /// <summary>
     /// Shows individual mood recordings as separate data points based on timestamps
     /// Uses CreatedAt as start time and LastModified as end time
     /// If times are equal, assumes 8 hours between start and end

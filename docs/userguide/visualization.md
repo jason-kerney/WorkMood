@@ -36,6 +36,16 @@ The visualization page provides simple interaction options:
 - **Back to History**: Returns to the History page for detailed mood records
 - **Loading States**: Shows activity indicator while data loads
 
+<!-- (dl (### Graph Modes)) -->
+
+The graph view supports multiple modes so you can focus on different insights:
+
+- **Impact (Change Over Day)**: Plots daily work impact using `(EndOfWork ?? StartOfWork) - StartOfWork`
+- **General Impact (Outside Work)**: Compares today's start mood to the previous recorded work-period mood
+- **Average (Daily Mood Level)**: Uses your adjusted daily average mood value
+- **Closing Mood (End of Day)**: Plots one point per day using `EndOfWork`, falling back to `StartOfWork` if end-of-work is missing
+- **Raw Data (Individual Recordings)**: Shows start and end recordings as separate timestamped points
+
 **Note**: The visualization is a static display - it does not support zooming, panning, or other chart interactions.
 
 <!-- (dl (# Understanding Your Data)) -->

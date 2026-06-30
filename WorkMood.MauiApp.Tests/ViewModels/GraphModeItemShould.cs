@@ -25,6 +25,7 @@ public class GraphModeItemShould
     [InlineData(GraphMode.Impact, "Impact (Change Over Day)")]
     [InlineData(GraphMode.GeneralImpact, "General Impact (Outside Work)")]
     [InlineData(GraphMode.Average, "Average (Daily Mood Level)")]
+    [InlineData(GraphMode.EndOfDay, "Closing Mood (End of Day)")]
     [InlineData(GraphMode.RawData, "Raw Data (Individual Recordings)")]
     public void Constructor_WithAllGraphModeValues_CreatesValidObject(GraphMode graphMode, string displayName)
     {
@@ -89,6 +90,7 @@ public class GraphModeItemShould
     [InlineData(GraphMode.Impact)]
     [InlineData(GraphMode.GeneralImpact)]
     [InlineData(GraphMode.Average)]
+    [InlineData(GraphMode.EndOfDay)]
     [InlineData(GraphMode.RawData)]
     public void Constructor_WithAllEnumValues_HandlesAllGraphModes(GraphMode graphMode)
     {
@@ -159,12 +161,16 @@ public class GraphModeItemShould
     {
         // Arrange & Act
         var impactItem = new GraphModeItem(GraphMode.Impact, "Impact");
+        var generalImpactItem = new GraphModeItem(GraphMode.GeneralImpact, "GeneralImpact");
         var averageItem = new GraphModeItem(GraphMode.Average, "Average");
+        var endOfDayItem = new GraphModeItem(GraphMode.EndOfDay, "EndOfDay");
         var rawDataItem = new GraphModeItem(GraphMode.RawData, "RawData");
 
         // Assert
         Assert.Equal(GraphMode.Impact, impactItem.GraphMode);
+        Assert.Equal(GraphMode.GeneralImpact, generalImpactItem.GraphMode);
         Assert.Equal(GraphMode.Average, averageItem.GraphMode);
+        Assert.Equal(GraphMode.EndOfDay, endOfDayItem.GraphMode);
         Assert.Equal(GraphMode.RawData, rawDataItem.GraphMode);
     }
 
@@ -207,6 +213,7 @@ public class GraphModeItemShould
         var impactItem = new GraphModeItem(GraphMode.Impact, "Impact (Change Over Day)");
         var generalImpactItem = new GraphModeItem(GraphMode.GeneralImpact, "General Impact (Outside Work)");
         var averageItem = new GraphModeItem(GraphMode.Average, "Average (Daily Mood Level)");
+        var endOfDayItem = new GraphModeItem(GraphMode.EndOfDay, "Closing Mood (End of Day)");
         var rawDataItem = new GraphModeItem(GraphMode.RawData, "Raw Data (Individual Recordings)");
 
         // Assert - Verify matches real GraphViewModel usage
@@ -218,6 +225,9 @@ public class GraphModeItemShould
         
         Assert.Equal(GraphMode.Average, averageItem.GraphMode);
         Assert.Equal("Average (Daily Mood Level)", averageItem.DisplayName);
+
+        Assert.Equal(GraphMode.EndOfDay, endOfDayItem.GraphMode);
+        Assert.Equal("Closing Mood (End of Day)", endOfDayItem.DisplayName);
         
         Assert.Equal(GraphMode.RawData, rawDataItem.GraphMode);
         Assert.Equal("Raw Data (Individual Recordings)", rawDataItem.DisplayName);
@@ -294,7 +304,7 @@ public class GraphModeItemShould
     public void Constructor_WithAllCombinations_HandlesAllEnumStringPairs()
     {
         // Arrange
-        var graphModes = new[] { GraphMode.Impact, GraphMode.GeneralImpact, GraphMode.Average, GraphMode.RawData };
+        var graphModes = new[] { GraphMode.Impact, GraphMode.GeneralImpact, GraphMode.Average, GraphMode.EndOfDay, GraphMode.RawData };
         var displayNames = new[] { "Short", "Medium Length Name", "Very Long Display Name With Lots Of Words" };
 
         // Act & Assert
