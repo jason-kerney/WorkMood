@@ -43,6 +43,7 @@ The graph view supports multiple modes so you can focus on different insights:
 - **Impact (Change Over Day)**: Plots daily work impact using `(EndOfWork ?? StartOfWork) - StartOfWork`
 - **General Impact (Outside Work)**: Compares today's start mood to the previous recorded work-period mood
 - **Average (Daily Mood Level)**: Uses your adjusted daily average mood value
+- **Opening Mood (Start of Day)**: Plots one point per day using `StartOfWork`
 - **Closing Mood (End of Day)**: Plots one point per day using `EndOfWork`, falling back to `StartOfWork` if end-of-work is missing
 - **Raw Data (Individual Recordings)**: Shows start and end recordings as separate timestamped points
 

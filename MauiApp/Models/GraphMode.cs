@@ -28,6 +28,13 @@ public enum GraphMode
     Average,
 
     /// <summary>
+    /// Shows one opening mood value per day.
+    /// Formula: StartOfWork
+    /// Range: 1 to 10 (raw mood values)
+    /// </summary>
+    StartOfDay,
+
+    /// <summary>
     /// Shows one closing mood value per day.
     /// Formula: EndOfWork ?? StartOfWork
     /// Range: 1 to 10 (raw mood values)

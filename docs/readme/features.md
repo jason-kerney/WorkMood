@@ -4,7 +4,7 @@
 
 - **Work-focused tracking**: Record morning and evening moods to measure daily work impact
 - **Mood visualization**: View charts and trends showing how work affects your emotional patterns
-- **Multiple graph modes**: Compare mood by Impact, General Impact, Average, Closing Mood (end-of-day), and Raw Data views
+- **Multiple graph modes**: Compare mood by Impact, General Impact, Average, Opening Mood (start-of-day), Closing Mood (end-of-day), and Raw Data views
 - **Historical analysis**: Browse past entries to identify work-related mood patterns
 - **Schedule integration**: Set work-based reminders for consistent mood tracking
 

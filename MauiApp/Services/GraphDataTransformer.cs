@@ -29,6 +29,7 @@ public class GraphDataTransformer : IGraphDataTransformer
             GraphMode.Impact => CreateSinglePointPerEntryData(entriesInRange, GraphMode.Impact),
             GraphMode.GeneralImpact => CreateGeneralImpactData(entriesInRange),
             GraphMode.Average => CreateSinglePointPerEntryData(entriesInRange, GraphMode.Average),
+            GraphMode.StartOfDay => CreateSinglePointPerEntryData(entriesInRange, GraphMode.StartOfDay),
             GraphMode.EndOfDay => CreateSinglePointPerEntryData(entriesInRange, GraphMode.EndOfDay),
             GraphMode.RawData => CreateRawData(entriesInRange),
             _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, "Unsupported graph mode")
@@ -95,6 +96,7 @@ public class GraphDataTransformer : IGraphDataTransformer
             GraphMode.Impact => entry.Value.HasValue,
             GraphMode.GeneralImpact => entry.StartOfWork.HasValue,
             GraphMode.Average => entry.GetAdjustedAverageMood().HasValue,
+            GraphMode.StartOfDay => entry.StartOfWork.HasValue,
             GraphMode.EndOfDay => entry.EndOfWork.HasValue || entry.StartOfWork.HasValue,
             GraphMode.RawData => entry.StartOfWork.HasValue || entry.EndOfWork.HasValue,
             _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, null)
@@ -108,6 +110,7 @@ public class GraphDataTransformer : IGraphDataTransformer
             GraphMode.Impact => entry.Value ?? 0,
             GraphMode.GeneralImpact => 0,
             GraphMode.Average => entry.GetAdjustedAverageMood() ?? 0,
+            GraphMode.StartOfDay => entry.StartOfWork ?? 0,
             GraphMode.EndOfDay => entry.EndOfWork ?? entry.StartOfWork ?? 0,
             GraphMode.RawData => entry.StartOfWork ?? 0,
             _ => entry.Value ?? 0
@@ -132,6 +135,7 @@ public class GraphDataTransformer : IGraphDataTransformer
             GraphMode.Impact => "Mood Change Over Time",
             GraphMode.GeneralImpact => "General Impact Over Time",
             GraphMode.Average => "Average Mood Over Time",
+            GraphMode.StartOfDay => "Opening Mood Over Time",
             GraphMode.EndOfDay => "Closing Mood Over Time",
             GraphMode.RawData => "Raw Mood Data Over Time",
             _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, "Unsupported graph mode")
@@ -176,6 +180,18 @@ public class GraphDataTransformer : IGraphDataTransformer
                 IsRawData = false,
                 YAxisLabelStep = 3,
                 Description = "Shows the average mood levels over time. Values represent the overall emotional state adjusted for context."
+            },
+            GraphMode.StartOfDay => new GraphData
+            {
+                DataPoints = dataPoints,
+                Title = title,
+                YAxisRange = AxisRange.RawData,
+                CenterLineValue = 5.5f,
+                YAxisLabel = "Mood Level",
+                XAxisLabel = "Date",
+                IsRawData = false,
+                YAxisLabelStep = 2,
+                Description = "Shows one opening mood value per day using start-of-work mood."
             },
             GraphMode.EndOfDay => new GraphData
             {

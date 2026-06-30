@@ -327,6 +327,65 @@ public class GraphDataTransformerTests
         Assert.Empty(result.DataPoints);
     }
 
+    [Fact]
+    public void TransformMoodEntries_StartOfDayMode_WithValidData_ShouldReturnOpeningMoodPerDay()
+    {
+        // Arrange
+        var moodEntries = new List<MoodEntry>
+        {
+            new()
+            {
+                Date = new DateOnly(2025, 1, 1),
+                StartOfWork = 4,
+                EndOfWork = 7,
+                CreatedAt = new DateTime(2025, 1, 1, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 1, 17, 0, 0)
+            },
+            new()
+            {
+                Date = new DateOnly(2025, 1, 2),
+                StartOfWork = 6,
+                EndOfWork = null,
+                CreatedAt = new DateTime(2025, 1, 2, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 2, 17, 0, 0)
+            }
+        };
+
+        // Act
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.StartOfDay, CreateDateRangeInfo(DateRange.Last3Years));
+
+        // Assert
+        Assert.Equal("Opening Mood Over Time", result.Title);
+        Assert.Equal(AxisRange.RawData, result.YAxisRange);
+        Assert.Equal(5.5f, result.CenterLineValue);
+        Assert.Equal("Mood Level", result.YAxisLabel);
+        Assert.Equal("Date", result.XAxisLabel);
+        Assert.False(result.IsRawData);
+        Assert.Equal(2, result.YAxisLabelStep);
+
+        var dataPoints = result.DataPoints.ToList();
+        Assert.Equal(2, dataPoints.Count);
+        Assert.Equal(4, dataPoints[0].Value);
+        Assert.Equal(6, dataPoints[1].Value);
+    }
+
+    [Fact]
+    public void TransformMoodEntries_StartOfDayMode_WithNoValidData_ShouldReturnEmptyDataPoints()
+    {
+        // Arrange
+        var moodEntries = new List<MoodEntry>
+        {
+            new() { Date = new DateOnly(2025, 1, 1), StartOfWork = null, EndOfWork = 8 }
+        };
+
+        // Act
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.StartOfDay, CreateDateRangeInfo(DateRange.Last3Years));
+
+        // Assert
+        Assert.Equal("Opening Mood Over Time", result.Title);
+        Assert.Empty(result.DataPoints);
+    }
+
     #endregion
 
     #region RawData Mode Tests
@@ -761,6 +820,24 @@ public class GraphDataTransformerTests
     }
 
     [Fact]
+    public void GetValueForMoodEntry_StartOfDayMode_ShouldReturnStartOfWorkValue()
+    {
+        // Arrange
+        var moodEntry = new MoodEntry
+        {
+            StartOfWork = 7,
+            EndOfWork = 3,
+            Date = new DateOnly(2025, 1, 1)
+        };
+
+        // Act
+        var result = _transformer.GetValueForMoodEntry(moodEntry, GraphMode.StartOfDay);
+
+        // Assert
+        Assert.Equal(7, result);
+    }
+
+    [Fact]
     public void GetValueForMoodEntry_GeneralImpactMode_ShouldReturnZeroBecauseSequenceContextIsRequired()
     {
         // Arrange
@@ -805,6 +882,7 @@ public class GraphDataTransformerTests
     [InlineData(GraphMode.Impact, "Mood Change Over Time", 0f, "Impact", "Date", false, 3)]
     [InlineData(GraphMode.GeneralImpact, "General Impact Over Time", 0f, "Impact", "Date", false, 3)]
     [InlineData(GraphMode.Average, "Average Mood Over Time", 0f, "Average Mood", "Date", false, 3)]
+    [InlineData(GraphMode.StartOfDay, "Opening Mood Over Time", 5.5f, "Mood Level", "Date", false, 2)]
     [InlineData(GraphMode.EndOfDay, "Closing Mood Over Time", 5.5f, "Mood Level", "Date", false, 2)]
     [InlineData(GraphMode.RawData, "Raw Mood Data Over Time", 5.5f, "Mood Level", "Time", true, 2)]
     public void TransformMoodEntries_ShouldSetCorrectMetadataForEachMode(
@@ -831,6 +909,7 @@ public class GraphDataTransformerTests
             GraphMode.Impact => AxisRange.Impact,
             GraphMode.GeneralImpact => AxisRange.Impact,
             GraphMode.Average => AxisRange.Average,
+            GraphMode.StartOfDay => AxisRange.RawData,
             GraphMode.EndOfDay => AxisRange.RawData,
             GraphMode.RawData => AxisRange.RawData,
             _ => throw new ArgumentOutOfRangeException(nameof(mode))

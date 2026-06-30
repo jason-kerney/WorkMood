@@ -690,6 +690,7 @@ public class GraphViewModel : ViewModelBase
         GraphModes.Add(new GraphModeItem(GraphMode.Impact, "Impact (Change Over Day)"));
         GraphModes.Add(new GraphModeItem(GraphMode.GeneralImpact, "General Impact (Outside Work)"));
         GraphModes.Add(new GraphModeItem(GraphMode.Average, "Average (Daily Mood Level)"));
+        GraphModes.Add(new GraphModeItem(GraphMode.StartOfDay, "Opening Mood (Start of Day)"));
         GraphModes.Add(new GraphModeItem(GraphMode.EndOfDay, "Closing Mood (End of Day)"));
         GraphModes.Add(new GraphModeItem(GraphMode.RawData, "Raw Data (Individual Recordings)"));
     }
