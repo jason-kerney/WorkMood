@@ -1,25 +1,25 @@
 Summary
-  Generated on: 3/2/2026 - 2:33:59 PM
-  Coverage date: 3/2/2026 - 2:33:56 PM
+  Generated on: 6/30/2026 - 4:31:59 PM
+  Coverage date: 6/30/2026 - 4:31:57 PM
   Parser: Cobertura
   Assemblies: 1
-  Classes: 114
-  Files: 75
-  Line coverage: 34.6%
-  Covered lines: 2260
-  Uncovered lines: 4254
-  Coverable lines: 6514
-  Total lines: 12550
-  Branch coverage: 32.5% (574 of 1763)
-  Covered branches: 574
-  Total branches: 1763
-  Method coverage: 35.5% (371 of 1045)
-  Full method coverage: 33.3% (348 of 1045)
-  Covered methods: 371
-  Fully covered methods: 348
-  Total methods: 1045
+  Classes: 118
+  Files: 80
+  Line coverage: 36.7%
+  Covered lines: 2540
+  Uncovered lines: 4364
+  Coverable lines: 6904
+  Total lines: 13000
+  Branch coverage: 34% (643 of 1891)
+  Covered branches: 643
+  Total branches: 1891
+  Method coverage: 37.4% (404 of 1079)
+  Full method coverage: 34.7% (375 of 1079)
+  Covered methods: 404
+  Fully covered methods: 375
+  Total methods: 1079
 
-WorkMood.MauiApp                                                        34.6%
+WorkMood.MauiApp                                                        36.7%
   WorkMood.MauiApp.Adapters.VisualizationDataAdapter                     100%
   WorkMood.MauiApp.App                                                     0%
   WorkMood.MauiApp.AppShell                                                0%
@@ -58,6 +58,7 @@ WorkMood.MauiApp                                                        34.6%
   WorkMood.MauiApp.Pages.Main                                              0%
   WorkMood.MauiApp.Pages.MoodRecording                                     0%
   WorkMood.MauiApp.Pages.Settings                                          0%
+  WorkMood.MauiApp.Pages.StorageSettingsPage                               0%
   WorkMood.MauiApp.Pages.Visualization                                     0%
   WorkMood.MauiApp.Processors.MoodDayInfo                                100%
   WorkMood.MauiApp.Processors.MoodVisualizationFormatter                22.8%
@@ -74,12 +75,12 @@ WorkMood.MauiApp                                                        34.6%
   WorkMood.MauiApp.Services.EveningReminderCommand                      97.6%
   WorkMood.MauiApp.Services.EveningReminderData                          100%
   WorkMood.MauiApp.Services.EveningReminderEventArgs                       0%
-  WorkMood.MauiApp.Services.GraphDataTransformer                        96.8%
+  WorkMood.MauiApp.Services.GraphDataTransformer                        94.8%
   WorkMood.MauiApp.Services.LineGraphGenerator                          96.6%
   WorkMood.MauiApp.Services.LineGraphService                             100%
   WorkMood.MauiApp.Services.LoggingService                              89.6%
   WorkMood.MauiApp.Services.LoggingServiceExtensions                      25%
-  WorkMood.MauiApp.Services.MoodDataService                             93.2%
+  WorkMood.MauiApp.Services.MoodDataService                             97.8%
   WorkMood.MauiApp.Services.MoodDispatcherService                       28.5%
   WorkMood.MauiApp.Services.MoodEntryViewFactory                           0%
   WorkMood.MauiApp.Services.MoodStatistics                               100%
@@ -88,8 +89,8 @@ WorkMood.MauiApp                                                        34.6%
   WorkMood.MauiApp.Services.MorningReminderCommand                         0%
   WorkMood.MauiApp.Services.MorningReminderData                          100%
   WorkMood.MauiApp.Services.MorningReminderEventArgs                     100%
-  WorkMood.MauiApp.Services.NavigationService                           93.7%
-  WorkMood.MauiApp.Services.ScheduleConfigService                        100%
+  WorkMood.MauiApp.Services.NavigationService                           94.7%
+  WorkMood.MauiApp.Services.ScheduleConfigService                       98.6%
   WorkMood.MauiApp.Services.WindowActivationService                     39.7%
   WorkMood.MauiApp.Shims.BitmapShim                                      100%
   WorkMood.MauiApp.Shims.BrowserShim                                       0%
@@ -101,6 +102,7 @@ WorkMood.MauiApp                                                        34.6%
   WorkMood.MauiApp.Shims.DrawShimFactory                                 100%
   WorkMood.MauiApp.Shims.FileShim                                         40%
   WorkMood.MauiApp.Shims.FileShimFactory                                 100%
+  WorkMood.MauiApp.Shims.FolderPickerShim                                  0%
   WorkMood.MauiApp.Shims.FolderShim                                       90%
   WorkMood.MauiApp.Shims.FontFaceShim                                    100%
   WorkMood.MauiApp.Shims.FontShimFactory                                 100%
@@ -114,6 +116,7 @@ WorkMood.MauiApp                                                        34.6%
   WorkMood.MauiApp.Shims.PaintShimArgs                                   100%
   WorkMood.MauiApp.Shims.PathEffectShim                                 62.5%
   WorkMood.MauiApp.Shims.PathEffectShims                                66.6%
+  WorkMood.MauiApp.Shims.PathValidationShim                                0%
   WorkMood.MauiApp.Strategies.AccessibleMoodColorStrategy                100%
   WorkMood.MauiApp.Strategies.DefaultMoodColorStrategy                   100%
   WorkMood.MauiApp.ViewModels.AboutViewModel                               0%
@@ -123,11 +126,12 @@ WorkMood.MauiApp                                                        34.6%
   WorkMood.MauiApp.ViewModels.GraphModeItem                              100%
   WorkMood.MauiApp.ViewModels.GraphViewModel                               0%
   WorkMood.MauiApp.ViewModels.HistoryViewModel                             0%
-  WorkMood.MauiApp.ViewModels.MainPageViewModel                            0%
+  WorkMood.MauiApp.ViewModels.MainPageViewModel                         21.7%
   WorkMood.MauiApp.ViewModels.MoodRecordingViewModel                       0%
   WorkMood.MauiApp.ViewModels.NavigateToMoodRecordingEventArgs             0%
   WorkMood.MauiApp.ViewModels.RelayCommand<T>                              0%
   WorkMood.MauiApp.ViewModels.SettingsPageViewModel                        0%
+  WorkMood.MauiApp.ViewModels.StorageSettingsViewModel                  92.8%
   WorkMood.MauiApp.ViewModels.VisualizationViewModel                       0%
   WorkMood.MauiApp.WorkMood_MauiApp_XamlTypeInfo.XamlMember                0%
   WorkMood.MauiApp.WorkMood_MauiApp_XamlTypeInfo.XamlMetaDataProvider      0%

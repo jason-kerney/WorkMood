@@ -38,20 +38,19 @@ fi
 
 echo -e "${GREEN}Found $coverage_files coverage file(s)${NC}"
 
+# Ensure repo-local tools are available (.config/dotnet-tools.json)
+echo -e "${CYAN}Restoring local .NET tools...${NC}"
+dotnet tool restore
+
 # Generate the coverage report with filters
 echo -e "${CYAN}Generating filtered coverage report...${NC}"
-reportgenerator \
+dotnet tool run reportgenerator \
     "-reports:WorkMood.MauiApp.Tests/TestResults/**/coverage.cobertura.xml" \
     "-targetdir:CoverageReport" \
     "-reporttypes:TextSummary" \
     "-verbosity:Off" \
     "-assemblyfilters:-whats-your-version" \
     "-classfilters:-Microsoft.*;-__XamlGeneratedCode__.*;-WinRT.*;-*.Tests.*;-*.XamlTypeInfo.*;-*.WinUI.*"
-
-if [ $? -ne 0 ]; then
-    echo -e "${RED}ERROR: reportgenerator failed with exit code $?${NC}"
-    exit $?
-fi
 
 # Display the summary
 if [ -f "CoverageReport/Summary.txt" ]; then

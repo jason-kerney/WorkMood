@@ -26,6 +26,15 @@ if ($coverageFiles.Count -eq 0) {
 
 Write-Host "Found $($coverageFiles.Count) coverage file(s)" -ForegroundColor Green
 
+# Ensure repo-local tools are available (.config/dotnet-tools.json)
+Write-Host "Restoring local .NET tools..." -ForegroundColor Cyan
+dotnet tool restore
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: dotnet tool restore failed with exit code $LASTEXITCODE" -ForegroundColor Red
+    exit $LASTEXITCODE
+}
+
 # Generate the coverage report with filters
 Write-Host "Generating filtered coverage report..." -ForegroundColor Cyan
 $reportsParam = "WorkMood.MauiApp.Tests\TestResults\**\coverage.cobertura.xml"
@@ -35,7 +44,7 @@ $verbosityParam = "Off"
 $assemblyFiltersParam = "-whats-your-version"
 $classFiltersParam = "-Microsoft.*;-__XamlGeneratedCode__.*;-WinRT.*;-*.Tests.*;-*.XamlTypeInfo.*;-*.WinUI.*"
 
-& reportgenerator `
+dotnet tool run reportgenerator `
     "-reports:$reportsParam" `
     "-targetdir:$targetParam" `
     "-reporttypes:$reportTypesParam" `
