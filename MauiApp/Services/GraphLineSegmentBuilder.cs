@@ -31,6 +31,25 @@ public static class GraphLineSegmentBuilder
         IReadOnlyList<T> orderedPoints,
         Func<T, DateOnly> dateSelector)
     {
+        return BuildSegments(orderedPoints, dateSelector, shouldBreak: null);
+    }
+
+    /// <summary>
+    /// Splits <paramref name="orderedPoints"/> into segments using a caller-provided break
+    /// policy. When no policy is provided, the default behavior breaks for gaps larger than one
+    /// calendar day.
+    /// </summary>
+    /// <typeparam name="T">The renderer-specific point type; never inspected beyond its date.</typeparam>
+    /// <param name="orderedPoints">Points already ordered chronologically by the caller.</param>
+    /// <param name="dateSelector">Projects the calendar date used for gap detection from a point.</param>
+    /// <param name="shouldBreak">
+    /// Optional policy deciding whether a segment must break between adjacent dates.
+    /// </param>
+    public static IReadOnlyList<IReadOnlyList<T>> BuildSegments<T>(
+        IReadOnlyList<T> orderedPoints,
+        Func<T, DateOnly> dateSelector,
+        Func<DateOnly, DateOnly, bool>? shouldBreak)
+    {
         ArgumentNullException.ThrowIfNull(orderedPoints);
         ArgumentNullException.ThrowIfNull(dateSelector);
 
@@ -49,7 +68,9 @@ public static class GraphLineSegmentBuilder
             var currentDate = dateSelector(orderedPoints[i]);
             var calendarDayGap = currentDate.DayNumber - previousDate.DayNumber;
 
-            if (calendarDayGap > 1)
+            var shouldStartNewSegment = shouldBreak?.Invoke(previousDate, currentDate) ?? calendarDayGap > 1;
+
+            if (shouldStartNewSegment)
             {
                 segments.Add(currentSegment);
                 currentSegment = new List<T>();

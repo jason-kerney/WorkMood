@@ -166,4 +166,63 @@ public class GraphLineSegmentBuilderShould
         Assert.Same(points[0], segment[0]);
         Assert.Same(points[^1], segment[^1]);
     }
+
+    [Fact]
+    public void KeepFridayToMondayInSameSegment_WhenOnlyWeekendDaysAreMissing_AndPolicyAllowsIt()
+    {
+        var points = new[]
+        {
+            new TestPoint(new DateOnly(2025, 1, 3), 0f, 0f),  // Friday
+            new TestPoint(new DateOnly(2025, 1, 6), 1f, 1f)   // Monday
+        };
+
+        static bool shouldBreak(DateOnly previousDate, DateOnly currentDate)
+        {
+            for (var date = previousDate.AddDays(1); date < currentDate; date = date.AddDays(1))
+            {
+                var isWeekend = date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+                if (!isWeekend)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        var result = GraphLineSegmentBuilder.BuildSegments(points, p => p.Date, shouldBreak);
+
+        var segment = Assert.Single(result);
+        Assert.Equal(2, segment.Count);
+    }
+
+    [Fact]
+    public void StillBreakWhenAWeekdayIsMissing_BeforeWeekendGap_EvenWithWeekendAwarePolicy()
+    {
+        var points = new[]
+        {
+            new TestPoint(new DateOnly(2025, 1, 2), 0f, 0f),  // Thursday
+            new TestPoint(new DateOnly(2025, 1, 6), 1f, 1f)   // Monday (Friday missing)
+        };
+
+        static bool shouldBreak(DateOnly previousDate, DateOnly currentDate)
+        {
+            for (var date = previousDate.AddDays(1); date < currentDate; date = date.AddDays(1))
+            {
+                var isWeekend = date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+                if (!isWeekend)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        var result = GraphLineSegmentBuilder.BuildSegments(points, p => p.Date, shouldBreak);
+
+        Assert.Equal(2, result.Count);
+        Assert.Single(result[0]);
+        Assert.Single(result[1]);
+    }
 }

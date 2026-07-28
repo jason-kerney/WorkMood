@@ -47,7 +47,22 @@ The graph view supports multiple modes so you can focus on different insights:
 - **Closing Mood (End of Day)**: Plots one point per day using `EndOfWork`, falling back to `StartOfWork` if end-of-work is missing
 - **Raw Data (Individual Recordings)**: Shows start and end recordings as separate timestamped points
 
-**Missing Days**: If a day has no recorded mood data, the line breaks at that day's position instead of connecting straight through it — the gap keeps its place in the timeline rather than being skipped or smoothed over. For example, if you didn't record anything on Tuesday, the line will show separate segments for Monday and Wednesday instead of one continuous line between them. This applies to every graph mode, including Raw Data, where the line only breaks when an entire calendar day has no recordings (not simply between the start and end recordings within the same day).
+**Missing Days**: Weekend days (Saturday and Sunday) are treated specially in Graph mode. If a weekend day has no recorded mood data, that day is compressed out of the horizontal axis instead of reserving blank timeline space.
+
+- Friday to Monday with no weekend records: the line stays continuous and weekend spacing is removed.
+- Weekend day with records: that weekend day keeps its horizontal spacing.
+- Missing weekday (for example, Tuesday): behavior is unchanged; the line still breaks at that weekday gap.
+
+This applies to every graph mode, including Raw Data. In Raw Data mode, start/end points within the same day stay ordered within that day while unrecorded weekend days are compressed.
+
+**Example**:
+
+1. Record mood on Friday.
+2. Do not record mood on Saturday or Sunday.
+3. Record mood on Monday.
+4. Open the graph.
+
+You will see a continuous Friday-to-Monday line segment, and the unrecorded weekend will not consume axis width.
 
 **Note**: The visualization is a static display - it does not support zooming, panning, or other chart interactions.
 

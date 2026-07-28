@@ -11,6 +11,62 @@ namespace WorkMood.MauiApp.Services;
 public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFactory fileShimFactory) : ILineGraphGenerator
 {
     private const int Padding = 60;
+
+    private sealed class WeekendAwareXAxisMapper
+    {
+        private readonly DateTime _rangeStart;
+        private readonly Dictionary<DateOnly, double> _daySlotOffsetByDate;
+        private readonly double _totalSlotSpan;
+
+        private WeekendAwareXAxisMapper(DateTime rangeStart, Dictionary<DateOnly, double> daySlotOffsetByDate, double totalSlotSpan)
+        {
+            _rangeStart = rangeStart;
+            _daySlotOffsetByDate = daySlotOffsetByDate;
+            _totalSlotSpan = totalSlotSpan <= 0 ? 1 : totalSlotSpan;
+        }
+
+        public static WeekendAwareXAxisMapper Create(DateOnly startDate, DateOnly endDate, IReadOnlyList<FilledGraphDataPoint> dataPoints)
+        {
+            var datesWithData = dataPoints
+                .Select(p => DateOnly.FromDateTime(p.Timestamp))
+                .ToHashSet();
+
+            var offsets = new Dictionary<DateOnly, double>();
+            var offset = 0d;
+
+            for (var date = startDate; date <= endDate; date = date.AddDays(1))
+            {
+                offsets[date] = offset;
+                var isWeekend = date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+                var consumesSlot = !isWeekend || datesWithData.Contains(date);
+                if (consumesSlot)
+                {
+                    offset += 1d;
+                }
+            }
+
+            return new WeekendAwareXAxisMapper(startDate.ToDateTime(TimeOnly.MinValue), offsets, offset);
+        }
+
+        public float GetNormalizedX(DateTime timestamp)
+        {
+            var date = DateOnly.FromDateTime(timestamp);
+            if (!_daySlotOffsetByDate.TryGetValue(date, out var slotOffset))
+            {
+                return 0f;
+            }
+
+            // Keep intra-day ordering (important for RawData mode) while weekends without
+            // recorded points still collapse to zero-width slots.
+            var intraDayFraction = (timestamp - date.ToDateTime(TimeOnly.MinValue)).TotalDays;
+            var compressedOffset = slotOffset + intraDayFraction;
+            var normalized = compressedOffset / _totalSlotSpan;
+
+            if (normalized < 0) return 0f;
+            if (normalized > 1) return 1f;
+            return (float)normalized;
+        }
+    }
     
     /// <summary>
     /// Initializes a new instance with default factory implementations.
@@ -118,6 +174,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         
         // Determine the end time based on actual data
         var requestedEndDateTime = CalculateEndDateTime(dateRange.EndDate, dataPoints);
+        var xAxisMapper = WeekendAwareXAxisMapper.Create(dateRange.StartDate, dateRange.EndDate, dataPoints);
 
         // Conditionally draw background for the entire canvas
         if (drawWhiteBackground)
@@ -150,24 +207,24 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         }
 
         // Draw data line and optionally points with proportional positioning
-        DrawDataLine(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY);
+        DrawDataLine(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY, xAxisMapper);
         
         if (showDataPoints)
         {
-            DrawDataPoints(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY);
+            DrawDataPoints(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY, xAxisMapper);
         }
 
         // Draw trend line if requested
         if (showTrendLine)
         {
-            DrawTrendLine(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY, drawWhiteBackground);
+            DrawTrendLine(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY, drawWhiteBackground, xAxisMapper);
         }
 
         // Draw axes labels
         if (showAxesAndGrid)
         {
             DrawYAxisLabels(canvas, graphArea, minY, maxY, graphData.YAxisLabelStep);
-            DrawXAxisLabels(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, showDataPoints, lineColor);
+            DrawXAxisLabels(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, showDataPoints, lineColor, xAxisMapper);
         }
 
         // Draw title
@@ -265,7 +322,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         canvas.DrawText("No data available for the selected range", centerX, centerY, textPaint);
     }
 
-    private void DrawDataLine(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, Color lineColor, int minY, int maxY)
+    private void DrawDataLine(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, Color lineColor, int minY, int maxY, WeekendAwareXAxisMapper xAxisMapper)
     {
         if (dataPoints.Count < 2) return;
 
@@ -277,12 +334,12 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
             IsAntialias = true
         });
 
-        // Calculate total time span in the requested range
-        var totalTimeSpan = requestedEndDateTime - requestedStartDateTime;
-
-        // Draw one path per calendar-contiguous segment so a missing day breaks the line
-        // instead of being bridged by it; x stays proportional to timestamp (no slotting).
-        var segments = GraphLineSegmentBuilder.BuildSegments(dataPoints, p => DateOnly.FromDateTime(p.Timestamp));
+        // Draw one path per weekend-aware segment so Friday->Monday remains connected when
+        // only unrecorded weekend days are missing.
+        var segments = GraphLineSegmentBuilder.BuildSegments(
+            dataPoints,
+            p => DateOnly.FromDateTime(p.Timestamp),
+            (previousDate, currentDate) => ShouldBreakForGap(previousDate, currentDate, dataPoints));
 
         foreach (var segment in segments)
         {
@@ -293,9 +350,8 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
             for (int i = 0; i < segment.Count; i++)
             {
                 var dataPoint = segment[i];
-                var timeFromStart = dataPoint.Timestamp - requestedStartDateTime;
-                var proportionalPosition = (float)(timeFromStart.TotalMilliseconds / totalTimeSpan.TotalMilliseconds);
-                var x = area.Left + (proportionalPosition * area.Width);
+                var normalizedX = xAxisMapper.GetNormalizedX(dataPoint.Timestamp);
+                var x = area.Left + (normalizedX * area.Width);
 
                 var value = dataPoint.Value ?? 0; // Use 0 if null (shouldn't happen for filled data points)
                 var y = (float)(area.Bottom - ((value - minY) * area.Height / (maxY - minY)));
@@ -310,7 +366,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         }
     }
 
-    private void DrawDataPoints(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, Color lineColor, int minY, int maxY)
+    private void DrawDataPoints(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, Color lineColor, int minY, int maxY, WeekendAwareXAxisMapper xAxisMapper)
     {
         using var pointPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
@@ -319,15 +375,11 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
             IsAntialias = true
         });
 
-        // Calculate total time span in the requested range
-        var totalTimeSpan = requestedEndDateTime - requestedStartDateTime;
-
         for (int i = 0; i < dataPoints.Count; i++)
         {
             var dataPoint = dataPoints[i];
-            var timeFromStart = dataPoint.Timestamp - requestedStartDateTime;
-            var proportionalPosition = (float)(timeFromStart.TotalMilliseconds / totalTimeSpan.TotalMilliseconds);
-            var x = area.Left + (proportionalPosition * area.Width);
+            var normalizedX = xAxisMapper.GetNormalizedX(dataPoint.Timestamp);
+            var x = area.Left + (normalizedX * area.Width);
 
             var value = dataPoint.Value ?? 0; // Use 0 if null (shouldn't happen for filled data points)
             var y = (float)(area.Bottom - ((value - minY) * area.Height / (maxY - minY)));
@@ -336,19 +388,17 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         }
     }
 
-    private void DrawTrendLine(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, Color lineColor, int minY, int maxY, bool drawWhiteBackground)
+    private void DrawTrendLine(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, Color lineColor, int minY, int maxY, bool drawWhiteBackground, WeekendAwareXAxisMapper xAxisMapper)
     {
         if (dataPoints.Count < 2) return;
 
         // Calculate linear regression
         var regressionPoints = new List<(double x, double y)>();
-        var totalTimeSpan = requestedEndDateTime - requestedStartDateTime;
         
         foreach (var dataPoint in dataPoints)
         {
             if (!dataPoint.Value.HasValue) continue;
-            var timeFromStart = dataPoint.Timestamp - requestedStartDateTime;
-            var normalizedX = timeFromStart.TotalMilliseconds / totalTimeSpan.TotalMilliseconds; // Normalize to 0-1
+            var normalizedX = xAxisMapper.GetNormalizedX(dataPoint.Timestamp);
             regressionPoints.Add((normalizedX, dataPoint.Value.GetValueOrDefault()));
         }
 
@@ -407,7 +457,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         }
     }
 
-    private void DrawXAxisLabels(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, bool showDataPoints, Color lineColor)
+    private void DrawXAxisLabels(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, bool showDataPoints, Color lineColor, WeekendAwareXAxisMapper xAxisMapper)
     {
         using var labelPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
         {
@@ -419,14 +469,15 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
 
         // Show labels for the requested date range
         var totalTimeSpan = requestedEndDateTime - requestedStartDateTime;
-        var totalDays = (int)totalTimeSpan.TotalDays;
+        var totalDays = Math.Max(1, (int)totalTimeSpan.TotalDays);
         var labelCount = Math.Min(8, Math.Max(2, totalDays / 30)); // At least 2 labels, roughly monthly intervals
 
         for (int i = 0; i <= labelCount; i++)
         {
             var proportion = (float)i / labelCount;
-            var x = area.Left + (proportion * area.Width);
             var dateTime = requestedStartDateTime.AddMilliseconds(proportion * totalTimeSpan.TotalMilliseconds);
+            var normalizedX = xAxisMapper.GetNormalizedX(dateTime);
+            var x = area.Left + (normalizedX * area.Width);
             canvas.DrawText(DateOnly.FromDateTime(dateTime).ToString("MM/dd"), x, area.Bottom + 20, labelPaint);
         }
 
@@ -443,13 +494,37 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
 
             foreach (var dataPoint in dataPoints)
             {
-                var timeFromStart = dataPoint.Timestamp - requestedStartDateTime;
-                var proportionalPosition = (float)(timeFromStart.TotalMilliseconds / totalTimeSpan.TotalMilliseconds);
-                var x = area.Left + (proportionalPosition * area.Width);
+                var normalizedX = xAxisMapper.GetNormalizedX(dataPoint.Timestamp);
+                var x = area.Left + (normalizedX * area.Width);
 
                 canvas.DrawText("●", x, area.Bottom + 35, dataLabelPaint);
             }
         }
+    }
+
+    private static bool ShouldBreakForGap(DateOnly previousDate, DateOnly currentDate, IReadOnlyCollection<FilledGraphDataPoint> allDataPoints)
+    {
+        if (currentDate.DayNumber - previousDate.DayNumber <= 1)
+        {
+            return false;
+        }
+
+        var datesWithData = allDataPoints
+            .Select(p => DateOnly.FromDateTime(p.Timestamp))
+            .ToHashSet();
+
+        for (var date = previousDate.AddDays(1); date < currentDate; date = date.AddDays(1))
+        {
+            var isWeekend = date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+            var hasRecordedData = datesWithData.Contains(date);
+
+            if (!isWeekend || hasRecordedData)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void DrawGraphTitle(ICanvasShim canvas, int width, string title)
