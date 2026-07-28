@@ -277,28 +277,37 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
             IsAntialias = true
         });
 
-        using var path = new SKPath();
-
         // Calculate total time span in the requested range
         var totalTimeSpan = requestedEndDateTime - requestedStartDateTime;
 
-        for (int i = 0; i < dataPoints.Count; i++)
+        // Draw one path per calendar-contiguous segment so a missing day breaks the line
+        // instead of being bridged by it; x stays proportional to timestamp (no slotting).
+        var segments = GraphLineSegmentBuilder.BuildSegments(dataPoints, p => DateOnly.FromDateTime(p.Timestamp));
+
+        foreach (var segment in segments)
         {
-            var dataPoint = dataPoints[i];
-            var timeFromStart = dataPoint.Timestamp - requestedStartDateTime;
-            var proportionalPosition = (float)(timeFromStart.TotalMilliseconds / totalTimeSpan.TotalMilliseconds);
-            var x = area.Left + (proportionalPosition * area.Width);
+            if (segment.Count < 2) continue;
 
-            var value = dataPoint.Value ?? 0; // Use 0 if null (shouldn't happen for filled data points)
-            var y = (float)(area.Bottom - ((value - minY) * area.Height / (maxY - minY)));
+            using var path = new SKPath();
 
-            if (i == 0)
-                path.MoveTo(x, y);
-            else
-                path.LineTo(x, y);
+            for (int i = 0; i < segment.Count; i++)
+            {
+                var dataPoint = segment[i];
+                var timeFromStart = dataPoint.Timestamp - requestedStartDateTime;
+                var proportionalPosition = (float)(timeFromStart.TotalMilliseconds / totalTimeSpan.TotalMilliseconds);
+                var x = area.Left + (proportionalPosition * area.Width);
+
+                var value = dataPoint.Value ?? 0; // Use 0 if null (shouldn't happen for filled data points)
+                var y = (float)(area.Bottom - ((value - minY) * area.Height / (maxY - minY)));
+
+                if (i == 0)
+                    path.MoveTo(x, y);
+                else
+                    path.LineTo(x, y);
+            }
+
+            canvas.DrawPath(path, linePaint);
         }
-
-        canvas.DrawPath(path, linePaint);
     }
 
     private void DrawDataPoints(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, Color lineColor, int minY, int maxY)

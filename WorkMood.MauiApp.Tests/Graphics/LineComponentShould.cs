@@ -315,4 +315,121 @@ public class LineComponentShould
             MaxAbsoluteValue = values.Length > 0 ? values.Select(Math.Abs).Max() : 1.0
         };
     }
+
+    #region Calendar Gap Tests
+
+    // bounds width 170 with margin 20 -> graphWidth 130 -> pointSpacing (130/13) = 10,
+    // giving clean whole-number x coordinates per day index: day N -> x = 20 + (N * 10).
+    private static readonly RectF GapTestBounds = new(0, 0, 170, 100);
+
+    [Fact]
+    public void Draw_WithConsecutiveRecordedDays_ShouldConnectThem()
+    {
+        // Arrange
+        var canvas = new Mock<ICanvas>();
+        var baseDate = new DateOnly(2025, 1, 1);
+
+        var dailyValues = new[]
+        {
+            new DailyMoodValue { Date = baseDate, HasData = true, Value = 1.0, Color = Colors.Blue },
+            new DailyMoodValue { Date = baseDate.AddDays(1), HasData = true, Value = 1.0, Color = Colors.Blue },
+            new DailyMoodValue { Date = baseDate.AddDays(2), HasData = true, Value = 1.0, Color = Colors.Blue }
+        };
+
+        var data = new MoodVisualizationData { DailyValues = dailyValues, MaxAbsoluteValue = 1.0 };
+
+        // Act
+        _component.Draw(canvas.Object, GapTestBounds, data);
+
+        // Assert - all three consecutive recorded days connect
+        canvas.Verify(c => c.DrawLine(20f, 20f, 30f, 20f), Times.Once);
+        canvas.Verify(c => c.DrawLine(30f, 20f, 40f, 20f), Times.Once);
+    }
+
+    [Fact]
+    public void Draw_WithMissingDayBetweenRecordedDays_ShouldNotConnectAcrossTheGap()
+    {
+        // Arrange
+        var canvas = new Mock<ICanvas>();
+        var baseDate = new DateOnly(2025, 1, 1);
+
+        var dailyValues = new[]
+        {
+            new DailyMoodValue { Date = baseDate, HasData = true, Value = 1.0, Color = Colors.Blue },
+            new DailyMoodValue { Date = baseDate.AddDays(1), HasData = true, Value = 1.0, Color = Colors.Blue },
+            new DailyMoodValue { Date = baseDate.AddDays(2), HasData = false }, // missing day
+            new DailyMoodValue { Date = baseDate.AddDays(3), HasData = true, Value = 1.0, Color = Colors.Blue }
+        };
+
+        var data = new MoodVisualizationData { DailyValues = dailyValues, MaxAbsoluteValue = 1.0 };
+
+        // Act
+        _component.Draw(canvas.Object, GapTestBounds, data);
+
+        // Assert - the two recorded days before the gap still connect to each other
+        canvas.Verify(c => c.DrawLine(20f, 20f, 30f, 20f), Times.Once);
+
+        // Assert - neither recorded day connects across the missing day
+        canvas.Verify(c => c.DrawLine(30f, 20f, 50f, 20f), Times.Never);
+        canvas.Verify(c => c.DrawLine(20f, 20f, 50f, 20f), Times.Never);
+    }
+
+    [Fact]
+    public void Draw_WithMultipleGapsInOneSeries_ShouldBreakAtEveryGap()
+    {
+        // Arrange
+        var canvas = new Mock<ICanvas>();
+        var baseDate = new DateOnly(2025, 1, 1);
+
+        var dailyValues = new[]
+        {
+            new DailyMoodValue { Date = baseDate, HasData = true, Value = 1.0, Color = Colors.Blue },          // day 0, x=20
+            new DailyMoodValue { Date = baseDate.AddDays(1), HasData = false },                                 // day 1, missing
+            new DailyMoodValue { Date = baseDate.AddDays(2), HasData = true, Value = 1.0, Color = Colors.Blue }, // day 2, x=40
+            new DailyMoodValue { Date = baseDate.AddDays(3), HasData = true, Value = 1.0, Color = Colors.Blue }, // day 3, x=50
+            new DailyMoodValue { Date = baseDate.AddDays(4), HasData = false },                                 // day 4, missing
+            new DailyMoodValue { Date = baseDate.AddDays(5), HasData = true, Value = 1.0, Color = Colors.Blue }  // day 5, x=70
+        };
+
+        var data = new MoodVisualizationData { DailyValues = dailyValues, MaxAbsoluteValue = 1.0 };
+
+        // Act
+        _component.Draw(canvas.Object, GapTestBounds, data);
+
+        // Assert - middle pair (day 2 -> day 3) connects
+        canvas.Verify(c => c.DrawLine(40f, 20f, 50f, 20f), Times.Once);
+
+        // Assert - neither boundary gap is bridged
+        canvas.Verify(c => c.DrawLine(20f, 20f, 40f, 20f), Times.Never); // day 0 -> day 2 (skips day 1)
+        canvas.Verify(c => c.DrawLine(50f, 20f, 70f, 20f), Times.Never); // day 3 -> day 5 (skips day 4)
+    }
+
+    [Fact]
+    public void Draw_WithGapAtRangeStart_ShouldNotConnectFirstIsolatedPoint()
+    {
+        // Arrange
+        var canvas = new Mock<ICanvas>();
+        var baseDate = new DateOnly(2025, 1, 1);
+
+        var dailyValues = new[]
+        {
+            new DailyMoodValue { Date = baseDate, HasData = true, Value = 1.0, Color = Colors.Blue },          // day 0, isolated
+            new DailyMoodValue { Date = baseDate.AddDays(1), HasData = false },                                 // day 1, missing
+            new DailyMoodValue { Date = baseDate.AddDays(2), HasData = true, Value = 1.0, Color = Colors.Blue }, // day 2
+            new DailyMoodValue { Date = baseDate.AddDays(3), HasData = true, Value = 1.0, Color = Colors.Blue }  // day 3
+        };
+
+        var data = new MoodVisualizationData { DailyValues = dailyValues, MaxAbsoluteValue = 1.0 };
+
+        // Act
+        _component.Draw(canvas.Object, GapTestBounds, data);
+
+        // Assert - the trailing pair still connects
+        canvas.Verify(c => c.DrawLine(40f, 20f, 50f, 20f), Times.Once);
+
+        // Assert - the isolated leading point is never used as a line endpoint
+        canvas.Verify(c => c.DrawLine(20f, 20f, 40f, 20f), Times.Never);
+    }
+
+    #endregion
 }

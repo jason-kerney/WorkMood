@@ -128,8 +128,9 @@ public class LineComponent : IGraphComponent
         var maxAbsValue = Math.Max(1.0, data.MaxAbsoluteValue);
         var scaleFactor = graphHeight / (2.0 * maxAbsValue);
         
-        // Collect points with data
-        var dataPoints = new List<PointF>();
+        // Collect points with data, keeping each point's calendar date so a missing day can
+        // break the line instead of being bridged by it.
+        var dataPoints = new List<(DateOnly Date, PointF Point)>();
         
         for (int day = 0; day < 14 && day < data.DailyValues.Length; day++)
         {
@@ -140,19 +141,25 @@ public class LineComponent : IGraphComponent
                 var value = (float)dailyValue.Value.Value;
                 var y = centerY - (float)(value * scaleFactor);
                 
-                dataPoints.Add(new PointF(x, y));
+                dataPoints.Add((dailyValue.Date, new PointF(x, y)));
             }
         }
         
-        // Draw connecting lines
-        if (dataPoints.Count > 1)
+        // Draw connecting lines only within calendar-contiguous segments; a missing day between
+        // two recorded days breaks the line instead of bridging the gap.
+        var segments = GraphLineSegmentBuilder.BuildSegments(dataPoints, p => p.Date);
+
+        if (segments.Any(segment => segment.Count > 1))
         {
             canvas.StrokeColor = Colors.DarkBlue;
             canvas.StrokeSize = 2f;
-            
-            for (int i = 0; i < dataPoints.Count - 1; i++)
+
+            foreach (var segment in segments)
             {
-                canvas.DrawLine(dataPoints[i], dataPoints[i + 1]);
+                for (int i = 0; i < segment.Count - 1; i++)
+                {
+                    canvas.DrawLine(segment[i].Point, segment[i + 1].Point);
+                }
             }
         }
     }

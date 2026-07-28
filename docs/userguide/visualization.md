@@ -47,6 +47,8 @@ The graph view supports multiple modes so you can focus on different insights:
 - **Closing Mood (End of Day)**: Plots one point per day using `EndOfWork`, falling back to `StartOfWork` if end-of-work is missing
 - **Raw Data (Individual Recordings)**: Shows start and end recordings as separate timestamped points
 
+**Missing Days**: If a day has no recorded mood data, the line breaks at that day's position instead of connecting straight through it — the gap keeps its place in the timeline rather than being skipped or smoothed over. For example, if you didn't record anything on Tuesday, the line will show separate segments for Monday and Wednesday instead of one continuous line between them. This applies to every graph mode, including Raw Data, where the line only breaks when an entire calendar day has no recordings (not simply between the start and end recordings within the same day).
+
 **Note**: The visualization is a static display - it does not support zooming, panning, or other chart interactions.
 
 <!-- (dl (# Understanding Your Data)) -->
