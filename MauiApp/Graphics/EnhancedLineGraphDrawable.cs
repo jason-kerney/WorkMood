@@ -53,6 +53,34 @@ public class EnhancedLineGraphDrawable : IDrawable
     }
 }
 
+internal static class VisualizationGraphLayout
+{
+    private const float Margin = 20f;
+
+    public static float MarginSize => Margin;
+
+    public static float[] GetPointPositions(RectF bounds, int slotCount)
+    {
+        if (slotCount <= 0)
+        {
+            return Array.Empty<float>();
+        }
+
+        var graphWidth = bounds.Width - (Margin * 2);
+
+        if (slotCount == 1)
+        {
+            return new[] { Margin + (graphWidth / 2f) };
+        }
+
+        var pointSpacing = graphWidth / (slotCount - 1);
+
+        return Enumerable.Range(0, slotCount)
+            .Select(index => Margin + (index * pointSpacing))
+            .ToArray();
+    }
+}
+
 /// <summary>
 /// Component for drawing grid lines
 /// </summary>
@@ -60,21 +88,30 @@ public class GridComponent : IGraphComponent
 {
     public void Draw(ICanvas canvas, RectF bounds, MoodVisualizationData data)
     {
+        var displayValues = VisualizationDisplayProjector.GetDisplayValues(data);
+        var xPositions = VisualizationGraphLayout.GetPointPositions(bounds, displayValues.Count);
         var width = bounds.Width;
         var height = bounds.Height;
-        var margin = 20f;
+        var margin = VisualizationGraphLayout.MarginSize;
         var graphWidth = width - (margin * 2);
         var graphHeight = height - (margin * 2);
-        var pointSpacing = graphWidth / 13f; // 13 gaps between 14 points
         
         canvas.StrokeColor = Colors.LightGray;
         canvas.StrokeSize = 0.5f;
         
-        // Vertical grid lines (one for each day)
-        for (int i = 0; i <= 14; i++)
+        if (xPositions.Length == 1)
         {
-            var x = margin + (i * pointSpacing);
-            canvas.DrawLine(x, margin, x, height - margin);
+            canvas.DrawLine(xPositions[0], margin, xPositions[0], height - margin);
+        }
+        else
+        {
+            var pointSpacing = xPositions.Length > 1 ? graphWidth / (xPositions.Length - 1) : 0f;
+
+            for (int i = 0; i <= xPositions.Length; i++)
+            {
+                var x = margin + (i * pointSpacing);
+                canvas.DrawLine(x, margin, x, height - margin);
+            }
         }
         
         // Horizontal grid lines based on data range
@@ -118,12 +155,12 @@ public class LineComponent : IGraphComponent
 {
     public void Draw(ICanvas canvas, RectF bounds, MoodVisualizationData data)
     {
+        var displayValues = VisualizationDisplayProjector.GetDisplayValues(data);
+        var xPositions = VisualizationGraphLayout.GetPointPositions(bounds, displayValues.Count);
         var width = bounds.Width;
         var height = bounds.Height;
-        var margin = 20f;
-        var graphWidth = width - (margin * 2);
+        var margin = VisualizationGraphLayout.MarginSize;
         var graphHeight = height - (margin * 2);
-        var pointSpacing = graphWidth / 13f;
         var centerY = margin + (graphHeight / 2f);
         var maxAbsValue = Math.Max(1.0, data.MaxAbsoluteValue);
         var scaleFactor = graphHeight / (2.0 * maxAbsValue);
@@ -132,12 +169,12 @@ public class LineComponent : IGraphComponent
         // break the line instead of being bridged by it.
         var dataPoints = new List<(DateOnly Date, PointF Point)>();
         
-        for (int day = 0; day < 14 && day < data.DailyValues.Length; day++)
+        for (int day = 0; day < displayValues.Count && day < xPositions.Length; day++)
         {
-            var dailyValue = data.DailyValues[day];
+            var dailyValue = displayValues[day];
             if (dailyValue.HasData && dailyValue.Value.HasValue)
             {
-                var x = margin + (day * pointSpacing);
+                var x = xPositions[day];
                 var value = (float)dailyValue.Value.Value;
                 var y = centerY - (float)(value * scaleFactor);
                 
@@ -147,7 +184,10 @@ public class LineComponent : IGraphComponent
         
         // Draw connecting lines only within calendar-contiguous segments; a missing day between
         // two recorded days breaks the line instead of bridging the gap.
-        var segments = GraphLineSegmentBuilder.BuildSegments(dataPoints, p => p.Date);
+        var segments = GraphLineSegmentBuilder.BuildSegments(
+            dataPoints,
+            p => p.Date,
+            VisualizationDisplayProjector.ShouldBreakDisplaySegment);
 
         if (segments.Any(segment => segment.Count > 1))
         {
@@ -172,22 +212,22 @@ public class DataPointComponent : IGraphComponent
 {
     public void Draw(ICanvas canvas, RectF bounds, MoodVisualizationData data)
     {
+        var displayValues = VisualizationDisplayProjector.GetDisplayValues(data);
+        var xPositions = VisualizationGraphLayout.GetPointPositions(bounds, displayValues.Count);
         var width = bounds.Width;
         var height = bounds.Height;
-        var margin = 20f;
-        var graphWidth = width - (margin * 2);
+        var margin = VisualizationGraphLayout.MarginSize;
         var graphHeight = height - (margin * 2);
-        var pointSpacing = graphWidth / 13f;
         var centerY = margin + (graphHeight / 2f);
         var maxAbsValue = Math.Max(1.0, data.MaxAbsoluteValue);
         var scaleFactor = graphHeight / (2.0 * maxAbsValue);
         
-        for (int day = 0; day < 14 && day < data.DailyValues.Length; day++)
+        for (int day = 0; day < displayValues.Count && day < xPositions.Length; day++)
         {
-            var dailyValue = data.DailyValues[day];
+            var dailyValue = displayValues[day];
             if (dailyValue.HasData && dailyValue.Value.HasValue)
             {
-                var x = margin + (day * pointSpacing);
+                var x = xPositions[day];
                 var value = (float)dailyValue.Value.Value;
                 var y = centerY - (float)(value * scaleFactor);
                 
@@ -211,21 +251,21 @@ public class MissingDataComponent : IGraphComponent
 {
     public void Draw(ICanvas canvas, RectF bounds, MoodVisualizationData data)
     {
+        var displayValues = VisualizationDisplayProjector.GetDisplayValues(data);
+        var xPositions = VisualizationGraphLayout.GetPointPositions(bounds, displayValues.Count);
         var width = bounds.Width;
         var height = bounds.Height;
-        var margin = 20f;
-        var graphWidth = width - (margin * 2);
+        var margin = VisualizationGraphLayout.MarginSize;
         var graphHeight = height - (margin * 2);
-        var pointSpacing = graphWidth / 13f;
         var centerY = margin + (graphHeight / 2f);
         
         // Draw missing data indicators (gray dots on zero line)
-        for (int day = 0; day < 14; day++)
+        for (int day = 0; day < displayValues.Count && day < xPositions.Length; day++)
         {
-            var dailyValue = data.DailyValues[day];
+            var dailyValue = displayValues[day];
             if (!dailyValue.HasData || !dailyValue.Value.HasValue)
             {
-                var x = margin + (day * pointSpacing);
+                var x = xPositions[day];
                 canvas.FillColor = Colors.LightGray;
                 canvas.FillCircle(x, centerY, 2f);
             }

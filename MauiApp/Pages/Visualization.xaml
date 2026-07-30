@@ -89,8 +89,7 @@
                            CornerRadius="5">
                         
                         <Grid x:Name="VisualizationGrid" 
-                              ColumnDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*"
-                              RowDefinitions="Auto,100,Auto"
+                            RowDefinitions="Auto,100"
                               MinimumHeightRequest="140">
                             
                             <!-- Day labels will be added programmatically -->

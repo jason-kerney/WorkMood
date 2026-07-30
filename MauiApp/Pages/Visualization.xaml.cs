@@ -67,14 +67,22 @@ public partial class Visualization : ContentPage
     public void CreateVisualization(MoodVisualizationData visualizationData)
     {
         if (visualizationData?.DailyValues == null) return;
+        var displayValues = VisualizationDisplayProjector.GetDisplayValues(visualizationData);
+        var displayColumnCount = Math.Max(1, displayValues.Count);
         
         // Clear existing visualization
         VisualizationGrid.Children.Clear();
+        VisualizationGrid.ColumnDefinitions.Clear();
+
+        for (var column = 0; column < displayColumnCount; column++)
+        {
+            VisualizationGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+        }
         
         // Add day labels (row 0)
-        for (int day = 0; day < 14; day++)
+        for (int day = 0; day < displayValues.Count; day++)
         {
-            var dailyValue = visualizationData.DailyValues[day];
+            var dailyValue = displayValues[day];
             var dayLabel = new Label
             {
                 Text = dailyValue.Date.ToString("dd"),
@@ -92,38 +100,9 @@ public partial class Visualization : ContentPage
         // Add visualization line graph (row 1) using enhanced drawable
         var lineGraphView = CreateLineGraphView(visualizationData);
         Grid.SetColumn(lineGraphView, 0);
-        Grid.SetColumnSpan(lineGraphView, 14);
+        Grid.SetColumnSpan(lineGraphView, displayColumnCount);
         Grid.SetRow(lineGraphView, 1);
         VisualizationGrid.Children.Add(lineGraphView);
-        
-        // Add week labels (row 2)
-        var week1Label = new Label
-        {
-            Text = "Week 1",
-            FontSize = 12,
-            FontAttributes = FontAttributes.Bold,
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 5, 0, 0)
-        };
-        Grid.SetColumn(week1Label, 0);
-        Grid.SetColumnSpan(week1Label, 7);
-        Grid.SetRow(week1Label, 2);
-        VisualizationGrid.Children.Add(week1Label);
-        
-        var week2Label = new Label
-        {
-            Text = "Week 2",
-            FontSize = 12,
-            FontAttributes = FontAttributes.Bold,
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 5, 0, 0)
-        };
-        Grid.SetColumn(week2Label, 7);
-        Grid.SetColumnSpan(week2Label, 7);
-        Grid.SetRow(week2Label, 2);
-        VisualizationGrid.Children.Add(week2Label);
     }
     
     /// <summary>

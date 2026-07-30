@@ -535,8 +535,7 @@ The main visualization displays:
 
 - **Date Range Display**: Shows the specific 2-week period being analyzed
 - **Color-Coded Chart**: Visual bars representing daily mood changes
-- **Day Labels**: Individual dates across the 2-week period
-- **Week Divisions**: Clear separation between Week 1 and Week 2
+- **Day Labels**: Individual dates for each displayed slot in the 2-week chart
 
 #### Reading the Visualization ####
 
@@ -548,6 +547,25 @@ The chart uses a color-coding system to show how your mood changed from day to d
 - **Declined** (Light Coral): Moderate negative mood changes
 - **Significantly Declined** (Red): Major negative mood changes
 - **No Data** (Light Gray): Days where mood wasn't recorded
+
+**Weekend compression on the 2-week visualization**: Unrecorded Saturday and Sunday entries do not consume horizontal chart space on this page.
+
+- Friday to Monday with no weekend records: the chart connects those displayed days without reserving blank weekend spacing.
+- Weekend day with records: that Saturday or Sunday stays visible in the chart and keeps its own slot.
+- Missing weekday: behavior is unchanged; missing weekdays still keep their place in the 14-day calendar window and do not collapse out of the display.
+
+**Example**:
+
+1. Record mood on Friday.
+2. Do not record mood on Saturday or Sunday.
+3. Record mood on Monday.
+4. Open the Visualization page.
+
+Expected result:
+
+- Friday and Monday appear next to each other in the chart.
+- Saturday and Sunday do not consume chart width when they are unrecorded.
+- The Daily Details list still shows the full calendar-based 2-week range.
 
 #### Interactive Features ####
 
@@ -601,6 +619,8 @@ The detailed view shows for each day:
 - **Color Indicator**: Visual representation of the day's mood change
 - **Description**: Text explanation of the mood change
 - **Value**: Numerical change value (when available)
+
+The Daily Details list remains calendar-based even when the chart compresses an unrecorded weekend out of the horizontal display.
 
 ### Understanding the Legend ###
 

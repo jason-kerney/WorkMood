@@ -72,7 +72,7 @@ public class DataPointComponentShould
         _component.Draw(canvas.Object, bounds, data);
 
         // Assert - Check the Y position in FillEllipse call (x, y, width, height)
-        canvas.Verify(c => c.FillEllipse(16f, expectedY - 4f, 8f, 8f), Times.Once);
+        canvas.Verify(c => c.FillEllipse(46f, expectedY - 4f, 8f, 8f), Times.Once);
     }
 
     [Fact]
@@ -90,7 +90,7 @@ public class DataPointComponentShould
         _component.Draw(canvas.Object, bounds, data);
 
         // Assert
-        canvas.Verify(c => c.FillEllipse(16f, expectedY - 4f, 8f, 8f), Times.Once);
+        canvas.Verify(c => c.FillEllipse(46f, expectedY - 4f, 8f, 8f), Times.Once);
     }
 
     [Fact]
@@ -107,7 +107,7 @@ public class DataPointComponentShould
         _component.Draw(canvas.Object, bounds, data);
 
         // Assert
-        canvas.Verify(c => c.FillEllipse(16f, expectedY - 4f, 8f, 8f), Times.Once);
+        canvas.Verify(c => c.FillEllipse(46f, expectedY - 4f, 8f, 8f), Times.Once);
     }
 
     [Theory]
@@ -146,7 +146,7 @@ public class DataPointComponentShould
         _component.Draw(canvas.Object, bounds, data);
 
         // Assert
-        canvas.Verify(c => c.FillEllipse(16f, expectedY - 4f, 8f, 8f), Times.Once);
+        canvas.Verify(c => c.FillEllipse(46f, expectedY - 4f, 8f, 8f), Times.Once);
     }
 
     [Theory]
@@ -315,7 +315,7 @@ public class DataPointComponentShould
         _component.Draw(canvas.Object, bounds, data);
 
         // Assert
-        canvas.Verify(c => c.FillEllipse(16f, It.IsAny<float>(), 8f, 8f), Times.Exactly(2));
+        canvas.Verify(c => c.FillEllipse(46f, It.IsAny<float>(), 8f, 8f), Times.Exactly(2));
     }
 
     [Fact]

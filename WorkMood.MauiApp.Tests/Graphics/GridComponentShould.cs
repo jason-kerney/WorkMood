@@ -320,9 +320,21 @@ public class GridComponentShould
 
     private MoodVisualizationData CreateTestData(double maxAbsoluteValue)
     {
+        var startDate = new DateOnly(2025, 1, 6);
+        var displayValues = Enumerable.Range(0, 14)
+            .Select(index => new DailyMoodValue
+            {
+                Date = startDate.AddDays(index),
+                HasData = index < 10,
+                Value = index < 10 ? 0.0 : null,
+                Color = Colors.Blue
+            })
+            .ToArray();
+
         return new MoodVisualizationData
         {
             DailyValues = Array.Empty<DailyMoodValue>(),
+            DisplayValues = displayValues,
             MaxAbsoluteValue = maxAbsoluteValue
         };
     }

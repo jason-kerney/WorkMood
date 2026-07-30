@@ -56,6 +56,7 @@ public class MoodVisualizationService : IMoodVisualizationService
         return new MoodVisualizationData
         {
             DailyValues = dailyValues,
+            DisplayValues = VisualizationDisplayProjector.BuildDisplayValues(dailyValues),
             StartDate = startDate,
             EndDate = endDate,
             Width = BITMAP_WIDTH,
@@ -83,6 +84,7 @@ public class MoodVisualizationService : IMoodVisualizationService
 public class MoodVisualizationData
 {
     public DailyMoodValue[] DailyValues { get; set; } = Array.Empty<DailyMoodValue>();
+    public DailyMoodValue[] DisplayValues { get; set; } = Array.Empty<DailyMoodValue>();
     public DateOnly StartDate { get; set; }
     public DateOnly EndDate { get; set; }
     public int Width { get; set; }

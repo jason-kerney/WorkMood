@@ -380,6 +380,62 @@ public class MoodVisualizationServiceShould
         Assert.Empty(result.DailyValues);
     }
 
+    [Fact]
+    public void CreateTwoWeekValueVisualization_ShouldCollapseUnrecordedWeekendDaysInDisplayValues()
+    {
+        // Arrange
+        var moodCollection = CreateTestMoodCollection();
+        var startDate = new DateOnly(2025, 7, 7); // Monday
+        var projectedSource = CreateSequentialDailyValues(startDate);
+
+        projectedSource[5] = new DailyMoodValue { Date = startDate.AddDays(5), HasData = false, Value = null, Color = Colors.LightGray };
+        projectedSource[6] = new DailyMoodValue { Date = startDate.AddDays(6), HasData = false, Value = null, Color = Colors.LightGray };
+
+        _mockDataProcessor.Setup(p => p.ProcessMoodEntries(
+            It.IsAny<IEnumerable<MoodEntry>>(),
+            It.IsAny<DateOnly>(),
+            It.IsAny<DateOnly>()))
+            .Returns(projectedSource);
+
+        // Act
+        var result = _service.CreateTwoWeekValueVisualization(moodCollection);
+
+        // Assert
+        Assert.Equal(14, result.DailyValues.Length);
+        Assert.Equal(12, result.DisplayValues.Length);
+        Assert.DoesNotContain(result.DisplayValues, value => value.Date == startDate.AddDays(5));
+        Assert.DoesNotContain(result.DisplayValues, value => value.Date == startDate.AddDays(6));
+        Assert.Equal(startDate.AddDays(4), result.DisplayValues[4].Date);
+        Assert.Equal(startDate.AddDays(7), result.DisplayValues[5].Date);
+    }
+
+    [Fact]
+    public void CreateTwoWeekValueVisualization_ShouldRetainRecordedWeekendDaysInDisplayValues()
+    {
+        // Arrange
+        var moodCollection = CreateTestMoodCollection();
+        var startDate = new DateOnly(2025, 7, 7); // Monday
+        var projectedSource = CreateSequentialDailyValues(startDate);
+
+        projectedSource[5] = new DailyMoodValue { Date = startDate.AddDays(5), HasData = true, Value = 1.5, Color = Colors.Green };
+        projectedSource[6] = new DailyMoodValue { Date = startDate.AddDays(6), HasData = false, Value = null, Color = Colors.LightGray };
+        projectedSource[12] = new DailyMoodValue { Date = startDate.AddDays(12), HasData = false, Value = null, Color = Colors.LightGray };
+        projectedSource[13] = new DailyMoodValue { Date = startDate.AddDays(13), HasData = false, Value = null, Color = Colors.LightGray };
+
+        _mockDataProcessor.Setup(p => p.ProcessMoodEntries(
+            It.IsAny<IEnumerable<MoodEntry>>(),
+            It.IsAny<DateOnly>(),
+            It.IsAny<DateOnly>()))
+            .Returns(projectedSource);
+
+        // Act
+        var result = _service.CreateTwoWeekValueVisualization(moodCollection);
+
+        // Assert
+        Assert.Contains(result.DisplayValues, value => value.Date == startDate.AddDays(5));
+        Assert.Equal(11, result.DisplayValues.Length);
+    }
+
     #endregion
 
     #region Integration Tests
@@ -503,6 +559,19 @@ public class MoodVisualizationServiceShould
         
         return dailyValues;
     }
+
+            private static DailyMoodValue[] CreateSequentialDailyValues(DateOnly startDate)
+            {
+                return Enumerable.Range(0, 14)
+                    .Select(day => new DailyMoodValue
+                    {
+                        Date = startDate.AddDays(day),
+                        Value = 1.0,
+                        HasData = true,
+                        Color = Colors.Blue
+                    })
+                    .ToArray();
+            }
 
     #endregion
 }

@@ -342,8 +342,8 @@ public class LineComponentShould
         _component.Draw(canvas.Object, GapTestBounds, data);
 
         // Assert - all three consecutive recorded days connect
-        canvas.Verify(c => c.DrawLine(20f, 20f, 30f, 20f), Times.Once);
-        canvas.Verify(c => c.DrawLine(30f, 20f, 40f, 20f), Times.Once);
+        canvas.Verify(c => c.DrawLine(20f, 20f, 85f, 20f), Times.Once);
+        canvas.Verify(c => c.DrawLine(85f, 20f, 150f, 20f), Times.Once);
     }
 
     [Fact]
@@ -367,11 +367,11 @@ public class LineComponentShould
         _component.Draw(canvas.Object, GapTestBounds, data);
 
         // Assert - the two recorded days before the gap still connect to each other
-        canvas.Verify(c => c.DrawLine(20f, 20f, 30f, 20f), Times.Once);
+        canvas.Verify(c => c.DrawLine(20f, 20f, 63.333332f, 20f), Times.Once);
 
         // Assert - neither recorded day connects across the missing day
-        canvas.Verify(c => c.DrawLine(30f, 20f, 50f, 20f), Times.Never);
-        canvas.Verify(c => c.DrawLine(20f, 20f, 50f, 20f), Times.Never);
+        canvas.Verify(c => c.DrawLine(63.333332f, 20f, 150f, 20f), Times.Never);
+        canvas.Verify(c => c.DrawLine(20f, 20f, 150f, 20f), Times.Never);
     }
 
     [Fact]
@@ -397,11 +397,13 @@ public class LineComponentShould
         _component.Draw(canvas.Object, GapTestBounds, data);
 
         // Assert - middle pair (day 2 -> day 3) connects
-        canvas.Verify(c => c.DrawLine(40f, 20f, 50f, 20f), Times.Once);
+        canvas.Verify(c => c.DrawLine(72f, 20f, 98f, 20f), Times.Once);
 
-        // Assert - neither boundary gap is bridged
-        canvas.Verify(c => c.DrawLine(20f, 20f, 40f, 20f), Times.Never); // day 0 -> day 2 (skips day 1)
-        canvas.Verify(c => c.DrawLine(50f, 20f, 70f, 20f), Times.Never); // day 3 -> day 5 (skips day 4)
+        // Assert - the weekday gap is not bridged
+        canvas.Verify(c => c.DrawLine(20f, 20f, 72f, 20f), Times.Never); // day 0 -> day 2 (skips day 1)
+
+        // Assert - the weekend gap is compressed, so Saturday still connects to Monday
+        canvas.Verify(c => c.DrawLine(98f, 20f, 150f, 20f), Times.Once); // day 3 -> day 5 with missing Sunday
     }
 
     [Fact]
@@ -425,10 +427,43 @@ public class LineComponentShould
         _component.Draw(canvas.Object, GapTestBounds, data);
 
         // Assert - the trailing pair still connects
-        canvas.Verify(c => c.DrawLine(40f, 20f, 50f, 20f), Times.Once);
+        canvas.Verify(c => c.DrawLine(106.666664f, 20f, 150f, 20f), Times.Once);
 
         // Assert - the isolated leading point is never used as a line endpoint
-        canvas.Verify(c => c.DrawLine(20f, 20f, 40f, 20f), Times.Never);
+        canvas.Verify(c => c.DrawLine(20f, 20f, 106.666664f, 20f), Times.Never);
+    }
+
+    [Fact]
+    public void Draw_WithCollapsedWeekendDisplayValues_ShouldConnectFridayToMonday()
+    {
+        // Arrange
+        var canvas = new Mock<ICanvas>();
+        var friday = new DateOnly(2025, 7, 11);
+        var monday = friday.AddDays(3);
+
+        var data = new MoodVisualizationData
+        {
+            DailyValues = new[]
+            {
+                new DailyMoodValue { Date = friday, HasData = true, Value = 1.0, Color = Colors.Blue },
+                new DailyMoodValue { Date = friday.AddDays(1), HasData = false, Value = null, Color = Colors.LightGray },
+                new DailyMoodValue { Date = friday.AddDays(2), HasData = false, Value = null, Color = Colors.LightGray },
+                new DailyMoodValue { Date = monday, HasData = true, Value = 1.0, Color = Colors.Blue }
+            },
+            DisplayValues = new[]
+            {
+                new DailyMoodValue { Date = friday, HasData = true, Value = 1.0, Color = Colors.Blue },
+                new DailyMoodValue { Date = monday, HasData = true, Value = 1.0, Color = Colors.Blue }
+            },
+            MaxAbsoluteValue = 1.0
+        };
+
+        // Act
+        _component.Draw(canvas.Object, GapTestBounds, data);
+
+        // Assert
+        canvas.VerifySet(c => c.StrokeColor = Colors.DarkBlue, Times.Once);
+        canvas.Verify(c => c.DrawLine(20f, 20f, 150f, 20f), Times.Once);
     }
 
     #endregion
