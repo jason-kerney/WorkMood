@@ -20,6 +20,7 @@ Review lens:
 - implementation_surface: Code paths, methods, types, abstractions, branches, wrappers, config points, or parallel flows introduced/retained by change.
 - avoidable_added_surface: New surface where an existing local path, reusable code, or narrower direct path could deliver same behavior.
 - avoidable_retained_surface: Surface left in place even though current change makes it obsolete, duplicative, or unnecessarily parallel in touched area.
+- commented_out_code: Executable code left commented in the touched area instead of removed.
 - reuse_or_collapse_path: Concrete in-scope existing mechanism that can replace added/retained surface.
 
 ## Deterministic Evaluation Checks
@@ -41,6 +42,10 @@ Each review must evaluate all checks and emit pass/fail.
 - Pass when existing local/nearby mechanisms are reused or collapsed.
 - Fail when change duplicates mechanism instead of reuse/collapse.
 
+5. DL-C5 no_commentary_dead_code
+- Pass when commented-out executable code is removed, or when any retained commented-out code is clearly temporary, under 100 lines, and preceded by a TODO that explains why it must remain and what condition removes it.
+- Fail when commented-out executable code remains without that narrow exception.
+
 ## Activity-Specific Application
 requirements (predictive):
 - Compare requested approach to existing code paths.
@@ -58,6 +63,7 @@ implementation_plan (prescriptive):
 code_change (observed):
 - Compare diff to deletion_baseline.
 - Block if added surface was avoidable or retained surface became obsolete/duplicative and remained.
+- Block if commented-out executable code remains and does not satisfy the narrow temporary exception.
 
 ## Block Validity Rules
 A block vote is valid only when all are present:
@@ -119,10 +125,11 @@ When invoked, output all fields below in deterministic form:
 1. Set activation=true (required role).
 2. Establish deletion_baseline and touched area.
 3. Inventory added and retained implementation surface.
-4. Run DL-C1..DL-C4 against concrete reuse/collapse paths.
-5. Validate any block against block validity rules.
-6. Emit vote using vote schema.
-7. Add overlap-policy output with at least one cross-role agreement/disagreement and one underweighted concern.
+4. Inventory commented-out executable code and test it against the temporary exception.
+5. Run DL-C1..DL-C5 against concrete reuse/collapse paths.
+6. Validate any block against block validity rules.
+7. Emit vote using vote schema.
+8. Add overlap-policy output with at least one cross-role agreement/disagreement and one underweighted concern.
 
 ## Boundary
 Deletion does not own release slicing, feature correctness, maintainability scoring, or broad subsystem redesign; it judges only whether this change added or kept code that did not need to exist.

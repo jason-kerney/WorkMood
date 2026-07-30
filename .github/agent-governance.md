@@ -1,6 +1,6 @@
 # Agent Governance Details
 
-This file contains the detailed governance mechanics referenced by [.github/copilot-instructions.md](./copilot-instructions.md).
+This file contains the detailed governance mechanics for the AI Role Panel governance pack.
 
 ## Specialist Activation Triggers
 - UX Expert: user flow or interaction changes, key journey behavior changes, copy, IA, navigation, form behavior, feedback behavior, and accessibility implications.
@@ -54,6 +54,7 @@ Full role definitions are in the `roles/` directory. When invoking a role sub-ag
 - Action block votes must name the primary slice and the additional separately shippable slice or slices that caused the block.
 - Architecture may block code_change only for true boundary or coupling violations.
 - Refactoring and Deletion may block only for concrete maintainability or redundancy failures.
+- Deletion may block code_change when commented-out executable code remains in the touched area, unless it is clearly temporary, narrowly scoped, and paired with a TODO that states the removal trigger and cleanup rationale.
 - Refactoring block votes at requirements and design must cite a specific structural risk in the current codebase that makes the regression predictable.
 - Refactoring block votes at implementation_plan must name the missing or deferred cleanup step.
 - Refactoring block votes at code_change must compare the diff to a concrete pre-change baseline in the touched area.
@@ -62,6 +63,7 @@ Full role definitions are in the `roles/` directory. When invoking a role sub-ag
 - Deletion block votes at requirements and design must cite the specific existing code that makes the new surface avoidable.
 - Deletion block votes at implementation_plan must name the missing reuse or removal step.
 - Deletion block votes at code_change must compare the diff to a concrete pre-change baseline and identify specific added or retained surface that could have been removed, reused, or collapsed.
+- Deletion block votes for commented-out code must treat the retained comments as avoidable surface unless the code is temporary, under 100 lines, and preceded by a TODO that explains why the code must remain and what condition removes it.
 - Deletion must not block only because more cleanup would be nice; it must show that this change introduced or preserved unnecessary surface within scope.
 - UX may block code_change only for severe usability or accessibility defects in activated scope, or context-mismatched placement without approved remodel.
 - Technical Writer may block code_change only for material user-doc defects in activated scope.
