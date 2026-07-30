@@ -77,10 +77,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
     /// </summary>
     public async Task<byte[]> GenerateLineGraphAsync(GraphData graphData, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, Color lineColor, int width = 800, int height = 600)
     {
-        return await GenerateImageAsync(width, height, async canvas =>
-        {
-            await Task.Run(() => DrawGraph(canvas, graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor));
-        });
+        return await RenderGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath: null, lineColor, width, height);
     }
 
     /// <summary>
@@ -88,10 +85,17 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
     /// </summary>
     public async Task<byte[]> GenerateLineGraphAsync(GraphData graphData, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
+        return await RenderGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath, lineColor, width, height);
+    }
+
+    private async Task<byte[]> RenderGraphAsync(GraphData graphData, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string? backgroundImagePath, Color lineColor, int width, int height)
+    {
         return await GenerateImageAsync(width, height, async canvas =>
         {
             SetupCanvasBackground(canvas, backgroundImagePath, width, height);
-            await Task.Run(() => DrawGraph(canvas, graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor, false));
+
+            var hasCustomBackgroundPath = !string.IsNullOrWhiteSpace(backgroundImagePath);
+            await Task.Run(() => DrawGraph(canvas, graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor, hasCustomBackgroundPath));
         });
     }
 
@@ -163,7 +167,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
     /// <summary>
     /// Main drawing logic using GraphData, mimicking LineGraphService behavior
     /// </summary>
-    private void DrawGraph(ICanvasShim canvas, GraphData graphData, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color lineColor, bool drawWhiteBackground = true)
+    private void DrawGraph(ICanvasShim canvas, GraphData graphData, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color lineColor, bool hasCustomBackgroundPath)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
         var dataPoints = graphData.DataPoints.ToList();
@@ -174,13 +178,6 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         // Determine the end time based on actual data
         var requestedEndDateTime = CalculateEndDateTime(dateRange.EndDate, dataPoints);
         var xAxisMapper = WeekendAwareXAxisMapper.Create(dateRange.StartDate, dateRange.EndDate, dataPoints);
-
-        // Conditionally draw background for the entire canvas
-        if (drawWhiteBackground)
-        {
-            var fullCanvasArea = new SKRect(0, 0, width, height);
-            DrawBackground(canvas, fullCanvasArea);
-        }
 
         // Use GraphData's Y range
         var minY = (int)graphData.YAxisRange.Min;
@@ -216,7 +213,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         // Draw trend line if requested
         if (showTrendLine)
         {
-            DrawTrendLine(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY, drawWhiteBackground, xAxisMapper);
+            DrawTrendLine(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY, !hasCustomBackgroundPath, xAxisMapper);
         }
 
         // Draw axes labels
@@ -231,16 +228,6 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         {
             DrawGraphTitle(canvas, width, graphData.Title);
         }
-    }
-
-    private void DrawBackground(ICanvasShim canvas, SKRect area)
-    {
-        using var backgroundPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
-        {
-            Color = drawShimFactory.Colors.White,
-            Style = SKPaintStyle.Fill
-        });
-        canvas.DrawRect(area, backgroundPaint);
     }
 
     private void DrawGrid(ICanvasShim canvas, SKRect area, int minY, int maxY, int verticalLineCount = 10, int verticalLineSpacing = 80)

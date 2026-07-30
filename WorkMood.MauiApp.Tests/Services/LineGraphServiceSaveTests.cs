@@ -45,7 +45,7 @@ public class LineGraphServiceSaveTests
         _mockData.Setup(x => x.ToArray()).Returns(new byte[] { 1, 2, 3, 4 });
 
         // Setup canvas clear to prevent errors
-        _mockCanvas.Setup(x => x.Clear(It.IsAny<SkiaSharp.SKColor>()));
+        _mockCanvas.Setup(x => x.Clear(It.IsAny<IColorShim>()));
 
         // Setup colors to prevent errors
         var mockColors = new Mock<IColorShims>();
@@ -98,6 +98,7 @@ public class LineGraphServiceSaveTests
         _mockCanvas.Setup(x => x.DrawCircle(It.IsAny<float>(), It.IsAny<float>(), It.IsAny<int>(), It.IsAny<IPaintShim>()));
         _mockCanvas.Setup(x => x.DrawPath(It.IsAny<SkiaSharp.SKPath>(), It.IsAny<IPaintShim>()));
         _mockCanvas.Setup(x => x.DrawRect(It.IsAny<SkiaSharp.SKRect>(), It.IsAny<IPaintShim>()));
+        _mockCanvas.Setup(x => x.DrawBitmap(It.IsAny<IBitmapShim>(), It.IsAny<SkiaSharp.SKRect>()));
 
         _lineGraphService = new LineGraphService(new GraphDataTransformer(), new LineGraphGenerator(_mockDrawShimFactory.Object, _mockFileShimFactory.Object));
     }
@@ -161,6 +162,8 @@ public class LineGraphServiceSaveTests
         // Assert
         _mockFileShim.Verify(x => x.WriteAllBytesAsync(expectedFilePath, It.IsAny<byte[]>()), Times.Once);
         _mockFileShim.Verify(x => x.WriteAllBytesAsync(It.IsAny<string>(), It.IsAny<byte[]>()), Times.Once);
+        _mockCanvas.Verify(x => x.Clear(It.IsAny<IColorShim>()), Times.Once);
+        _mockCanvas.Verify(x => x.DrawBitmap(It.IsAny<IBitmapShim>(), It.IsAny<SkiaSharp.SKRect>()), Times.Never);
     }
 
     [Fact]
@@ -197,6 +200,73 @@ public class LineGraphServiceSaveTests
         // Assert
         _mockFileShim.Verify(x => x.WriteAllBytesAsync(expectedFilePath, It.IsAny<byte[]>()), Times.Once);
         _mockFileShim.Verify(x => x.WriteAllBytesAsync(It.IsAny<string>(), It.IsAny<byte[]>()), Times.Once);
+        _mockCanvas.Verify(x => x.DrawBitmap(_mockBitmap.Object, It.IsAny<SkiaSharp.SKRect>()), Times.Once);
+        _mockCanvas.Verify(x => x.Clear(It.IsAny<IColorShim>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SaveLineGraphAsync_WithMissingBackgroundImage_FallsBackToWhiteClear()
+    {
+        // Arrange
+        const string expectedFilePath = @"C:\test\output_missing_background.png";
+        const string backgroundImagePath = @"C:\test\missing_background.png";
+        var moodEntries = CreateTestMoodEntries();
+        var dateRange = CreateTestDateRange();
+
+        _mockFileShim.Setup(x => x.Exists(backgroundImagePath)).Returns(false);
+
+        // Act
+        await _lineGraphService.SaveGraphAsync(
+            moodEntries,
+            GraphMode.Impact,
+            dateRange,
+            showDataPoints: true,
+            showAxesAndGrid: true,
+            showTitle: true,
+            showTrendLine: false,
+            expectedFilePath,
+            backgroundImagePath,
+            Colors.Green,
+            width: 800,
+            height: 600);
+
+        // Assert
+        _mockFileShim.Verify(x => x.WriteAllBytesAsync(expectedFilePath, It.IsAny<byte[]>()), Times.Once);
+        _mockCanvas.Verify(x => x.Clear(It.IsAny<IColorShim>()), Times.Once);
+        _mockCanvas.Verify(x => x.DrawBitmap(It.IsAny<IBitmapShim>(), It.IsAny<SkiaSharp.SKRect>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SaveLineGraphAsync_WithBackgroundDecodeFailure_FallsBackToWhiteClear()
+    {
+        // Arrange
+        const string expectedFilePath = @"C:\test\output_decode_failure.png";
+        const string backgroundImagePath = @"C:\test\decode_failure_background.png";
+        var moodEntries = CreateTestMoodEntries();
+        var dateRange = CreateTestDateRange();
+
+        _mockFileShim.Setup(x => x.Exists(backgroundImagePath)).Returns(true);
+        _mockDrawShimFactory.Setup(x => x.DecodeBitmapFromFile(backgroundImagePath)).Returns((IBitmapShim?)null);
+
+        // Act
+        await _lineGraphService.SaveGraphAsync(
+            moodEntries,
+            GraphMode.RawData,
+            dateRange,
+            showDataPoints: true,
+            showAxesAndGrid: true,
+            showTitle: true,
+            showTrendLine: false,
+            expectedFilePath,
+            backgroundImagePath,
+            Colors.Blue,
+            width: 800,
+            height: 600);
+
+        // Assert
+        _mockFileShim.Verify(x => x.WriteAllBytesAsync(expectedFilePath, It.IsAny<byte[]>()), Times.Once);
+        _mockCanvas.Verify(x => x.Clear(It.IsAny<IColorShim>()), Times.Once);
+        _mockCanvas.Verify(x => x.DrawBitmap(It.IsAny<IBitmapShim>(), It.IsAny<SkiaSharp.SKRect>()), Times.Never);
     }
 
     [Fact]
