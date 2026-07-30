@@ -56,7 +56,7 @@ public class MoodVisualizationService : IMoodVisualizationService
         return new MoodVisualizationData
         {
             DailyValues = dailyValues,
-            DisplayValues = VisualizationDisplayProjector.BuildDisplayValues(dailyValues),
+            DisplayValues = VisualizationDisplayValueFilter.BuildDisplayValues(dailyValues),
             StartDate = startDate,
             EndDate = endDate,
             Width = BITMAP_WIDTH,

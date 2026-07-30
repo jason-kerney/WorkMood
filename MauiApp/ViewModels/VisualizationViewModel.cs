@@ -248,7 +248,7 @@ public class VisualizationViewModel : ViewModelBase
             CurrentVisualization = new MoodVisualizationData
             {
                 DailyValues = emptyDailyValues,
-                DisplayValues = VisualizationDisplayProjector.BuildDisplayValues(emptyDailyValues),
+                DisplayValues = VisualizationDisplayValueFilter.BuildDisplayValues(emptyDailyValues),
                 StartDate = startDate,
                 EndDate = endDate,
                 Width = 280,
