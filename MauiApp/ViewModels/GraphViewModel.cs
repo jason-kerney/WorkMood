@@ -34,6 +34,7 @@ public class GraphViewModel : ViewModelBase
     private string _customBackgroundPath = string.Empty;
     private Color _selectedLineColor = Colors.Blue;
     private bool _isColorPickerVisible = false;
+    private bool _isGraphConfigVisible = true;
     private GraphMode _selectedGraphMode = GraphMode.Impact;
     private GraphModeItem _selectedGraphModeItem = null!;
     private double _availableContainerWidth = 800; // Default fallback
@@ -62,6 +63,7 @@ public class GraphViewModel : ViewModelBase
         ClearCustomBackgroundCommand = new RelayCommand(ClearCustomBackground);
         ToggleColorPickerCommand = new RelayCommand(ToggleColorPicker);
         SelectColorCommand = new RelayCommand<string>(SelectColor);
+        ToggleGraphConfigCommand = new RelayCommand(ToggleGraphConfig);
     }
     
     #region Properties
@@ -316,6 +318,26 @@ public class GraphViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Whether graph configuration controls are visible
+    /// </summary>
+    public bool IsGraphConfigVisible
+    {
+        get => _isGraphConfigVisible;
+        set
+        {
+            if (SetProperty(ref _isGraphConfigVisible, value))
+            {
+                OnPropertyChanged(nameof(GraphConfigToggleText));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Text for the graph configuration toggle button based on visibility state
+    /// </summary>
+    public string GraphConfigToggleText => IsGraphConfigVisible ? "Hide Graph Controls" : "Show Graph Controls";
+
+    /// <summary>
     /// Selected graph mode
     /// </summary>
     public GraphMode SelectedGraphMode
@@ -505,6 +527,11 @@ public class GraphViewModel : ViewModelBase
     /// Command to select a color from the inline color picker
     /// </summary>
     public ICommand SelectColorCommand { get; }
+
+    /// <summary>
+    /// Command to toggle visibility of graph configuration controls
+    /// </summary>
+    public ICommand ToggleGraphConfigCommand { get; }
 
     #endregion
     
@@ -848,6 +875,20 @@ public class GraphViewModel : ViewModelBase
     private void ToggleColorPicker()
     {
         IsColorPickerVisible = !IsColorPickerVisible;
+    }
+
+    /// <summary>
+    /// Toggles the visibility of graph configuration controls
+    /// </summary>
+    private void ToggleGraphConfig()
+    {
+        var isCollapsing = IsGraphConfigVisible;
+        IsGraphConfigVisible = !IsGraphConfigVisible;
+
+        if (isCollapsing)
+        {
+            IsColorPickerVisible = false;
+        }
     }
     
     /// <summary>

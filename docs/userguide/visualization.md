@@ -53,6 +53,8 @@ The visualization page provides simple interaction options:
 - **Refresh Data**: Updates the visualization with the latest mood entries
 - **Back to History**: Returns to the History page for detailed mood records
 - **Loading States**: Shows activity indicator while data loads
+- **Hide Graph Controls**: Collapses graph configuration controls to free more space for the graph image
+- **Show Graph Controls**: Restores graph configuration controls when you want to change options
 
 <!-- (dl (### Graph Modes)) -->
 
@@ -72,6 +74,22 @@ The graph view supports multiple modes so you can focus on different insights:
 - Missing weekday (for example, Tuesday): behavior is unchanged; the line still breaks at that weekday gap.
 
 This applies to every graph mode, including Raw Data. In Raw Data mode, start/end points within the same day stay ordered within that day while unrecorded weekend days are compressed.
+
+<!-- (dl (### Graph Controls Visibility)) -->
+
+Use the **Hide Graph Controls** button above the graph controls when you want a larger graph preview.
+
+- Hiding controls collapses date range, graph mode, display options, line color tools, and background controls.
+- The graph section expands into the newly available space.
+- Use **Show Graph Controls** at any time to bring the controls back.
+
+**Example**:
+
+1. Open the Graph page.
+2. Choose a date range and graph mode.
+3. Select **Hide Graph Controls**.
+4. Review the larger graph preview.
+5. Select **Show Graph Controls** when you need to adjust settings.
 
 **Example**:
 
