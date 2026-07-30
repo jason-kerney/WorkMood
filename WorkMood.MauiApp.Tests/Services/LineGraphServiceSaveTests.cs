@@ -15,6 +15,7 @@ namespace WorkMood.MauiApp.Tests.Services;
 /// </summary>
 public class LineGraphServiceSaveTests
 {
+    private readonly List<(byte r, byte g, byte b, byte a)> _fromArgbCalls = [];
     private readonly Mock<IDrawShimFactory> _mockDrawShimFactory;
     private readonly Mock<IFileShimFactory> _mockFileShimFactory;
     private readonly Mock<IFileShim> _mockFileShim;
@@ -63,7 +64,12 @@ public class LineGraphServiceSaveTests
         mockColors.Setup(x => x.LightGray).Returns(mockLightGrayColor.Object);
         mockColors.Setup(x => x.Black).Returns(mockBlackColor.Object);
         mockColors.Setup(x => x.DarkGray).Returns(mockDarkGrayColor.Object);
-        mockColors.Setup(x => x.FromArgb(It.IsAny<byte>(), It.IsAny<byte>(), It.IsAny<byte>(), It.IsAny<byte>())).Returns(mockWhiteColor.Object);
+        mockColors.Setup(x => x.FromArgb(It.IsAny<byte>(), It.IsAny<byte>(), It.IsAny<byte>(), It.IsAny<byte>()))
+            .Returns((byte r, byte g, byte b, byte a) =>
+            {
+                _fromArgbCalls.Add((r, g, b, a));
+                return mockWhiteColor.Object;
+            });
         
         _mockDrawShimFactory.Setup(x => x.Colors).Returns(mockColors.Object);
 
@@ -267,6 +273,40 @@ public class LineGraphServiceSaveTests
         _mockFileShim.Verify(x => x.WriteAllBytesAsync(expectedFilePath, It.IsAny<byte[]>()), Times.Once);
         _mockCanvas.Verify(x => x.Clear(It.IsAny<IColorShim>()), Times.Once);
         _mockCanvas.Verify(x => x.DrawBitmap(It.IsAny<IBitmapShim>(), It.IsAny<SkiaSharp.SKRect>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SaveLineGraphAsync_WithMissingBackgroundImageAndTrendLine_UsesWhiteBackgroundTrendColorBranch()
+    {
+        // Arrange
+        const string expectedFilePath = @"C:\test\output_missing_background_trend.png";
+        const string backgroundImagePath = @"C:\test\missing_background_trend.png";
+        var moodEntries = CreateTestMoodEntries();
+        var dateRange = CreateTestDateRange();
+
+        _mockFileShim.Setup(x => x.Exists(backgroundImagePath)).Returns(false);
+
+        // Act
+        await _lineGraphService.SaveGraphAsync(
+            moodEntries,
+            GraphMode.Impact,
+            dateRange,
+            showDataPoints: false,
+            showAxesAndGrid: false,
+            showTitle: false,
+            showTrendLine: true,
+            expectedFilePath,
+            backgroundImagePath,
+            Colors.Blue,
+            width: 800,
+            height: 600);
+
+        // Assert
+        _mockFileShim.Verify(x => x.WriteAllBytesAsync(expectedFilePath, It.IsAny<byte[]>()), Times.Once);
+        _mockCanvas.Verify(x => x.Clear(It.IsAny<IColorShim>()), Times.Once);
+        _mockCanvas.Verify(x => x.DrawBitmap(It.IsAny<IBitmapShim>(), It.IsAny<SkiaSharp.SKRect>()), Times.Never);
+        _fromArgbCalls.Should().Contain((100, 100, 100, 255));
+        _fromArgbCalls.Should().NotContain((180, 180, 180, 255));
     }
 
     [Fact]

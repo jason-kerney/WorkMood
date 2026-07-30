@@ -92,10 +92,8 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
     {
         return await GenerateImageAsync(width, height, async canvas =>
         {
-            SetupCanvasBackground(canvas, backgroundImagePath, width, height);
-
-            var hasCustomBackgroundPath = !string.IsNullOrWhiteSpace(backgroundImagePath);
-            await Task.Run(() => DrawGraph(canvas, graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor, hasCustomBackgroundPath));
+            var hasWhiteBackground = SetupCanvasBackground(canvas, backgroundImagePath, width, height);
+            await Task.Run(() => DrawGraph(canvas, graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor, hasWhiteBackground));
         });
     }
 
@@ -135,7 +133,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
     /// <summary>
     /// Sets up the canvas background - either white or custom image
     /// </summary>
-    private void SetupCanvasBackground(ICanvasShim canvas, string? backgroundImagePath, int width, int height)
+    private bool SetupCanvasBackground(ICanvasShim canvas, string? backgroundImagePath, int width, int height)
     {
         if (!string.IsNullOrEmpty(backgroundImagePath))
         {
@@ -146,13 +144,14 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
                 if (backgroundBitmap != null)
                 {
                     canvas.DrawBitmap(backgroundBitmap, new SKRect(0, 0, width, height));
-                    return;
+                    return false;
                 }
             }
         }
         
         // Fallback to white background
         canvas.Clear(drawShimFactory.Colors.White);
+        return true;
     }
 
     /// <summary>
@@ -167,7 +166,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
     /// <summary>
     /// Main drawing logic using GraphData, mimicking LineGraphService behavior
     /// </summary>
-    private void DrawGraph(ICanvasShim canvas, GraphData graphData, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color lineColor, bool hasCustomBackgroundPath)
+    private void DrawGraph(ICanvasShim canvas, GraphData graphData, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, int width, int height, Color lineColor, bool hasWhiteBackground)
     {
         var graphArea = new SKRect(Padding, Padding, width - Padding, height - Padding);
         var dataPoints = graphData.DataPoints.ToList();
@@ -213,7 +212,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         // Draw trend line if requested
         if (showTrendLine)
         {
-            DrawTrendLine(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY, !hasCustomBackgroundPath, xAxisMapper);
+            DrawTrendLine(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY, hasWhiteBackground, xAxisMapper);
         }
 
         // Draw axes labels
