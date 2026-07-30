@@ -43,6 +43,10 @@
         {
             "name": "docs",
             "command": "node .\\node_modules\\doculisp\\dist\\index.js .\\docs\\_docs.dlproj"
+        },
+        {
+            "name": "run:win",
+            "command":"dotnet run --project .\\MauiApp\\WorkMood.MauiApp.csproj --framework net9.0-windows10.0.19041.0"
         }
     ],
     "collaborators": []
