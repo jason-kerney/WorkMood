@@ -46,7 +46,7 @@
         },
         {
             "name": "run:win",
-            "command":"dotnet run --project .\\MauiApp\\WorkMood.MauiApp.csproj --framework net9.0-windows10.0.19041.0"
+            "command":"cls; dotnet run --project .\\MauiApp\\WorkMood.MauiApp.csproj --framework net9.0-windows10.0.19041.0"
         }
     ],
     "collaborators": []
