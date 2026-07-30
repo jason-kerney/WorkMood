@@ -12,9 +12,4 @@ public static class VisualizationDisplayProjector
 
         return data.DisplayValues.Length > 0 ? data.DisplayValues : data.DailyValues;
     }
-
-    public static bool ShouldBreakDisplaySegment(DateOnly previousDate, DateOnly currentDate)
-    {
-        return CalendarGapPolicy.ShouldBreakWhenWeekdaysMissing(previousDate, currentDate);
-    }
 }

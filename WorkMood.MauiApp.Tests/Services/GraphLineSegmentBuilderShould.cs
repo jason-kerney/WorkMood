@@ -225,4 +225,43 @@ public class GraphLineSegmentBuilderShould
         Assert.Single(result[0]);
         Assert.Single(result[1]);
     }
+
+    [Fact]
+    public void BuildSegments_ShouldMatchBetweenPolicyEntryPoints_WhenIntermediateRecordedWeekendsAreNotPresent()
+    {
+        var points = new[]
+        {
+            new TestPoint(new DateOnly(2025, 1, 2), 0f, 0f),  // Thursday
+            new TestPoint(new DateOnly(2025, 1, 3), 1f, 1f),  // Friday
+            new TestPoint(new DateOnly(2025, 1, 6), 2f, 2f),  // Monday
+            new TestPoint(new DateOnly(2025, 1, 6), 3f, 3f),  // Monday same day
+            new TestPoint(new DateOnly(2025, 1, 8), 4f, 4f)   // Wednesday (Tuesday missing)
+        };
+
+        var recordedDates = points
+            .Select(p => p.Date)
+            .ToHashSet();
+
+        var projectorPolicySegments = GraphLineSegmentBuilder.BuildSegments(
+            points,
+            p => p.Date,
+            CalendarGapPolicy.ShouldBreakWhenWeekdaysMissing);
+
+        var recordedSeriesPolicySegments = GraphLineSegmentBuilder.BuildSegments(
+            points,
+            p => p.Date,
+            (previousDate, currentDate) => CalendarGapPolicy.ShouldBreakForRecordedSeries(previousDate, currentDate, recordedDates));
+
+        Assert.Equal(projectorPolicySegments.Count, recordedSeriesPolicySegments.Count);
+
+        for (var segmentIndex = 0; segmentIndex < projectorPolicySegments.Count; segmentIndex++)
+        {
+            Assert.Equal(projectorPolicySegments[segmentIndex].Count, recordedSeriesPolicySegments[segmentIndex].Count);
+
+            for (var pointIndex = 0; pointIndex < projectorPolicySegments[segmentIndex].Count; pointIndex++)
+            {
+                Assert.Equal(projectorPolicySegments[segmentIndex][pointIndex].Date, recordedSeriesPolicySegments[segmentIndex][pointIndex].Date);
+            }
+        }
+    }
 }

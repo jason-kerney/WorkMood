@@ -81,12 +81,19 @@ internal static class VisualizationGraphLayout
     }
 }
 
-/// <summary>
-/// Component for drawing grid lines
-/// </summary>
-public class GridComponent : IGraphComponent
+internal readonly record struct VisualizationDisplayContext(
+    IReadOnlyList<DailyMoodValue> DisplayValues,
+    float[] XPositions,
+    float Width,
+    float Height,
+    float Margin,
+    float GraphWidth,
+    float GraphHeight,
+    float CenterY,
+    double MaxAbsValue,
+    double ScaleFactor)
 {
-    public void Draw(ICanvas canvas, RectF bounds, MoodVisualizationData data)
+    public static VisualizationDisplayContext Create(RectF bounds, MoodVisualizationData data)
     {
         var displayValues = VisualizationDisplayProjector.GetDisplayValues(data);
         var xPositions = VisualizationGraphLayout.GetPointPositions(bounds, displayValues.Count);
@@ -95,36 +102,59 @@ public class GridComponent : IGraphComponent
         var margin = VisualizationGraphLayout.MarginSize;
         var graphWidth = width - (margin * 2);
         var graphHeight = height - (margin * 2);
+        var centerY = margin + (graphHeight / 2f);
+        var maxAbsValue = Math.Max(1.0, data.MaxAbsoluteValue);
+        var scaleFactor = graphHeight / (2.0 * maxAbsValue);
+
+        return new VisualizationDisplayContext(
+            displayValues,
+            xPositions,
+            width,
+            height,
+            margin,
+            graphWidth,
+            graphHeight,
+            centerY,
+            maxAbsValue,
+            scaleFactor);
+    }
+}
+
+/// <summary>
+/// Component for drawing grid lines
+/// </summary>
+public class GridComponent : IGraphComponent
+{
+    public void Draw(ICanvas canvas, RectF bounds, MoodVisualizationData data)
+    {
+        var context = VisualizationDisplayContext.Create(bounds, data);
         
         canvas.StrokeColor = Colors.LightGray;
         canvas.StrokeSize = 0.5f;
         
-        if (xPositions.Length == 1)
+        if (context.XPositions.Length == 1)
         {
-            canvas.DrawLine(xPositions[0], margin, xPositions[0], height - margin);
+            canvas.DrawLine(context.XPositions[0], context.Margin, context.XPositions[0], context.Height - context.Margin);
         }
         else
         {
-            var pointSpacing = xPositions.Length > 1 ? graphWidth / (xPositions.Length - 1) : 0f;
+            var pointSpacing = context.XPositions.Length > 1 ? context.GraphWidth / (context.XPositions.Length - 1) : 0f;
 
-            for (int i = 0; i <= xPositions.Length; i++)
+            for (int i = 0; i <= context.XPositions.Length; i++)
             {
-                var x = margin + (i * pointSpacing);
-                canvas.DrawLine(x, margin, x, height - margin);
+                var x = context.Margin + (i * pointSpacing);
+                canvas.DrawLine(x, context.Margin, x, context.Height - context.Margin);
             }
         }
         
         // Horizontal grid lines based on data range
-        var centerY = margin + (graphHeight / 2f);
-        var maxAbsValue = Math.Max(1.0, data.MaxAbsoluteValue);
-        var scaleFactor = graphHeight / (2.0 * maxAbsValue);
-        var gridInterval = maxAbsValue <= 3 ? 1 : Math.Ceiling(maxAbsValue / 3);
+        var gridInterval = context.MaxAbsValue <= 3 ? 1 : Math.Ceiling(context.MaxAbsValue / 3);
         
-        for (double i = -maxAbsValue; i <= maxAbsValue; i += gridInterval)
+        for (double i = -context.MaxAbsValue; i <= context.MaxAbsValue; i += gridInterval)
         {
             if (Math.Abs(i) < 0.001) continue; // Skip center line
-            var y = centerY - (float)(i * scaleFactor);
-            canvas.DrawLine(margin, y, width - margin, y);
+            var y = context.CenterY - (float)(i * context.ScaleFactor);
+            canvas.DrawLine(context.Margin, y, context.Width - context.Margin, y);
         }
     }
 }
@@ -155,28 +185,20 @@ public class LineComponent : IGraphComponent
 {
     public void Draw(ICanvas canvas, RectF bounds, MoodVisualizationData data)
     {
-        var displayValues = VisualizationDisplayProjector.GetDisplayValues(data);
-        var xPositions = VisualizationGraphLayout.GetPointPositions(bounds, displayValues.Count);
-        var width = bounds.Width;
-        var height = bounds.Height;
-        var margin = VisualizationGraphLayout.MarginSize;
-        var graphHeight = height - (margin * 2);
-        var centerY = margin + (graphHeight / 2f);
-        var maxAbsValue = Math.Max(1.0, data.MaxAbsoluteValue);
-        var scaleFactor = graphHeight / (2.0 * maxAbsValue);
+        var context = VisualizationDisplayContext.Create(bounds, data);
         
         // Collect points with data, keeping each point's calendar date so a missing day can
         // break the line instead of being bridged by it.
         var dataPoints = new List<(DateOnly Date, PointF Point)>();
         
-        for (int day = 0; day < displayValues.Count && day < xPositions.Length; day++)
+        for (int day = 0; day < context.DisplayValues.Count && day < context.XPositions.Length; day++)
         {
-            var dailyValue = displayValues[day];
+            var dailyValue = context.DisplayValues[day];
             if (dailyValue.HasData && dailyValue.Value.HasValue)
             {
-                var x = xPositions[day];
+                var x = context.XPositions[day];
                 var value = (float)dailyValue.Value.Value;
-                var y = centerY - (float)(value * scaleFactor);
+                var y = context.CenterY - (float)(value * context.ScaleFactor);
                 
                 dataPoints.Add((dailyValue.Date, new PointF(x, y)));
             }
@@ -187,7 +209,7 @@ public class LineComponent : IGraphComponent
         var segments = GraphLineSegmentBuilder.BuildSegments(
             dataPoints,
             p => p.Date,
-            VisualizationDisplayProjector.ShouldBreakDisplaySegment);
+            CalendarGapPolicy.ShouldBreakWhenWeekdaysMissing);
 
         if (segments.Any(segment => segment.Count > 1))
         {
@@ -212,24 +234,16 @@ public class DataPointComponent : IGraphComponent
 {
     public void Draw(ICanvas canvas, RectF bounds, MoodVisualizationData data)
     {
-        var displayValues = VisualizationDisplayProjector.GetDisplayValues(data);
-        var xPositions = VisualizationGraphLayout.GetPointPositions(bounds, displayValues.Count);
-        var width = bounds.Width;
-        var height = bounds.Height;
-        var margin = VisualizationGraphLayout.MarginSize;
-        var graphHeight = height - (margin * 2);
-        var centerY = margin + (graphHeight / 2f);
-        var maxAbsValue = Math.Max(1.0, data.MaxAbsoluteValue);
-        var scaleFactor = graphHeight / (2.0 * maxAbsValue);
+        var context = VisualizationDisplayContext.Create(bounds, data);
         
-        for (int day = 0; day < displayValues.Count && day < xPositions.Length; day++)
+        for (int day = 0; day < context.DisplayValues.Count && day < context.XPositions.Length; day++)
         {
-            var dailyValue = displayValues[day];
+            var dailyValue = context.DisplayValues[day];
             if (dailyValue.HasData && dailyValue.Value.HasValue)
             {
-                var x = xPositions[day];
+                var x = context.XPositions[day];
                 var value = (float)dailyValue.Value.Value;
-                var y = centerY - (float)(value * scaleFactor);
+                var y = context.CenterY - (float)(value * context.ScaleFactor);
                 
                 // Draw filled circle for data point
                 canvas.FillColor = dailyValue.Color;
@@ -251,23 +265,17 @@ public class MissingDataComponent : IGraphComponent
 {
     public void Draw(ICanvas canvas, RectF bounds, MoodVisualizationData data)
     {
-        var displayValues = VisualizationDisplayProjector.GetDisplayValues(data);
-        var xPositions = VisualizationGraphLayout.GetPointPositions(bounds, displayValues.Count);
-        var width = bounds.Width;
-        var height = bounds.Height;
-        var margin = VisualizationGraphLayout.MarginSize;
-        var graphHeight = height - (margin * 2);
-        var centerY = margin + (graphHeight / 2f);
+        var context = VisualizationDisplayContext.Create(bounds, data);
         
         // Draw missing data indicators (gray dots on zero line)
-        for (int day = 0; day < displayValues.Count && day < xPositions.Length; day++)
+        for (int day = 0; day < context.DisplayValues.Count && day < context.XPositions.Length; day++)
         {
-            var dailyValue = displayValues[day];
+            var dailyValue = context.DisplayValues[day];
             if (!dailyValue.HasData || !dailyValue.Value.HasValue)
             {
-                var x = xPositions[day];
+                var x = context.XPositions[day];
                 canvas.FillColor = Colors.LightGray;
-                canvas.FillCircle(x, centerY, 2f);
+                canvas.FillCircle(x, context.CenterY, 2f);
             }
         }
     }

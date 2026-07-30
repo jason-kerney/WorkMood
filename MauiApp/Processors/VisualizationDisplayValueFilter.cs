@@ -21,16 +21,11 @@ public static class VisualizationDisplayValueFilter
     {
         ArgumentNullException.ThrowIfNull(dailyValue);
 
-        if (!IsWeekend(dailyValue.Date.DayOfWeek))
+        if (!CalendarGapPolicy.IsWeekend(dailyValue.Date.DayOfWeek))
         {
             return true;
         }
 
         return dailyValue.HasData && dailyValue.Value.HasValue;
-    }
-
-    private static bool IsWeekend(DayOfWeek dayOfWeek)
-    {
-        return dayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
     }
 }

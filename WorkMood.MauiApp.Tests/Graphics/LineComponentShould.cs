@@ -466,5 +466,39 @@ public class LineComponentShould
         canvas.Verify(c => c.DrawLine(20f, 20f, 150f, 20f), Times.Once);
     }
 
+    [Fact]
+    public void Draw_WithRecordedSaturdayAndMissingSunday_ShouldConnectFridayToSaturdayAndSaturdayToMondayOnly()
+    {
+        // Arrange
+        var canvas = new Mock<ICanvas>();
+        var friday = new DateOnly(2025, 1, 3);
+
+        var data = new MoodVisualizationData
+        {
+            DailyValues = new[]
+            {
+                new DailyMoodValue { Date = friday, HasData = true, Value = 1.0, Color = Colors.Blue },
+                new DailyMoodValue { Date = friday.AddDays(1), HasData = true, Value = 2.0, Color = Colors.Blue },
+                new DailyMoodValue { Date = friday.AddDays(2), HasData = false, Value = null, Color = Colors.LightGray },
+                new DailyMoodValue { Date = friday.AddDays(3), HasData = true, Value = 3.0, Color = Colors.Blue }
+            },
+            DisplayValues = new[]
+            {
+                new DailyMoodValue { Date = friday, HasData = true, Value = 1.0, Color = Colors.Blue },
+                new DailyMoodValue { Date = friday.AddDays(1), HasData = true, Value = 2.0, Color = Colors.Blue },
+                new DailyMoodValue { Date = friday.AddDays(3), HasData = true, Value = 3.0, Color = Colors.Blue }
+            },
+            MaxAbsoluteValue = 3.0
+        };
+
+        // Act
+        _component.Draw(canvas.Object, GapTestBounds, data);
+
+        // Assert
+        canvas.Verify(c => c.DrawLine(20f, It.IsAny<float>(), 85f, It.IsAny<float>()), Times.Once);
+        canvas.Verify(c => c.DrawLine(85f, It.IsAny<float>(), 150f, It.IsAny<float>()), Times.Once);
+        canvas.Verify(c => c.DrawLine(20f, It.IsAny<float>(), 150f, It.IsAny<float>()), Times.Never);
+    }
+
     #endregion
 }

@@ -6,33 +6,52 @@ namespace WorkMood.MauiApp.Tests.Services;
 public class VisualizationDisplayProjectorShould
 {
     [Fact]
-    public void NotBreakForFridayToMonday()
+    public void ReturnDisplayValues_WhenDisplayValuesArePresent()
     {
-        var friday = new DateOnly(2025, 1, 3);
-        var monday = new DateOnly(2025, 1, 6);
+        var start = new DateOnly(2025, 1, 1);
+        var data = new MoodVisualizationData
+        {
+            DailyValues =
+            [
+                new DailyMoodValue { Date = start, HasData = true, Value = 1.0 },
+                new DailyMoodValue { Date = start.AddDays(1), HasData = true, Value = 2.0 }
+            ],
+            DisplayValues =
+            [
+                new DailyMoodValue { Date = start, HasData = true, Value = 1.0 }
+            ]
+        };
 
-        var shouldBreak = VisualizationDisplayProjector.ShouldBreakDisplaySegment(friday, monday);
+        var values = VisualizationDisplayProjector.GetDisplayValues(data);
 
-        Assert.False(shouldBreak);
+        var only = Assert.Single(values);
+        Assert.Equal(start, only.Date);
     }
 
     [Fact]
-    public void BreakForThursdayToMonday_WhenWeekdayIsMissing()
+    public void FallBackToDailyValues_WhenDisplayValuesAreEmpty()
     {
-        var thursday = new DateOnly(2025, 1, 2);
-        var monday = new DateOnly(2025, 1, 6);
+        var start = new DateOnly(2025, 1, 1);
+        var data = new MoodVisualizationData
+        {
+            DailyValues =
+            [
+                new DailyMoodValue { Date = start, HasData = true, Value = 1.0 },
+                new DailyMoodValue { Date = start.AddDays(1), HasData = false, Value = null }
+            ],
+            DisplayValues = Array.Empty<DailyMoodValue>()
+        };
 
-        var shouldBreak = VisualizationDisplayProjector.ShouldBreakDisplaySegment(thursday, monday);
+        var values = VisualizationDisplayProjector.GetDisplayValues(data);
 
-        Assert.True(shouldBreak);
+        Assert.Equal(2, values.Count);
+        Assert.Equal(start, values[0].Date);
+        Assert.Equal(start.AddDays(1), values[1].Date);
     }
 
     [Fact]
-    public void NotBreakForNonIncreasingDates()
+    public void ThrowWhenDataIsNull()
     {
-        var date = new DateOnly(2025, 1, 6);
-
-        Assert.False(VisualizationDisplayProjector.ShouldBreakDisplaySegment(date, date));
-        Assert.False(VisualizationDisplayProjector.ShouldBreakDisplaySegment(date, date.AddDays(-1)));
+        Assert.Throws<ArgumentNullException>(() => VisualizationDisplayProjector.GetDisplayValues(null!));
     }
 }
