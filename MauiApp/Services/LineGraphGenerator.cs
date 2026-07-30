@@ -37,8 +37,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
             for (var date = startDate; date <= endDate; date = date.AddDays(1))
             {
                 offsets[date] = offset;
-                var isWeekend = date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
-                var consumesSlot = !isWeekend || datesWithData.Contains(date);
+                var consumesSlot = CalendarGapPolicy.ShouldConsumeCompressedDaySlot(date, datesWithData);
                 if (consumesSlot)
                 {
                     offset += 1d;
@@ -336,10 +335,14 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
 
         // Draw one path per weekend-aware segment so Friday->Monday remains connected when
         // only unrecorded weekend days are missing.
+        var datesWithData = dataPoints
+            .Select(p => DateOnly.FromDateTime(p.Timestamp))
+            .ToHashSet();
+
         var segments = GraphLineSegmentBuilder.BuildSegments(
             dataPoints,
             p => DateOnly.FromDateTime(p.Timestamp),
-            (previousDate, currentDate) => ShouldBreakForGap(previousDate, currentDate, dataPoints));
+            (previousDate, currentDate) => CalendarGapPolicy.ShouldBreakForRecordedSeries(previousDate, currentDate, datesWithData));
 
         foreach (var segment in segments)
         {
@@ -500,31 +503,6 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
                 canvas.DrawText("●", x, area.Bottom + 35, dataLabelPaint);
             }
         }
-    }
-
-    private static bool ShouldBreakForGap(DateOnly previousDate, DateOnly currentDate, IReadOnlyCollection<FilledGraphDataPoint> allDataPoints)
-    {
-        if (currentDate.DayNumber - previousDate.DayNumber <= 1)
-        {
-            return false;
-        }
-
-        var datesWithData = allDataPoints
-            .Select(p => DateOnly.FromDateTime(p.Timestamp))
-            .ToHashSet();
-
-        for (var date = previousDate.AddDays(1); date < currentDate; date = date.AddDays(1))
-        {
-            var isWeekend = date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
-            var hasRecordedData = datesWithData.Contains(date);
-
-            if (!isWeekend || hasRecordedData)
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private void DrawGraphTitle(ICanvasShim canvas, int width, string title)
