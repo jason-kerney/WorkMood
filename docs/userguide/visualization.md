@@ -82,11 +82,13 @@ Graph rendering includes a checkbox named **Show Missing Weekdays as Zero** in t
 - When the checkbox is off, missing weekdays remain gaps in the data line.
 - When the checkbox is on, missing weekdays are rendered as zero-value points.
 
-When gap-fill is on, you can also choose a **Gap Segment Accent** for line segments touching generated gap-fill days:
+When gap-fill is on, you can also choose a **Gap Segment Accent** for line segments and synthetic point markers generated for gap-fill days:
 
 - **Complementary** uses the opposite hue of the primary line color.
 - **First Triadic** uses the first triadic companion of the primary line color.
 - **Second Triadic** uses the second triadic companion of the primary line color.
+
+If no gap accent is selected, all point markers continue using the primary marker color.
 
 Weekend compression behavior does not change for either mode.
 
@@ -101,6 +103,7 @@ Example task:
 Expected result:
 
 - Tuesday is rendered as a zero-value point.
+- The generated Tuesday point marker and adjacent line segments use the selected gap accent color.
 - If Saturday and Sunday are unrecorded, they are still compressed out of spacing.
 
 <!-- (dl (### Graph Controls Visibility)) -->

@@ -206,7 +206,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         
         if (showDataPoints)
         {
-            DrawDataPoints(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY, xAxisMapper);
+            DrawDataPoints(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY, xAxisMapper, graphData.GapSegmentSecondaryPenMode);
         }
 
         // Draw trend line if requested
@@ -507,14 +507,13 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         return normalizedHue < 0f ? normalizedHue + 360f : normalizedHue;
     }
 
-    private void DrawDataPoints(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, Color lineColor, int minY, int maxY, WeekendAwareXAxisMapper xAxisMapper)
+    private void DrawDataPoints(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, Color lineColor, int minY, int maxY, WeekendAwareXAxisMapper xAxisMapper, GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode)
     {
-        using var pointPaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
-        {
-            Color = drawShimFactory.Colors.FromArgb((byte)(lineColor.Red * 180), (byte)(lineColor.Green * 180), (byte)(lineColor.Blue * 180), 255),
-            Style = SKPaintStyle.Fill,
-            IsAntialias = true
-        });
+        using var primaryPointPaint = CreateDataPointPaint(lineColor);
+
+        using var secondaryPointPaint = dataPoints.Any(point => point.IsSyntheticGapFill) && gapSegmentSecondaryPenMode.HasValue
+            ? CreateDataPointPaint(GetDerivedGapSegmentColor(lineColor, gapSegmentSecondaryPenMode.Value), useFullColorIntensity: true)
+            : null;
 
         for (int i = 0; i < dataPoints.Count; i++)
         {
@@ -525,8 +524,24 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
             var value = dataPoint.Value ?? 0; // Use 0 if null (shouldn't happen for filled data points)
             var y = (float)(area.Bottom - ((value - minY) * area.Height / (maxY - minY)));
 
+            var pointPaint = dataPoint.IsSyntheticGapFill && secondaryPointPaint != null
+                ? secondaryPointPaint
+                : primaryPointPaint;
+
             canvas.DrawCircle(x, y, 4, pointPaint);
         }
+    }
+
+    private IPaintShim CreateDataPointPaint(Color color, bool useFullColorIntensity = false)
+    {
+        var intensity = useFullColorIntensity ? 255 : 180;
+
+        return drawShimFactory.PaintFromArgs(new PaintShimArgs
+        {
+            Color = drawShimFactory.Colors.FromArgb((byte)(color.Red * intensity), (byte)(color.Green * intensity), (byte)(color.Blue * intensity), 255),
+            Style = SKPaintStyle.Fill,
+            IsAntialias = true
+        });
     }
 
     private void DrawTrendLine(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, Color lineColor, int minY, int maxY, bool drawWhiteBackground, WeekendAwareXAxisMapper xAxisMapper)

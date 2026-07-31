@@ -25,6 +25,8 @@ public class LineGraphGeneratorGapTests
         public List<(string Text, float X, float Y)> DrawnText { get; } = [];
 
         public List<(float X, float Y, int Radius)> DrawnCircles { get; } = [];
+
+        public List<SKColor> CircleColors { get; } = [];
     }
 
     private static (LineGraphGenerator Generator, RenderCapture Capture) CreateGeneratorWithCapture()
@@ -95,7 +97,11 @@ public class LineGraphGeneratorGapTests
             .Callback<string, int, int, IPaintShim>((text, x, y, _) => capture.DrawnText.Add((text, x, y)));
 
         mockCanvas.Setup(c => c.DrawCircle(It.IsAny<float>(), It.IsAny<float>(), It.IsAny<int>(), It.IsAny<IPaintShim>()))
-            .Callback<float, float, int, IPaintShim>((x, y, radius, _) => capture.DrawnCircles.Add((x, y, radius)));
+            .Callback<float, float, int, IPaintShim>((x, y, radius, paint) =>
+            {
+                capture.DrawnCircles.Add((x, y, radius));
+                capture.CircleColors.Add(paint.Raw.Color);
+            });
 
         var generator = new LineGraphGenerator(mockDrawFactory.Object, new Mock<IFileShimFactory>().Object);
         return (generator, capture);
@@ -313,5 +319,98 @@ public class LineGraphGeneratorGapTests
         Assert.Equal(2, capture.Paths.Count);
         Assert.Equal(SKColors.Blue, capture.PathColors[0]);
         Assert.NotEqual(SKColors.Blue, capture.PathColors[1]);
+    }
+
+    [Fact]
+    public async Task GenerateLineGraphAsync_WithSyntheticGapPointAndSecondaryPenMode_UsesDerivedColorOnlyForSyntheticMarkers()
+    {
+        var (generator, capture) = CreateGeneratorWithCapture();
+        var dataPoints = new List<FilledGraphDataPoint>
+        {
+            new(new DateTime(2025, 1, 1, 10, 0, 0), 5),
+            new(new DateTime(2025, 1, 2, 10, 0, 0), 6),
+            new(new DateTime(2025, 1, 3, 0, 0, 0), 0, IsSyntheticGapFill: true),
+            new(new DateTime(2025, 1, 4, 10, 0, 0), 7)
+        };
+        var graphData = new GraphData
+        {
+            DataPoints = dataPoints,
+            Title = "Gap Marker Accent Test",
+            YAxisLabel = "Mood",
+            XAxisLabel = "Time",
+            YAxisRange = new AxisRange(0, 10),
+            GapSegmentSecondaryPenMode = GapSegmentSecondaryPenMode.FirstTriadic
+        };
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 4));
+
+        await generator.GenerateLineGraphAsync(graphData, dateRange, showDataPoints: true, showAxesAndGrid: false, showTitle: false, showTrendLine: false, Colors.Blue, 800, 600);
+
+        Assert.Equal(4, capture.CircleColors.Count);
+
+        var primaryMarkerColor = new SKColor(0, 0, 180, 255);
+        var syntheticMarkerAccentColor = new SKColor(255, 0, 0, 255);
+
+        Assert.Equal(primaryMarkerColor, capture.CircleColors[0]);
+        Assert.Equal(primaryMarkerColor, capture.CircleColors[1]);
+        Assert.Equal(syntheticMarkerAccentColor, capture.CircleColors[2]);
+        Assert.Equal(primaryMarkerColor, capture.CircleColors[3]);
+    }
+
+    [Fact]
+    public async Task GenerateLineGraphAsync_WithSyntheticGapPointAndNullSecondaryPenMode_UsesPrimaryColorForAllMarkers()
+    {
+        var (generator, capture) = CreateGeneratorWithCapture();
+        var dataPoints = new List<FilledGraphDataPoint>
+        {
+            new(new DateTime(2025, 1, 1, 10, 0, 0), 5),
+            new(new DateTime(2025, 1, 2, 10, 0, 0), 6),
+            new(new DateTime(2025, 1, 3, 0, 0, 0), 0, IsSyntheticGapFill: true),
+            new(new DateTime(2025, 1, 4, 10, 0, 0), 7)
+        };
+        var graphData = new GraphData
+        {
+            DataPoints = dataPoints,
+            Title = "Gap Marker Primary Fallback Test",
+            YAxisLabel = "Mood",
+            XAxisLabel = "Time",
+            YAxisRange = new AxisRange(0, 10),
+            GapSegmentSecondaryPenMode = null
+        };
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 4));
+
+        await generator.GenerateLineGraphAsync(graphData, dateRange, showDataPoints: true, showAxesAndGrid: false, showTitle: false, showTrendLine: false, Colors.Blue, 800, 600);
+
+        var primaryMarkerColor = new SKColor(0, 0, 180, 255);
+        Assert.NotEmpty(capture.CircleColors);
+        Assert.All(capture.CircleColors, color => Assert.Equal(primaryMarkerColor, color));
+    }
+
+    [Fact]
+    public async Task GenerateLineGraphAsync_WithSecondaryPenModeAndNoSyntheticGapPoints_UsesPrimaryColorForAllMarkers()
+    {
+        var (generator, capture) = CreateGeneratorWithCapture();
+        var dataPoints = new List<FilledGraphDataPoint>
+        {
+            new(new DateTime(2025, 1, 1, 10, 0, 0), 5),
+            new(new DateTime(2025, 1, 2, 10, 0, 0), 6),
+            new(new DateTime(2025, 1, 3, 10, 0, 0), 7),
+            new(new DateTime(2025, 1, 4, 10, 0, 0), 8)
+        };
+        var graphData = new GraphData
+        {
+            DataPoints = dataPoints,
+            Title = "No Synthetic Marker Accent Test",
+            YAxisLabel = "Mood",
+            XAxisLabel = "Time",
+            YAxisRange = new AxisRange(0, 10),
+            GapSegmentSecondaryPenMode = GapSegmentSecondaryPenMode.FirstTriadic
+        };
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 4));
+
+        await generator.GenerateLineGraphAsync(graphData, dateRange, showDataPoints: true, showAxesAndGrid: false, showTitle: false, showTrendLine: false, Colors.Blue, 800, 600);
+
+        var primaryMarkerColor = new SKColor(0, 0, 180, 255);
+        Assert.NotEmpty(capture.CircleColors);
+        Assert.All(capture.CircleColors, color => Assert.Equal(primaryMarkerColor, color));
     }
 }
