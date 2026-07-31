@@ -77,10 +77,10 @@ This applies to every graph mode, including Raw Data. In Raw Data mode, start/en
 
 <!-- (dl (### Gap Display Mode)) -->
 
-Graph rendering includes a checkbox named **Show Missing Weekdays as Zero** in the graph controls.
+Graph rendering includes a dropdown named **Gap Display Mode** in the graph controls.
 
-- When the checkbox is off, missing weekdays remain gaps in the data line.
-- When the checkbox is on, missing weekdays are rendered as zero-value points.
+- When **Gap Display Mode** is set to **Show Gaps**, missing weekdays remain gaps in the data line.
+- When **Gap Display Mode** is set to **Gaps as Zero**, missing weekdays are rendered as zero-value points.
 
 When gap-fill is on, you can also choose a **Gap Segment Accent** for line segments and synthetic point markers generated for gap-fill days:
 
@@ -88,14 +88,14 @@ When gap-fill is on, you can also choose a **Gap Segment Accent** for line segme
 - **First Triadic** uses the first triadic companion of the primary line color.
 - **Second Triadic** uses the second triadic companion of the primary line color.
 
-If no gap accent is selected, all point markers continue using the primary marker color.
+When **Gap Display Mode** is **Show Gaps**, gap accenting is not applied and point markers continue using the primary marker color.
 
 Weekend compression behavior does not change for either mode.
 
 Example task:
 
 1. On the main dashboard, select **Generate Graph**.
-2. In the graph controls, enable **Show Missing Weekdays as Zero**.
+2. In the graph controls, set **Gap Display Mode** to **Gaps as Zero**.
 3. Optionally choose a **Gap Segment Accent**.
 4. Record mood on Monday and Wednesday only.
 5. Review the graph.

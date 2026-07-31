@@ -107,7 +107,7 @@ public class GraphViewModelShould
     }
 
     [Fact]
-    public async Task LoadDataAsync_WhenMissingWeekdaysAsZeroIsEnabled_ShouldRequestGapsAsZero()
+    public async Task LoadDataAsync_WhenGapDisplayModeIsGapsAsZero_ShouldRequestGapsAsZero()
     {
         var capturedGapDisplayMode = GapDisplayMode.ShowGaps;
         var viewModel = CreateViewModel();
@@ -139,7 +139,7 @@ public class GraphViewModelShould
             })
             .ReturnsAsync([1, 2, 3]);
 
-        viewModel.ShowMissingWeekdaysAsZero = true;
+        viewModel.SelectedGapDisplayModeItem = viewModel.GapDisplayModes.Single(mode => mode.GapDisplayMode == GapDisplayMode.GapsAsZero);
 
         await viewModel.LoadDataAsync();
 
@@ -147,7 +147,7 @@ public class GraphViewModelShould
     }
 
     [Fact]
-    public async Task LoadDataAsync_WhenGapSegmentSecondaryPenModeChanges_ShouldRequestSelectedSecondaryPenMode()
+    public async Task LoadDataAsync_WhenGapDisplayModeIsGapsAsZeroAndGapSegmentSecondaryPenModeChanges_ShouldRequestSelectedSecondaryPenMode()
     {
         GapSegmentSecondaryPenMode? capturedGapSegmentSecondaryPenMode = null;
         var viewModel = CreateViewModel();
@@ -179,12 +179,53 @@ public class GraphViewModelShould
             })
             .ReturnsAsync([1, 2, 3]);
 
-        viewModel.ShowMissingWeekdaysAsZero = true;
+        viewModel.SelectedGapDisplayModeItem = viewModel.GapDisplayModes.Single(mode => mode.GapDisplayMode == GapDisplayMode.GapsAsZero);
         viewModel.SelectedGapSegmentSecondaryPenModeItem = viewModel.GapSegmentSecondaryPenModes.Single(mode => mode.GapSegmentSecondaryPenMode == GapSegmentSecondaryPenMode.FirstTriadic);
 
         await viewModel.LoadDataAsync();
 
         Assert.Equal(GapSegmentSecondaryPenMode.FirstTriadic, capturedGapSegmentSecondaryPenMode);
+    }
+
+    [Fact]
+    public async Task LoadDataAsync_WhenGapDisplayModeIsShowGaps_ShouldNotRequestSecondaryPenMode()
+    {
+        GapSegmentSecondaryPenMode? capturedGapSegmentSecondaryPenMode = GapSegmentSecondaryPenMode.Complementary;
+        var viewModel = CreateViewModel();
+
+        _mockMoodDataService
+            .Setup(service => service.LoadMoodDataAsync())
+            .ReturnsAsync(new MoodCollection(new[]
+            {
+                new MoodEntry(new DateOnly(2026, 7, 29)) { StartOfWork = 4, EndOfWork = 6 }
+            }));
+
+        _mockLineGraphService
+            .Setup(service => service.GenerateGraphAsync(
+                It.IsAny<IEnumerable<MoodEntry>>(),
+                It.IsAny<GraphMode>(),
+                It.IsAny<DateRangeInfo>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<Color>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<GapDisplayMode>(),
+                It.IsAny<GapSegmentSecondaryPenMode?>()))
+            .Callback<IEnumerable<MoodEntry>, GraphMode, DateRangeInfo, bool, bool, bool, bool, Color, int, int, GapDisplayMode, GapSegmentSecondaryPenMode?>((_, _, _, _, _, _, _, _, _, _, _, gapSegmentSecondaryPenMode) =>
+            {
+                capturedGapSegmentSecondaryPenMode = gapSegmentSecondaryPenMode;
+            })
+            .ReturnsAsync([1, 2, 3]);
+
+        viewModel.SelectedGapDisplayModeItem = viewModel.GapDisplayModes.Single(mode => mode.GapDisplayMode == GapDisplayMode.ShowGaps);
+        viewModel.SelectedGapSegmentSecondaryPenModeItem = viewModel.GapSegmentSecondaryPenModes.Single(mode => mode.GapSegmentSecondaryPenMode == GapSegmentSecondaryPenMode.FirstTriadic);
+
+        await viewModel.LoadDataAsync();
+
+        Assert.Null(capturedGapSegmentSecondaryPenMode);
     }
 
     private GraphViewModel CreateViewModel()

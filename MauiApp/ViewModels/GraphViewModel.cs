@@ -27,7 +27,6 @@ public class GraphViewModel : ViewModelBase
     private bool _showDataPoints = true;
     private bool _showAxesAndGrid = true;
     private bool _showTitle = true;
-    private bool _showMissingWeekdaysAsZero = false;
     private ImageSource? _customBackgroundSource;
     private bool _hasCustomBackground = false;
     private int _customBackgroundWidth = 0;
@@ -38,6 +37,7 @@ public class GraphViewModel : ViewModelBase
     private bool _isGraphConfigVisible = true;
     private GraphMode _selectedGraphMode = GraphMode.Impact;
     private GraphModeItem _selectedGraphModeItem = null!;
+    private GapDisplayModeItem _selectedGapDisplayModeItem = null!;
     private GapSegmentSecondaryPenModeItem _selectedGapSegmentSecondaryPenModeItem = null!;
     private double _availableContainerWidth = 800; // Default fallback
     private double _availableContainerHeight = 400; // Default fallback
@@ -55,11 +55,15 @@ public class GraphViewModel : ViewModelBase
         GraphModes = new ObservableCollection<GraphModeItem>();
         InitializeGraphModes();
 
+        GapDisplayModes = new ObservableCollection<GapDisplayModeItem>();
+        InitializeGapDisplayModes();
+
         GapSegmentSecondaryPenModes = new ObservableCollection<GapSegmentSecondaryPenModeItem>();
         InitializeGapSegmentSecondaryPenModes();
 
         _selectedDateRange = DateRanges.First();
         _selectedGraphModeItem = GraphModes.First();
+        _selectedGapDisplayModeItem = GapDisplayModes.First();
         _selectedGapSegmentSecondaryPenModeItem = GapSegmentSecondaryPenModes.First();
 
         // Initialize commands
@@ -224,12 +228,15 @@ public class GraphViewModel : ViewModelBase
     /// </summary>
     public bool ShowMissingWeekdaysAsZero
     {
-        get => _showMissingWeekdaysAsZero;
+        get => SelectedGapDisplayMode == GapDisplayMode.GapsAsZero;
         set
         {
-            if (SetProperty(ref _showMissingWeekdaysAsZero, value))
+            var targetMode = value ? GapDisplayMode.GapsAsZero : GapDisplayMode.ShowGaps;
+            var targetItem = GapDisplayModes.FirstOrDefault(mode => mode.GapDisplayMode == targetMode);
+
+            if (targetItem != null && !ReferenceEquals(SelectedGapDisplayModeItem, targetItem))
             {
-                _ = UpdateGraphAsync();
+                SelectedGapDisplayModeItem = targetItem;
             }
         }
     }
@@ -380,6 +387,11 @@ public class GraphViewModel : ViewModelBase
     public ObservableCollection<GraphModeItem> GraphModes { get; }
 
     /// <summary>
+    /// Collection of available gap display modes for the picker.
+    /// </summary>
+    public ObservableCollection<GapDisplayModeItem> GapDisplayModes { get; }
+
+    /// <summary>
     /// Collection of available secondary pen modes for gap-adjacent segments.
     /// </summary>
     public ObservableCollection<GapSegmentSecondaryPenModeItem> GapSegmentSecondaryPenModes { get; }
@@ -398,6 +410,28 @@ public class GraphViewModel : ViewModelBase
             }
         }
     }
+
+    /// <summary>
+    /// Selected gap display mode item for the picker.
+    /// </summary>
+    public GapDisplayModeItem SelectedGapDisplayModeItem
+    {
+        get => _selectedGapDisplayModeItem;
+        set
+        {
+            if (SetProperty(ref _selectedGapDisplayModeItem, value) && value != null)
+            {
+                OnPropertyChanged(nameof(ShowMissingWeekdaysAsZero));
+                OnPropertyChanged(nameof(IsGapSegmentAccentVisible));
+                _ = UpdateGraphAsync();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Whether gap segment accent controls should be shown.
+    /// </summary>
+    public bool IsGapSegmentAccentVisible => SelectedGapDisplayMode == GapDisplayMode.GapsAsZero;
 
     /// <summary>
     /// Selected derived-color mode for segments touching synthesized gap-fill points.
@@ -607,8 +641,8 @@ public class GraphViewModel : ViewModelBase
                 return;
             }
             
-            var gapDisplayMode = ShowMissingWeekdaysAsZero ? GapDisplayMode.GapsAsZero : GapDisplayMode.ShowGaps;
-            GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode = ShowMissingWeekdaysAsZero ? SelectedGapSegmentSecondaryPenModeItem.GapSegmentSecondaryPenMode : null;
+            var gapDisplayMode = SelectedGapDisplayMode;
+            GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode = IsGapSegmentAccentVisible ? SelectedGapSegmentSecondaryPenModeItem.GapSegmentSecondaryPenMode : null;
 
             // Use consolidated method for all graph modes
             byte[] imageData;
@@ -661,8 +695,8 @@ public class GraphViewModel : ViewModelBase
             
             var exportWidth = HasCustomBackground ? CustomBackgroundWidth : ExportGraphWidth;
             var exportHeight = HasCustomBackground ? CustomBackgroundHeight : 900;
-            var gapDisplayMode = ShowMissingWeekdaysAsZero ? GapDisplayMode.GapsAsZero : GapDisplayMode.ShowGaps;
-            GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode = ShowMissingWeekdaysAsZero ? SelectedGapSegmentSecondaryPenModeItem.GapSegmentSecondaryPenMode : null;
+            var gapDisplayMode = SelectedGapDisplayMode;
+            GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode = IsGapSegmentAccentVisible ? SelectedGapSegmentSecondaryPenModeItem.GapSegmentSecondaryPenMode : null;
 
             // Use consolidated method for all graph modes
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
@@ -704,8 +738,8 @@ public class GraphViewModel : ViewModelBase
             
             var exportWidth = HasCustomBackground ? CustomBackgroundWidth : ExportGraphWidth;
             var exportHeight = HasCustomBackground ? CustomBackgroundHeight : 900;
-            var gapDisplayMode = ShowMissingWeekdaysAsZero ? GapDisplayMode.GapsAsZero : GapDisplayMode.ShowGaps;
-            GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode = ShowMissingWeekdaysAsZero ? SelectedGapSegmentSecondaryPenModeItem.GapSegmentSecondaryPenMode : null;
+            var gapDisplayMode = SelectedGapDisplayMode;
+            GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode = IsGapSegmentAccentVisible ? SelectedGapSegmentSecondaryPenModeItem.GapSegmentSecondaryPenMode : null;
             
             // Use consolidated method for all graph modes
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
@@ -768,6 +802,15 @@ public class GraphViewModel : ViewModelBase
         GraphModes.Add(new GraphModeItem(GraphMode.StartOfDay, "Opening Mood (Start of Day)"));
         GraphModes.Add(new GraphModeItem(GraphMode.EndOfDay, "Closing Mood (End of Day)"));
         GraphModes.Add(new GraphModeItem(GraphMode.RawData, "Raw Data (Individual Recordings)"));
+    }
+
+    /// <summary>
+    /// Initializes the gap display mode collection.
+    /// </summary>
+    private void InitializeGapDisplayModes()
+    {
+        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.ShowGaps, "Show Gaps"));
+        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsZero, "Gaps as Zero"));
     }
 
     /// <summary>
@@ -988,6 +1031,8 @@ public class GraphViewModel : ViewModelBase
             ShowStatusMessage($"Error selecting color: {ex.Message}");
         }
     }
+
+    private GapDisplayMode SelectedGapDisplayMode => SelectedGapDisplayModeItem?.GapDisplayMode ?? GapDisplayMode.ShowGaps;
     
     #endregion
 }
@@ -1019,6 +1064,21 @@ public class GraphModeItem
     }
     
     public GraphMode GraphMode { get; }
+    public string DisplayName { get; }
+}
+
+/// <summary>
+/// Wrapper class for gap display mode values to provide display names.
+/// </summary>
+public class GapDisplayModeItem
+{
+    public GapDisplayModeItem(GapDisplayMode gapDisplayMode, string displayName)
+    {
+        GapDisplayMode = gapDisplayMode;
+        DisplayName = displayName;
+    }
+
+    public GapDisplayMode GapDisplayMode { get; }
     public string DisplayName { get; }
 }
 
