@@ -6,5 +6,6 @@ namespace WorkMood.MauiApp.Models;
 public enum GapDisplayMode
 {
     ShowGaps = 0,
-    GapsAsZero = 1
+    GapsAsZero = 1,
+    GapsAsMax = 2
 }

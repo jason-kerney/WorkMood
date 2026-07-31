@@ -431,7 +431,7 @@ public class GraphViewModel : ViewModelBase
     /// <summary>
     /// Whether gap segment accent controls should be shown.
     /// </summary>
-    public bool IsGapSegmentAccentVisible => SelectedGapDisplayMode == GapDisplayMode.GapsAsZero;
+    public bool IsGapSegmentAccentVisible => SelectedGapDisplayMode != GapDisplayMode.ShowGaps;
 
     /// <summary>
     /// Selected derived-color mode for segments touching synthesized gap-fill points.
@@ -811,6 +811,7 @@ public class GraphViewModel : ViewModelBase
     {
         GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.ShowGaps, "Show Gaps"));
         GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsZero, "Gaps as Zero"));
+        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsMax, "Gaps as Max"));
     }
 
     /// <summary>

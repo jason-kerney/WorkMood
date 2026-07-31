@@ -88,6 +88,81 @@ namespace WorkMood.MauiApp.Tests.Services
         }
 
         [Fact]
+        public async Task GenerateGraphAsync_WithGapsAsMax_ShouldApplySecondaryPenModeToGraphData()
+        {
+            // Arrange
+            var mockTransformer = new Mock<IGraphDataTransformer>();
+            var mockGenerator = new Mock<ILineGraphGenerator>();
+            var service = new LineGraphService(mockTransformer.Object, mockGenerator.Object);
+
+            var expectedBytes = new byte[] { 1, 2, 3 };
+            var transformedData = new GraphData();
+            var dateRange = new DateRangeInfo(DateRange.Last7Days, DateOnly.FromDateTime(DateTime.Today));
+            var moodEntries = new List<MoodEntry>();
+
+            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange, GapDisplayMode.GapsAsMax))
+                .Returns(transformedData);
+            mockGenerator.Setup(g => g.GenerateLineGraphAsync(transformedData, dateRange, true, true, true, true, Colors.Blue, 800, 600))
+                .ReturnsAsync(expectedBytes);
+
+            // Act
+            var result = await service.GenerateGraphAsync(
+                moodEntries,
+                GraphMode.Impact,
+                dateRange,
+                true,
+                true,
+                true,
+                true,
+                Colors.Blue,
+                gapDisplayMode: GapDisplayMode.GapsAsMax,
+                gapSegmentSecondaryPenMode: GapSegmentSecondaryPenMode.FirstTriadic);
+
+            // Assert
+            Assert.Equal(expectedBytes, result);
+            Assert.Equal(GapSegmentSecondaryPenMode.FirstTriadic, transformedData.GapSegmentSecondaryPenMode);
+        }
+
+        [Fact]
+        public async Task GenerateGraphAsync_WithShowGaps_ShouldClearSecondaryPenModeOnGraphData()
+        {
+            // Arrange
+            var mockTransformer = new Mock<IGraphDataTransformer>();
+            var mockGenerator = new Mock<ILineGraphGenerator>();
+            var service = new LineGraphService(mockTransformer.Object, mockGenerator.Object);
+
+            var expectedBytes = new byte[] { 1, 2, 3 };
+            var transformedData = new GraphData
+            {
+                GapSegmentSecondaryPenMode = GapSegmentSecondaryPenMode.Complementary
+            };
+            var dateRange = new DateRangeInfo(DateRange.Last7Days, DateOnly.FromDateTime(DateTime.Today));
+            var moodEntries = new List<MoodEntry>();
+
+            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange, GapDisplayMode.ShowGaps))
+                .Returns(transformedData);
+            mockGenerator.Setup(g => g.GenerateLineGraphAsync(transformedData, dateRange, true, true, true, true, Colors.Blue, 800, 600))
+                .ReturnsAsync(expectedBytes);
+
+            // Act
+            var result = await service.GenerateGraphAsync(
+                moodEntries,
+                GraphMode.Impact,
+                dateRange,
+                true,
+                true,
+                true,
+                true,
+                Colors.Blue,
+                gapDisplayMode: GapDisplayMode.ShowGaps,
+                gapSegmentSecondaryPenMode: GapSegmentSecondaryPenMode.FirstTriadic);
+
+            // Assert
+            Assert.Equal(expectedBytes, result);
+            Assert.Null(transformedData.GapSegmentSecondaryPenMode);
+        }
+
+        [Fact]
         public async Task GenerateGraphAsync_ShouldDefaultToShowGaps_WhenGapDisplayModeIsNotSpecified()
         {
             // Arrange

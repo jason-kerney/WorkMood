@@ -780,6 +780,92 @@ public class GraphDataTransformerTests
         Assert.DoesNotContain(new DateOnly(2025, 1, 5), dates);
     }
 
+    [Theory]
+    [InlineData(GraphMode.Impact, 9f)]
+    [InlineData(GraphMode.GeneralImpact, 9f)]
+    [InlineData(GraphMode.Average, 5f)]
+    [InlineData(GraphMode.StartOfDay, 10f)]
+    [InlineData(GraphMode.EndOfDay, 10f)]
+    public void TransformMoodEntries_WithGapsAsMax_ShouldInsertWeekdayMaxPointsForGraphMode(GraphMode graphMode, float expectedGapFillValue)
+    {
+        var entries = new List<MoodEntry>
+        {
+            new()
+            {
+                Date = new DateOnly(2025, 1, 6),
+                StartOfWork = 5,
+                EndOfWork = 7,
+                CreatedAt = new DateTime(2025, 1, 6, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 6, 17, 0, 0)
+            },
+            new()
+            {
+                Date = new DateOnly(2025, 1, 8),
+                StartOfWork = 6,
+                EndOfWork = 8,
+                CreatedAt = new DateTime(2025, 1, 8, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 8, 17, 0, 0)
+            }
+        };
+
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 8));
+
+        var result = _transformer.TransformMoodEntries(entries, graphMode, dateRange, GapDisplayMode.GapsAsMax);
+
+        var gapPoint = result.DataPoints.Single(point => DateOnly.FromDateTime(point.Timestamp) == new DateOnly(2025, 1, 7));
+
+        Assert.Equal(expectedGapFillValue, gapPoint.Value);
+        Assert.True(gapPoint.IsSyntheticGapFill);
+    }
+
+    [Fact]
+    public void TransformMoodEntries_RawDataMode_WithGapsAsMax_ShouldInsertWeekdayMaxPoint_SkipWeekends_AndPreserveOrdering()
+    {
+        var moodEntries = new List<MoodEntry>
+        {
+            new()
+            {
+                Date = new DateOnly(2025, 1, 3), // Friday
+                StartOfWork = 4,
+                EndOfWork = 6,
+                CreatedAt = new DateTime(2025, 1, 3, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 3, 17, 0, 0)
+            },
+            new()
+            {
+                Date = new DateOnly(2025, 1, 8), // Wednesday
+                StartOfWork = 7,
+                EndOfWork = 8,
+                CreatedAt = new DateTime(2025, 1, 8, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 8, 17, 0, 0)
+            }
+        };
+
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 8));
+
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.RawData, dateRange, GapDisplayMode.GapsAsMax);
+
+        var dataPoints = result.DataPoints.ToList();
+        var thursday = new DateOnly(2025, 1, 2).ToDateTime(TimeOnly.MinValue);
+        var monday = new DateOnly(2025, 1, 6).ToDateTime(TimeOnly.MinValue);
+        var tuesday = new DateOnly(2025, 1, 7).ToDateTime(TimeOnly.MinValue);
+
+        Assert.Equal(7, dataPoints.Count);
+        Assert.Contains(dataPoints, point => point.Timestamp == thursday && point.Value == 10f);
+        Assert.Contains(dataPoints, point => point.Timestamp == monday && point.Value == 10f);
+        Assert.Contains(dataPoints, point => point.Timestamp == tuesday && point.Value == 10f);
+        Assert.DoesNotContain(dataPoints, point => DateOnly.FromDateTime(point.Timestamp) == new DateOnly(2025, 1, 4));
+        Assert.DoesNotContain(dataPoints, point => DateOnly.FromDateTime(point.Timestamp) == new DateOnly(2025, 1, 5));
+
+        Assert.Equal(thursday, dataPoints[0].Timestamp);
+        Assert.Equal(new DateTime(2025, 1, 3, 8, 0, 0), dataPoints[1].Timestamp);
+        Assert.Equal(new DateTime(2025, 1, 3, 17, 0, 0), dataPoints[2].Timestamp);
+        Assert.Equal(monday, dataPoints[3].Timestamp);
+        Assert.Equal(tuesday, dataPoints[4].Timestamp);
+        Assert.Equal(new DateTime(2025, 1, 8, 8, 0, 0), dataPoints[5].Timestamp);
+        Assert.Equal(new DateTime(2025, 1, 8, 17, 0, 0), dataPoints[6].Timestamp);
+    }
+
     #endregion
 
     #region Date Range Filtering Tests

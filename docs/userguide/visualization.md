@@ -81,8 +81,15 @@ Graph rendering includes a dropdown named **Gap Display Mode** in the graph cont
 
 - When **Gap Display Mode** is set to **Show Gaps**, missing weekdays remain gaps in the data line.
 - When **Gap Display Mode** is set to **Gaps as Zero**, missing weekdays are rendered as zero-value points.
+- When **Gap Display Mode** is set to **Gaps as Max**, missing weekdays are rendered as max-value points for the active graph mode.
 
-When gap-fill is on, you can also choose a **Gap Segment Accent** for line segments and synthetic point markers generated for gap-fill days:
+Max-value mapping by graph mode:
+
+- **Impact** and **General Impact** use `9`.
+- **Average** uses `5`.
+- **Opening Mood**, **Closing Mood**, and **Raw Data** use `10`.
+
+When gap-fill is on (**Gaps as Zero** or **Gaps as Max**), you can also choose a **Gap Segment Accent** for line segments and synthetic point markers generated for gap-fill days:
 
 - **Complementary** uses the opposite hue of the primary line color.
 - **First Triadic** uses the first triadic companion of the primary line color.
@@ -95,14 +102,14 @@ Weekend compression behavior does not change for either mode.
 Example task:
 
 1. On the main dashboard, select **Generate Graph**.
-2. In the graph controls, set **Gap Display Mode** to **Gaps as Zero**.
+2. In the graph controls, set **Gap Display Mode** to **Gaps as Zero** or **Gaps as Max**.
 3. Optionally choose a **Gap Segment Accent**.
 4. Record mood on Monday and Wednesday only.
 5. Review the graph.
 
 Expected result:
 
-- Tuesday is rendered as a zero-value point.
+- Tuesday is rendered as a synthetic gap-fill point at zero for **Gaps as Zero**, or at the mode maximum for **Gaps as Max**.
 - The generated Tuesday point marker and adjacent line segments use the selected gap accent color.
 - If Saturday and Sunday are unrecorded, they are still compressed out of spacing.
 

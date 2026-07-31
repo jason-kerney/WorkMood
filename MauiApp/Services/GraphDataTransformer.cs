@@ -39,16 +39,21 @@ public class GraphDataTransformer : IGraphDataTransformer
             _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, "Unsupported graph mode")
         };
 
-        var normalizedDataPoints = gapDisplayMode == GapDisplayMode.GapsAsZero
-            ? ApplyGapDisplayMode(dataPoints, dateRangeInfo)
-            : dataPoints;
+        var normalizedDataPoints = gapDisplayMode switch
+        {
+            GapDisplayMode.ShowGaps => dataPoints,
+            GapDisplayMode.GapsAsZero => ApplyGapDisplayMode(dataPoints, dateRangeInfo, 0f),
+            GapDisplayMode.GapsAsMax => ApplyGapDisplayMode(dataPoints, dateRangeInfo, GetGapDisplayModeMaxValue(graphMode)),
+            _ => throw new ArgumentOutOfRangeException(nameof(gapDisplayMode), gapDisplayMode, "Unsupported gap display mode")
+        };
 
         return CreateGraphData(normalizedDataPoints, graphMode, dateRangeInfo);
     }
 
     private static IEnumerable<FilledGraphDataPoint> ApplyGapDisplayMode(
         IEnumerable<FilledGraphDataPoint> dataPoints,
-        DateRangeInfo dateRangeInfo)
+        DateRangeInfo dateRangeInfo,
+        float gapFillValue)
     {
         var orderedPoints = dataPoints
             .OrderBy(point => point.Timestamp)
@@ -73,10 +78,24 @@ public class GraphDataTransformer : IGraphDataTransformer
                 continue;
             }
 
-            result.Add(new FilledGraphDataPoint(date.ToDateTime(TimeOnly.MinValue), 0f, IsSyntheticGapFill: true));
+            result.Add(new FilledGraphDataPoint(date.ToDateTime(TimeOnly.MinValue), gapFillValue, IsSyntheticGapFill: true));
         }
 
         return result;
+    }
+
+    private static float GetGapDisplayModeMaxValue(GraphMode graphMode)
+    {
+        return graphMode switch
+        {
+            GraphMode.Impact => AxisRange.Impact.Max,
+            GraphMode.GeneralImpact => AxisRange.Impact.Max,
+            GraphMode.Average => AxisRange.Average.Max,
+            GraphMode.StartOfDay => AxisRange.RawData.Max,
+            GraphMode.EndOfDay => AxisRange.RawData.Max,
+            GraphMode.RawData => AxisRange.RawData.Max,
+            _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, "Unsupported graph mode")
+        };
     }
 
     private static IEnumerable<FilledGraphDataPoint> CreateSinglePointPerEntryData(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)

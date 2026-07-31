@@ -64,7 +64,7 @@ public class LineGraphService : ILineGraphService
         ValidateGraphMode(graphMode);
 
         var graphData = _graphDataTransformer.TransformMoodEntries(moodEntries, graphMode, dateRange, gapDisplayMode);
-        graphData.GapSegmentSecondaryPenMode = gapDisplayMode == GapDisplayMode.GapsAsZero ? gapSegmentSecondaryPenMode : null;
+        graphData.GapSegmentSecondaryPenMode = gapDisplayMode == GapDisplayMode.ShowGaps ? null : gapSegmentSecondaryPenMode;
 
         return string.IsNullOrWhiteSpace(backgroundImagePath)
             ? await _lineGraphGenerator.GenerateLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, lineColor, width, height)
@@ -76,7 +76,7 @@ public class LineGraphService : ILineGraphService
         ValidateGraphMode(graphMode);
 
         var graphData = _graphDataTransformer.TransformMoodEntries(moodEntries, graphMode, dateRange, gapDisplayMode);
-        graphData.GapSegmentSecondaryPenMode = gapDisplayMode == GapDisplayMode.GapsAsZero ? gapSegmentSecondaryPenMode : null;
+        graphData.GapSegmentSecondaryPenMode = gapDisplayMode == GapDisplayMode.ShowGaps ? null : gapSegmentSecondaryPenMode;
 
         if (string.IsNullOrWhiteSpace(backgroundImagePath))
         {
