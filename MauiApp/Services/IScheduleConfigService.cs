@@ -26,7 +26,10 @@ public interface IScheduleConfigService
     /// <param name="eveningTime">New evening time</param>
     /// <param name="newOverride">Optional new override to add</param>
     /// <returns>The updated configuration</returns>
-    Task<ScheduleConfig> UpdateScheduleConfigAsync(TimeSpan morningTime, TimeSpan eveningTime, ScheduleOverride? newOverride = null);
+    Task<ScheduleConfig> UpdateScheduleConfigAsync(
+        TimeSpan morningTime,
+        TimeSpan eveningTime,
+        ScheduleOverride? newOverride = null);
 
     /// <summary>
     /// Creates a one-time backup copy of the current schedule configuration in the specified folder.

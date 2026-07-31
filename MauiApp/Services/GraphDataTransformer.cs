@@ -16,7 +16,11 @@ public class GraphDataTransformer : IGraphDataTransformer
     /// <param name="graphMode">The mode determining how to extract values (Impact, Average, or RawData)</param>
     /// <param name="dateRangeInfo">The date range info to filter the mood entries by</param>
     /// <returns>Complete graph data including data points, title, axis information, and rendering metadata</returns>
-    public GraphData TransformMoodEntries(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRangeInfo)
+    public GraphData TransformMoodEntries(
+        IEnumerable<MoodEntry> moodEntries,
+        GraphMode graphMode,
+        DateRangeInfo dateRangeInfo,
+        GapDisplayMode gapDisplayMode = GapDisplayMode.ShowGaps)
     {
         var entriesInRange = moodEntries
             .Where(entry => entry.Date >= dateRangeInfo.StartDate && entry.Date <= dateRangeInfo.EndDate)
@@ -35,7 +39,44 @@ public class GraphDataTransformer : IGraphDataTransformer
             _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, "Unsupported graph mode")
         };
 
-        return CreateGraphData(dataPoints, graphMode, dateRangeInfo);
+        var normalizedDataPoints = gapDisplayMode == GapDisplayMode.GapsAsZero
+            ? ApplyGapDisplayMode(dataPoints, dateRangeInfo)
+            : dataPoints;
+
+        return CreateGraphData(normalizedDataPoints, graphMode, dateRangeInfo);
+    }
+
+    private static IEnumerable<FilledGraphDataPoint> ApplyGapDisplayMode(
+        IEnumerable<FilledGraphDataPoint> dataPoints,
+        DateRangeInfo dateRangeInfo)
+    {
+        var orderedPoints = dataPoints
+            .OrderBy(point => point.Timestamp)
+            .ToList();
+
+        var pointsByDate = orderedPoints
+            .GroupBy(point => DateOnly.FromDateTime(point.Timestamp))
+            .ToDictionary(group => group.Key, group => group.OrderBy(point => point.Timestamp).ToList());
+
+        var result = new List<FilledGraphDataPoint>();
+
+        for (var date = dateRangeInfo.StartDate; date <= dateRangeInfo.EndDate; date = date.AddDays(1))
+        {
+            if (pointsByDate.TryGetValue(date, out var existingPoints))
+            {
+                result.AddRange(existingPoints);
+                continue;
+            }
+
+            if (CalendarGapPolicy.IsWeekend(date.DayOfWeek))
+            {
+                continue;
+            }
+
+            result.Add(new FilledGraphDataPoint(date.ToDateTime(TimeOnly.MinValue), 0f));
+        }
+
+        return result;
     }
 
     private static IEnumerable<FilledGraphDataPoint> CreateSinglePointPerEntryData(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)

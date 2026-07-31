@@ -211,7 +211,10 @@ public class SettingsPageViewModel : ViewModelBase
             }
             
             // Use the centralized update method with automatic cleanup
-            var updatedConfig = await _scheduleConfigService.UpdateScheduleConfigAsync(MorningTime, EveningTime, newOverride);
+            var updatedConfig = await _scheduleConfigService.UpdateScheduleConfigAsync(
+                MorningTime,
+                EveningTime,
+                newOverride);
             
             // Update our local reference
             _currentConfig = updatedConfig;

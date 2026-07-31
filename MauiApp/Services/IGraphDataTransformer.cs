@@ -15,5 +15,9 @@ public interface IGraphDataTransformer
     /// <param name="graphMode">The mode determining how to extract values (Impact, Average, or RawData)</param>
     /// <param name="dateRangeInfo">The date range info to filter the mood entries by</param>
     /// <returns>Complete graph data including data points, title, axis information, and rendering metadata</returns>
-    GraphData TransformMoodEntries(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRangeInfo);
+    GraphData TransformMoodEntries(
+        IEnumerable<MoodEntry> moodEntries,
+        GraphMode graphMode,
+        DateRangeInfo dateRangeInfo,
+        GapDisplayMode gapDisplayMode = GapDisplayMode.ShowGaps);
 }

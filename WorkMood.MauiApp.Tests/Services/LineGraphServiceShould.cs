@@ -28,29 +28,23 @@ namespace WorkMood.MauiApp.Tests.Services
         }
 
         [Fact]
-        public void Constructor_WithNullTransformer_ShouldCreateInstanceWithoutThrowingException()
+        public void Constructor_WithNullTransformer_ShouldThrowArgumentNullException()
         {
             // Arrange
             var mockGenerator = new Mock<ILineGraphGenerator>();
             
-            // Act
-            var service = new LineGraphService(null!, mockGenerator.Object);
-            
-            // Assert
-            Assert.NotNull(service);
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => new LineGraphService(null!, mockGenerator.Object));
         }
 
         [Fact]
-        public void Constructor_WithNullGenerator_ShouldCreateInstanceWithoutThrowingException()
+        public void Constructor_WithNullGenerator_ShouldThrowArgumentNullException()
         {
             // Arrange
             var mockTransformer = new Mock<IGraphDataTransformer>();
             
-            // Act
-            var service = new LineGraphService(mockTransformer.Object, null!);
-            
-            // Assert
-            Assert.NotNull(service);
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => new LineGraphService(mockTransformer.Object, null!));
         }
 
         [Fact]
@@ -66,6 +60,58 @@ namespace WorkMood.MauiApp.Tests.Services
         #endregion
 
         #region GenerateGraphAsync Tests (White Background)
+
+        [Fact]
+        public async Task GenerateGraphAsync_ShouldUseProvidedGapDisplayMode()
+        {
+            // Arrange
+            var mockTransformer = new Mock<IGraphDataTransformer>();
+            var mockGenerator = new Mock<ILineGraphGenerator>();
+            var service = new LineGraphService(mockTransformer.Object, mockGenerator.Object);
+
+            var expectedBytes = new byte[] { 1, 2, 3 };
+            var transformedData = new GraphData();
+            var dateRange = new DateRangeInfo(DateRange.Last7Days, DateOnly.FromDateTime(DateTime.Today));
+            var moodEntries = new List<MoodEntry>();
+
+            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange, GapDisplayMode.GapsAsZero))
+                .Returns(transformedData);
+            mockGenerator.Setup(g => g.GenerateLineGraphAsync(transformedData, dateRange, true, true, true, true, Colors.Blue, 800, 600))
+                .ReturnsAsync(expectedBytes);
+
+            // Act
+            var result = await service.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, true, true, true, true, Colors.Blue, gapDisplayMode: GapDisplayMode.GapsAsZero);
+
+            // Assert
+            Assert.Equal(expectedBytes, result);
+            mockTransformer.Verify(t => t.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange, GapDisplayMode.GapsAsZero), Times.Once);
+        }
+
+        [Fact]
+        public async Task GenerateGraphAsync_ShouldDefaultToShowGaps_WhenGapDisplayModeIsNotSpecified()
+        {
+            // Arrange
+            var mockTransformer = new Mock<IGraphDataTransformer>();
+            var mockGenerator = new Mock<ILineGraphGenerator>();
+            var service = new LineGraphService(mockTransformer.Object, mockGenerator.Object);
+
+            var expectedBytes = new byte[] { 1, 2, 3 };
+            var transformedData = new GraphData();
+            var dateRange = new DateRangeInfo(DateRange.Last7Days, DateOnly.FromDateTime(DateTime.Today));
+            var moodEntries = new List<MoodEntry>();
+
+            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange, GapDisplayMode.ShowGaps))
+                .Returns(transformedData);
+            mockGenerator.Setup(g => g.GenerateLineGraphAsync(transformedData, dateRange, true, true, true, true, Colors.Blue, 800, 600))
+                .ReturnsAsync(expectedBytes);
+
+            // Act
+            var result = await service.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, true, true, true, true, Colors.Blue);
+
+            // Assert
+            Assert.Equal(expectedBytes, result);
+            mockTransformer.Verify(t => t.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange, GapDisplayMode.ShowGaps), Times.Once);
+        }
 
         [Theory]
         [InlineData(GraphMode.Impact)]
@@ -86,7 +132,7 @@ namespace WorkMood.MauiApp.Tests.Services
             var dateRange = new DateRangeInfo(DateRange.Last7Days, DateOnly.FromDateTime(DateTime.Today));
             var moodEntries = new List<MoodEntry>();
             
-            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, graphMode, dateRange))
+            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, graphMode, dateRange, GapDisplayMode.ShowGaps))
                 .Returns(transformedData);
             mockGenerator.Setup(g => g.GenerateLineGraphAsync(transformedData, dateRange, true, true, true, true, Colors.Blue, 800, 600))
                 .ReturnsAsync(expectedBytes);
@@ -96,7 +142,7 @@ namespace WorkMood.MauiApp.Tests.Services
 
             // Assert
             Assert.Equal(expectedBytes, result);
-            mockTransformer.Verify(t => t.TransformMoodEntries(moodEntries, graphMode, dateRange), Times.Once);
+            mockTransformer.Verify(t => t.TransformMoodEntries(moodEntries, graphMode, dateRange, GapDisplayMode.ShowGaps), Times.Once);
             mockGenerator.Verify(g => g.GenerateLineGraphAsync(transformedData, dateRange, true, true, true, true, Colors.Blue, 800, 600), Times.Once);
         }
 
@@ -142,7 +188,7 @@ namespace WorkMood.MauiApp.Tests.Services
             var moodEntries = new List<MoodEntry>();
             var backgroundPath = "test-background.png";
             
-            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, graphMode, dateRange))
+            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, graphMode, dateRange, GapDisplayMode.ShowGaps))
                 .Returns(transformedData);
             mockGenerator.Setup(g => g.GenerateLineGraphAsync(transformedData, dateRange, true, true, true, true, backgroundPath, Colors.Green, 800, 600))
                 .ReturnsAsync(expectedBytes);
@@ -152,7 +198,7 @@ namespace WorkMood.MauiApp.Tests.Services
 
             // Assert
             Assert.Equal(expectedBytes, result);
-            mockTransformer.Verify(t => t.TransformMoodEntries(moodEntries, graphMode, dateRange), Times.Once);
+            mockTransformer.Verify(t => t.TransformMoodEntries(moodEntries, graphMode, dateRange, GapDisplayMode.ShowGaps), Times.Once);
             mockGenerator.Verify(g => g.GenerateLineGraphAsync(transformedData, dateRange, true, true, true, true, backgroundPath, Colors.Green, 800, 600), Times.Once);
         }
 
@@ -198,7 +244,7 @@ namespace WorkMood.MauiApp.Tests.Services
             var moodEntries = new List<MoodEntry>();
             var filePath = "test-graph.png";
             
-            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, graphMode, dateRange))
+            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, graphMode, dateRange, GapDisplayMode.ShowGaps))
                 .Returns(transformedData);
             mockGenerator.Setup(g => g.SaveLineGraphAsync(transformedData, dateRange, true, true, true, true, filePath, Colors.Red, 800, 600))
                 .Returns(Task.CompletedTask);
@@ -207,7 +253,7 @@ namespace WorkMood.MauiApp.Tests.Services
             await service.SaveGraphAsync(moodEntries, graphMode, dateRange, true, true, true, true, filePath, Colors.Red);
 
             // Assert
-            mockTransformer.Verify(t => t.TransformMoodEntries(moodEntries, graphMode, dateRange), Times.Once);
+            mockTransformer.Verify(t => t.TransformMoodEntries(moodEntries, graphMode, dateRange, GapDisplayMode.ShowGaps), Times.Once);
             mockGenerator.Verify(g => g.SaveLineGraphAsync(transformedData, dateRange, true, true, true, true, filePath, Colors.Red, 800, 600), Times.Once);
         }
 
@@ -254,7 +300,7 @@ namespace WorkMood.MauiApp.Tests.Services
             var filePath = "test-graph-with-bg.png";
             var backgroundPath = "save-background.png";
             
-            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, graphMode, dateRange))
+            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, graphMode, dateRange, GapDisplayMode.ShowGaps))
                 .Returns(transformedData);
             mockGenerator.Setup(g => g.SaveLineGraphAsync(transformedData, dateRange, true, true, true, true, filePath, backgroundPath, Colors.Purple, 800, 600))
                 .Returns(Task.CompletedTask);
@@ -263,7 +309,7 @@ namespace WorkMood.MauiApp.Tests.Services
             await service.SaveGraphAsync(moodEntries, graphMode, dateRange, true, true, true, true, filePath, backgroundPath, Colors.Purple);
 
             // Assert
-            mockTransformer.Verify(t => t.TransformMoodEntries(moodEntries, graphMode, dateRange), Times.Once);
+            mockTransformer.Verify(t => t.TransformMoodEntries(moodEntries, graphMode, dateRange, GapDisplayMode.ShowGaps), Times.Once);
             mockGenerator.Verify(g => g.SaveLineGraphAsync(transformedData, dateRange, true, true, true, true, filePath, backgroundPath, Colors.Purple, 800, 600), Times.Once);
         }
 
@@ -304,7 +350,7 @@ namespace WorkMood.MauiApp.Tests.Services
             var dateRange = new DateRangeInfo(DateRange.Last6Months, DateOnly.FromDateTime(DateTime.Today));
             var emptyMoodEntries = new List<MoodEntry>();
             
-            mockTransformer.Setup(t => t.TransformMoodEntries(emptyMoodEntries, GraphMode.Impact, dateRange))
+            mockTransformer.Setup(t => t.TransformMoodEntries(emptyMoodEntries, GraphMode.Impact, dateRange, GapDisplayMode.ShowGaps))
                 .Returns(transformedData);
             mockGenerator.Setup(g => g.GenerateLineGraphAsync(transformedData, dateRange, false, false, false, false, Colors.Black, 800, 600))
                 .ReturnsAsync(expectedBytes);
@@ -314,7 +360,7 @@ namespace WorkMood.MauiApp.Tests.Services
 
             // Assert
             Assert.Equal(expectedBytes, result);
-            mockTransformer.Verify(t => t.TransformMoodEntries(emptyMoodEntries, GraphMode.Impact, dateRange), Times.Once);
+            mockTransformer.Verify(t => t.TransformMoodEntries(emptyMoodEntries, GraphMode.Impact, dateRange, GapDisplayMode.ShowGaps), Times.Once);
         }
 
         [Fact]
@@ -332,7 +378,7 @@ namespace WorkMood.MauiApp.Tests.Services
             var customWidth = 1200;
             var customHeight = 800;
             
-            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, GraphMode.Average, dateRange))
+            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, GraphMode.Average, dateRange, GapDisplayMode.ShowGaps))
                 .Returns(transformedData);
             mockGenerator.Setup(g => g.SaveLineGraphAsync(transformedData, dateRange, true, false, true, false, filePath, Colors.Orange, customWidth, customHeight))
                 .Returns(Task.CompletedTask);
@@ -359,7 +405,7 @@ namespace WorkMood.MauiApp.Tests.Services
             var dateRange = new DateRangeInfo(DateRange.Last7Days, DateOnly.FromDateTime(DateTime.Today));
             var moodEntries = new List<MoodEntry>();
             
-            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange))
+            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange, GapDisplayMode.ShowGaps))
                 .Throws(new InvalidOperationException("Transform failed"));
 
             // Act & Assert
@@ -380,7 +426,7 @@ namespace WorkMood.MauiApp.Tests.Services
             var dateRange = new DateRangeInfo(DateRange.Last7Days, DateOnly.FromDateTime(DateTime.Today));
             var moodEntries = new List<MoodEntry>();
             
-            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, GraphMode.RawData, dateRange))
+            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, GraphMode.RawData, dateRange, GapDisplayMode.ShowGaps))
                 .Returns(transformedData);
             mockGenerator.Setup(g => g.GenerateLineGraphAsync(transformedData, dateRange, true, true, true, true, Colors.Cyan, 800, 600))
                 .ThrowsAsync(new IOException("Generation failed"));
@@ -405,7 +451,7 @@ namespace WorkMood.MauiApp.Tests.Services
             var filePath = "failing-save.png";
             var backgroundPath = "background.png";
             
-            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, GraphMode.Average, dateRange))
+            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, GraphMode.Average, dateRange, GapDisplayMode.ShowGaps))
                 .Returns(transformedData);
             mockGenerator.Setup(g => g.SaveLineGraphAsync(transformedData, dateRange, true, true, true, true, filePath, backgroundPath, Colors.Yellow, 800, 600))
                 .ThrowsAsync(new UnauthorizedAccessException("Cannot save file"));

@@ -170,7 +170,10 @@ public class ScheduleConfigService : IScheduleConfigService
     /// <param name="eveningTime">New evening time</param>
     /// <param name="newOverride">Optional new override to add</param>
     /// <returns>The updated configuration</returns>
-    public async Task<ScheduleConfig> UpdateScheduleConfigAsync(TimeSpan morningTime, TimeSpan eveningTime, ScheduleOverride? newOverride = null)
+    public async Task<ScheduleConfig> UpdateScheduleConfigAsync(
+        TimeSpan morningTime,
+        TimeSpan eveningTime,
+        ScheduleOverride? newOverride = null)
     {
         Log($"UpdateScheduleConfigAsync: Updating config - Morning: {morningTime}, Evening: {eveningTime}");
         

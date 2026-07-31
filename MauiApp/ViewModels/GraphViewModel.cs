@@ -27,6 +27,7 @@ public class GraphViewModel : ViewModelBase
     private bool _showDataPoints = true;
     private bool _showAxesAndGrid = true;
     private bool _showTitle = true;
+    private bool _showMissingWeekdaysAsZero = false;
     private ImageSource? _customBackgroundSource;
     private bool _hasCustomBackground = false;
     private int _customBackgroundWidth = 0;
@@ -208,6 +209,21 @@ public class GraphViewModel : ViewModelBase
             if (SetProperty(ref _showTrendLine, value))
             {
                 // Auto-update graph when trend line visibility changes
+                _ = UpdateGraphAsync();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Whether missing weekdays should be rendered as zero-value points.
+    /// </summary>
+    public bool ShowMissingWeekdaysAsZero
+    {
+        get => _showMissingWeekdaysAsZero;
+        set
+        {
+            if (SetProperty(ref _showMissingWeekdaysAsZero, value))
+            {
                 _ = UpdateGraphAsync();
             }
         }
@@ -566,15 +582,17 @@ public class GraphViewModel : ViewModelBase
                 return;
             }
             
+            var gapDisplayMode = ShowMissingWeekdaysAsZero ? GapDisplayMode.GapsAsZero : GapDisplayMode.ShowGaps;
+
             // Use consolidated method for all graph modes
             byte[] imageData;
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
-                imageData = await _lineGraphService.GenerateGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                imageData = await _lineGraphService.GenerateGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight, gapDisplayMode);
             }
             else
             {
-                imageData = await _lineGraphService.GenerateGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight);
+                imageData = await _lineGraphService.GenerateGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight, gapDisplayMode);
             }
             
             GraphImageSource = ImageSource.FromStream(() => new MemoryStream(imageData));
@@ -617,15 +635,16 @@ public class GraphViewModel : ViewModelBase
             
             var exportWidth = HasCustomBackground ? CustomBackgroundWidth : ExportGraphWidth;
             var exportHeight = HasCustomBackground ? CustomBackgroundHeight : 900;
+            var gapDisplayMode = ShowMissingWeekdaysAsZero ? GapDisplayMode.GapsAsZero : GapDisplayMode.ShowGaps;
 
             // Use consolidated method for all graph modes
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
-                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode);
             }
             else
             {
-                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
+                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode);
             }
             
             ShowStatusMessage($"Graph exported to: {filePath}");
@@ -658,15 +677,16 @@ public class GraphViewModel : ViewModelBase
             
             var exportWidth = HasCustomBackground ? CustomBackgroundWidth : ExportGraphWidth;
             var exportHeight = HasCustomBackground ? CustomBackgroundHeight : 900;
+            var gapDisplayMode = ShowMissingWeekdaysAsZero ? GapDisplayMode.GapsAsZero : GapDisplayMode.ShowGaps;
             
             // Use consolidated method for all graph modes
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
-                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight);
+                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode);
             }
             else
             {
-                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight);
+                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode);
             }
             
             await Share.RequestAsync(new ShareFileRequest

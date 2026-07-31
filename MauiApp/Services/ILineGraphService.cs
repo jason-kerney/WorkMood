@@ -25,7 +25,7 @@ public interface ILineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>PNG image data as byte array</returns>
-    Task<byte[]> GenerateGraphAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, Color lineColor, int width = 800, int height = 600);
+    Task<byte[]> GenerateGraphAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, Color lineColor, int width = 800, int height = 600, GapDisplayMode gapDisplayMode = GapDisplayMode.ShowGaps);
 
     /// <summary>
     /// Generates a line graph PNG image with custom background for the specified graph mode
@@ -42,7 +42,7 @@ public interface ILineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>PNG image data as byte array</returns>
-    Task<byte[]> GenerateGraphAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string backgroundImagePath, Color lineColor, int width = 800, int height = 600);
+    Task<byte[]> GenerateGraphAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string backgroundImagePath, Color lineColor, int width = 800, int height = 600, GapDisplayMode gapDisplayMode = GapDisplayMode.ShowGaps);
 
     /// <summary>
     /// Saves a line graph PNG image to the specified file path with white background for the specified graph mode
@@ -59,7 +59,7 @@ public interface ILineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>Task representing the async operation</returns>
-    Task SaveGraphAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, Color lineColor, int width = 800, int height = 600);
+    Task SaveGraphAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, Color lineColor, int width = 800, int height = 600, GapDisplayMode gapDisplayMode = GapDisplayMode.ShowGaps);
 
     /// <summary>
     /// Saves a line graph PNG image to the specified file path with custom background for the specified graph mode
@@ -77,5 +77,5 @@ public interface ILineGraphService
     /// <param name="width">Width of the graph in pixels</param>
     /// <param name="height">Height of the graph in pixels</param>
     /// <returns>Task representing the async operation</returns>
-    Task SaveGraphAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600);
+    Task SaveGraphAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600, GapDisplayMode gapDisplayMode = GapDisplayMode.ShowGaps);
 }

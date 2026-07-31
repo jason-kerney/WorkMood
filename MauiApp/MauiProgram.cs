@@ -120,6 +120,8 @@ public static class MauiProgram
 		});
 
 		// Register graph-related services
+		builder.Services.AddSingleton<IGraphDataTransformer, GraphDataTransformer>();
+		builder.Services.AddSingleton<ILineGraphGenerator, LineGraphGenerator>();
 		builder.Services.AddSingleton<ILineGraphService, LineGraphService>();
 		
 		// Register version retriever service

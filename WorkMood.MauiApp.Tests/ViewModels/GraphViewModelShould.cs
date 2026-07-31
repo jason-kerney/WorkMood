@@ -1,4 +1,5 @@
 using Moq;
+using WorkMood.MauiApp.Models;
 using WorkMood.MauiApp.Services;
 using WorkMood.MauiApp.Tests.TestHelpers;
 using WorkMood.MauiApp.ViewModels;
@@ -103,6 +104,45 @@ public class GraphViewModelShould
         var largerHeightDisplay = viewModel.DisplayHeight;
 
         Assert.True(largerHeightDisplay > smallerHeightDisplay);
+    }
+
+    [Fact]
+    public async Task LoadDataAsync_WhenMissingWeekdaysAsZeroIsEnabled_ShouldRequestGapsAsZero()
+    {
+        var capturedGapDisplayMode = GapDisplayMode.ShowGaps;
+        var viewModel = CreateViewModel();
+
+        _mockMoodDataService
+            .Setup(service => service.LoadMoodDataAsync())
+            .ReturnsAsync(new MoodCollection(new[]
+            {
+                new MoodEntry(new DateOnly(2026, 7, 29)) { StartOfWork = 4, EndOfWork = 6 }
+            }));
+
+        _mockLineGraphService
+            .Setup(service => service.GenerateGraphAsync(
+                It.IsAny<IEnumerable<MoodEntry>>(),
+                It.IsAny<GraphMode>(),
+                It.IsAny<DateRangeInfo>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<Color>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<GapDisplayMode>()))
+            .Callback<IEnumerable<MoodEntry>, GraphMode, DateRangeInfo, bool, bool, bool, bool, Color, int, int, GapDisplayMode>((_, _, _, _, _, _, _, _, _, _, gapDisplayMode) =>
+            {
+                capturedGapDisplayMode = gapDisplayMode;
+            })
+            .ReturnsAsync([1, 2, 3]);
+
+        viewModel.ShowMissingWeekdaysAsZero = true;
+
+        await viewModel.LoadDataAsync();
+
+        Assert.Equal(GapDisplayMode.GapsAsZero, capturedGapDisplayMode);
     }
 
     private GraphViewModel CreateViewModel()

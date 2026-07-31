@@ -75,6 +75,27 @@ The graph view supports multiple modes so you can focus on different insights:
 
 This applies to every graph mode, including Raw Data. In Raw Data mode, start/end points within the same day stay ordered within that day while unrecorded weekend days are compressed.
 
+<!-- (dl (### Gap Display Mode)) -->
+
+Graph rendering includes a checkbox named **Show Missing Weekdays as Zero** in the graph controls.
+
+- When the checkbox is off, missing weekdays remain gaps in the data line.
+- When the checkbox is on, missing weekdays are rendered as zero-value points.
+
+Weekend compression behavior does not change for either mode.
+
+Example task:
+
+1. On the main dashboard, select **Generate Graph**.
+2. In the graph controls, enable **Show Missing Weekdays as Zero**.
+3. Record mood on Monday and Wednesday only.
+4. Review the graph.
+
+Expected result:
+
+- Tuesday is rendered as a zero-value point.
+- If Saturday and Sunday are unrecorded, they are still compressed out of spacing.
+
 <!-- (dl (### Graph Controls Visibility)) -->
 
 Use the **Hide Graph Controls** button above the graph controls when you want a larger graph preview.
