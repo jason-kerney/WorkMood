@@ -83,6 +83,7 @@ Graph rendering includes a dropdown named **Gap Display Mode** in the graph cont
 - When **Gap Display Mode** is set to **Gaps as Zero**, missing weekdays are rendered as zero-value points.
 - When **Gap Display Mode** is set to **Gaps as Max**, missing weekdays are rendered as max-value points for the active graph mode.
 - When **Gap Display Mode** is set to **Gaps as Average**, missing weekdays are rendered using the arithmetic mean of all currently visible recorded points for the selected graph mode and date range.
+- When **Gap Display Mode** is set to **Gaps as Surrounding Average**, each missing weekday is rendered using the arithmetic mean of the nearest previous and nearest next visible recorded points.
 
 Max-value mapping by graph mode:
 
@@ -106,10 +107,17 @@ For **Gaps as Average**:
 - In **Raw Data**, both recorded points per day (start and end) are included in the mean.
 - If no recorded points are visible in the selected date range, no synthetic average-fill points are added.
 
+For **Gaps as Surrounding Average**:
+
+- Each missing weekday uses local context instead of a global mean.
+- The value is computed as: (nearest previous visible point + nearest next visible point) / 2.
+- If either surrounding side is missing, that day is left as a gap.
+- In **Raw Data**, nearest surrounding points are taken from the visible timestamp-ordered points.
+
 Example task:
 
 1. On the main dashboard, select **Generate Graph**.
-2. In the graph controls, set **Gap Display Mode** to **Gaps as Zero**, **Gaps as Max**, or **Gaps as Average**.
+2. In the graph controls, set **Gap Display Mode** to **Gaps as Zero**, **Gaps as Max**, **Gaps as Average**, or **Gaps as Surrounding Average**.
 3. Optionally choose a **Gap Segment Accent**.
 4. Record mood on Monday and Wednesday only.
 5. Review the graph.
@@ -118,6 +126,7 @@ Expected result:
 
 - Tuesday is rendered as a synthetic gap-fill point at zero for **Gaps as Zero**, or at the mode maximum for **Gaps as Max**.
 - For **Gaps as Average**, Tuesday is rendered as a synthetic gap-fill point at the arithmetic mean of visible recorded points in the selected graph mode and date range.
+- For **Gaps as Surrounding Average**, Tuesday is rendered as a synthetic gap-fill point at the average of the nearest visible point before Tuesday and the nearest visible point after Tuesday.
 - The generated Tuesday point marker and adjacent line segments use the selected gap accent color.
 - If Saturday and Sunday are unrecorded, they are still compressed out of spacing.
 

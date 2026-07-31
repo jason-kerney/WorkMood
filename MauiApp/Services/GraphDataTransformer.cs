@@ -45,6 +45,7 @@ public class GraphDataTransformer : IGraphDataTransformer
             GapDisplayMode.GapsAsZero => ApplyGapDisplayMode(dataPoints, dateRangeInfo, 0f),
             GapDisplayMode.GapsAsMax => ApplyGapDisplayMode(dataPoints, dateRangeInfo, GetGapDisplayModeMaxValue(graphMode)),
             GapDisplayMode.GapsAsAverage => ApplyAverageGapDisplayMode(dataPoints, dateRangeInfo),
+            GapDisplayMode.GapsAsSurroundingAverage => ApplySurroundingAverageGapDisplayMode(dataPoints, dateRangeInfo),
             _ => throw new ArgumentOutOfRangeException(nameof(gapDisplayMode), gapDisplayMode, "Unsupported gap display mode")
         };
 
@@ -114,6 +115,49 @@ public class GraphDataTransformer : IGraphDataTransformer
             GraphMode.RawData => AxisRange.RawData.Max,
             _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, "Unsupported graph mode")
         };
+    }
+
+    private static IEnumerable<FilledGraphDataPoint> ApplySurroundingAverageGapDisplayMode(
+        IEnumerable<FilledGraphDataPoint> dataPoints,
+        DateRangeInfo dateRangeInfo)
+    {
+        var visiblePoints = dataPoints
+            .Where(point => !point.IsSyntheticGapFill && point.Value.HasValue)
+            .OrderBy(point => point.Timestamp)
+            .ToList();
+
+        var pointsByDate = visiblePoints
+            .GroupBy(point => DateOnly.FromDateTime(point.Timestamp))
+            .ToDictionary(group => group.Key, group => group.OrderBy(point => point.Timestamp).ToList());
+
+        var result = new List<FilledGraphDataPoint>();
+
+        for (var date = dateRangeInfo.StartDate; date <= dateRangeInfo.EndDate; date = date.AddDays(1))
+        {
+            if (pointsByDate.TryGetValue(date, out var existingPoints))
+            {
+                result.AddRange(existingPoints);
+                continue;
+            }
+
+            if (CalendarGapPolicy.IsWeekend(date.DayOfWeek))
+            {
+                continue;
+            }
+
+            var previousPoint = visiblePoints.LastOrDefault(point => DateOnly.FromDateTime(point.Timestamp) < date);
+            var nextPoint = visiblePoints.FirstOrDefault(point => DateOnly.FromDateTime(point.Timestamp) > date);
+
+            if (previousPoint?.Value is not float previousValue || nextPoint?.Value is not float nextValue)
+            {
+                continue;
+            }
+
+            var averageValue = (previousValue + nextValue) / 2f;
+            result.Add(new FilledGraphDataPoint(date.ToDateTime(TimeOnly.MinValue), averageValue, IsSyntheticGapFill: true));
+        }
+
+        return result;
     }
 
     private static IEnumerable<FilledGraphDataPoint> CreateSinglePointPerEntryData(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
