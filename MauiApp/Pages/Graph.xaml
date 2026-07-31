@@ -92,7 +92,7 @@
                   <Picker ItemsSource="{Binding GapDisplayModes}"
                         SelectedItem="{Binding SelectedGapDisplayModeItem}"
                         ItemDisplayBinding="{Binding DisplayName}"
-                    Title="Choose gap display mode (Show Gaps, Gaps as Zero, or Gaps as Max)"
+                                        Title="Choose gap display mode (Show Gaps, Gaps as Zero, Gaps as Max, or Gaps as Average)"
                         VerticalOptions="Center"
                         MinimumWidthRequest="170" />
                   <StackLayout IsVisible="{Binding IsGapSegmentAccentVisible}"

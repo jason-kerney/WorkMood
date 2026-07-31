@@ -7,5 +7,6 @@ public enum GapDisplayMode
 {
     ShowGaps = 0,
     GapsAsZero = 1,
-    GapsAsMax = 2
+    GapsAsMax = 2,
+    GapsAsAverage = 3
 }

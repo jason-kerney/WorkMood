@@ -82,6 +82,7 @@ Graph rendering includes a dropdown named **Gap Display Mode** in the graph cont
 - When **Gap Display Mode** is set to **Show Gaps**, missing weekdays remain gaps in the data line.
 - When **Gap Display Mode** is set to **Gaps as Zero**, missing weekdays are rendered as zero-value points.
 - When **Gap Display Mode** is set to **Gaps as Max**, missing weekdays are rendered as max-value points for the active graph mode.
+- When **Gap Display Mode** is set to **Gaps as Average**, missing weekdays are rendered using the arithmetic mean of all currently visible recorded points for the selected graph mode and date range.
 
 Max-value mapping by graph mode:
 
@@ -99,10 +100,16 @@ When **Gap Display Mode** is **Show Gaps**, gap accenting is not applied and poi
 
 Weekend compression behavior does not change for either mode.
 
+For **Gaps as Average**:
+
+- The mean is calculated from visible recorded points only (not synthetic gap-fill points).
+- In **Raw Data**, both recorded points per day (start and end) are included in the mean.
+- If no recorded points are visible in the selected date range, no synthetic average-fill points are added.
+
 Example task:
 
 1. On the main dashboard, select **Generate Graph**.
-2. In the graph controls, set **Gap Display Mode** to **Gaps as Zero** or **Gaps as Max**.
+2. In the graph controls, set **Gap Display Mode** to **Gaps as Zero**, **Gaps as Max**, or **Gaps as Average**.
 3. Optionally choose a **Gap Segment Accent**.
 4. Record mood on Monday and Wednesday only.
 5. Review the graph.
@@ -110,6 +117,7 @@ Example task:
 Expected result:
 
 - Tuesday is rendered as a synthetic gap-fill point at zero for **Gaps as Zero**, or at the mode maximum for **Gaps as Max**.
+- For **Gaps as Average**, Tuesday is rendered as a synthetic gap-fill point at the arithmetic mean of visible recorded points in the selected graph mode and date range.
 - The generated Tuesday point marker and adjacent line segments use the selected gap accent color.
 - If Saturday and Sunday are unrecorded, they are still compressed out of spacing.
 

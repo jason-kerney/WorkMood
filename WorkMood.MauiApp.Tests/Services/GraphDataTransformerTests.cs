@@ -866,6 +866,69 @@ public class GraphDataTransformerTests
         Assert.Equal(new DateTime(2025, 1, 8, 17, 0, 0), dataPoints[6].Timestamp);
     }
 
+    [Fact]
+    public void TransformMoodEntries_RawDataMode_WithGapsAsAverage_ShouldInsertWeekdayAveragePoint_FromAllVisiblePoints()
+    {
+        var moodEntries = new List<MoodEntry>
+        {
+            new()
+            {
+                Date = new DateOnly(2025, 1, 3), // Friday
+                StartOfWork = 4,
+                EndOfWork = 6,
+                CreatedAt = new DateTime(2025, 1, 3, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 3, 17, 0, 0)
+            },
+            new()
+            {
+                Date = new DateOnly(2025, 1, 8), // Wednesday
+                StartOfWork = 8,
+                EndOfWork = 10,
+                CreatedAt = new DateTime(2025, 1, 8, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 8, 17, 0, 0)
+            }
+        };
+
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 8));
+
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.RawData, dateRange, GapDisplayMode.GapsAsAverage);
+
+        var dataPoints = result.DataPoints.ToList();
+        var expectedAverage = 7f; // average of 4, 6, 8, 10
+        var thursday = new DateOnly(2025, 1, 2).ToDateTime(TimeOnly.MinValue);
+        var monday = new DateOnly(2025, 1, 6).ToDateTime(TimeOnly.MinValue);
+        var tuesday = new DateOnly(2025, 1, 7).ToDateTime(TimeOnly.MinValue);
+
+        Assert.Equal(7, dataPoints.Count);
+        Assert.Contains(dataPoints, point => point.Timestamp == thursday && point.Value == expectedAverage && point.IsSyntheticGapFill);
+        Assert.Contains(dataPoints, point => point.Timestamp == monday && point.Value == expectedAverage && point.IsSyntheticGapFill);
+        Assert.Contains(dataPoints, point => point.Timestamp == tuesday && point.Value == expectedAverage && point.IsSyntheticGapFill);
+        Assert.DoesNotContain(dataPoints, point => DateOnly.FromDateTime(point.Timestamp) == new DateOnly(2025, 1, 4));
+        Assert.DoesNotContain(dataPoints, point => DateOnly.FromDateTime(point.Timestamp) == new DateOnly(2025, 1, 5));
+    }
+
+    [Fact]
+    public void TransformMoodEntries_WithGapsAsAverage_WhenNoVisiblePointsExist_ShouldNotInsertSyntheticPoints()
+    {
+        var moodEntries = new List<MoodEntry>
+        {
+            new()
+            {
+                Date = new DateOnly(2024, 12, 1),
+                StartOfWork = 5,
+                EndOfWork = 7,
+                CreatedAt = new DateTime(2024, 12, 1, 8, 0, 0),
+                LastModified = new DateTime(2024, 12, 1, 17, 0, 0)
+            }
+        };
+
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 8));
+
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange, GapDisplayMode.GapsAsAverage);
+
+        Assert.Empty(result.DataPoints);
+    }
+
     #endregion
 
     #region Date Range Filtering Tests

@@ -44,6 +44,7 @@ public class GraphDataTransformer : IGraphDataTransformer
             GapDisplayMode.ShowGaps => dataPoints,
             GapDisplayMode.GapsAsZero => ApplyGapDisplayMode(dataPoints, dateRangeInfo, 0f),
             GapDisplayMode.GapsAsMax => ApplyGapDisplayMode(dataPoints, dateRangeInfo, GetGapDisplayModeMaxValue(graphMode)),
+            GapDisplayMode.GapsAsAverage => ApplyAverageGapDisplayMode(dataPoints, dateRangeInfo),
             _ => throw new ArgumentOutOfRangeException(nameof(gapDisplayMode), gapDisplayMode, "Unsupported gap display mode")
         };
 
@@ -82,6 +83,23 @@ public class GraphDataTransformer : IGraphDataTransformer
         }
 
         return result;
+    }
+
+    private static IEnumerable<FilledGraphDataPoint> ApplyAverageGapDisplayMode(
+        IEnumerable<FilledGraphDataPoint> dataPoints,
+        DateRangeInfo dateRangeInfo)
+    {
+        var visiblePoints = dataPoints
+            .Where(point => !point.IsSyntheticGapFill && point.Value.HasValue)
+            .ToList();
+
+        if (visiblePoints.Count == 0)
+        {
+            return visiblePoints;
+        }
+
+        var averageFillValue = (float)visiblePoints.Average(point => point.Value!.Value);
+        return ApplyGapDisplayMode(visiblePoints, dateRangeInfo, averageFillValue);
     }
 
     private static float GetGapDisplayModeMaxValue(GraphMode graphMode)
