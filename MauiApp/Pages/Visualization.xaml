@@ -81,21 +81,18 @@
                         </StackLayout>
                     </Grid>
                     
-                    <!-- Visualization Canvas -->
+                    <!-- Visualization Chart -->
                     <Frame BackgroundColor="White" 
                            BorderColor="Gray" 
                            HasShadow="False" 
                            Padding="10" 
                            CornerRadius="5">
-                        
-                        <Grid x:Name="VisualizationGrid" 
-                            RowDefinitions="Auto,100"
-                              MinimumHeightRequest="140">
-                            
-                            <!-- Day labels will be added programmatically -->
-                            <!-- Bar chart will be added programmatically -->
-                            
-                        </Grid>
+
+                        <Image Source="{Binding ChartImageSource}"
+                               Aspect="AspectFit"
+                               HeightRequest="220"
+                               HorizontalOptions="Fill"
+                               VerticalOptions="Center" />
                     </Frame>
                 </StackLayout>
             </Frame>

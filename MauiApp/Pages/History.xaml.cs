@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
+using Microsoft.Extensions.DependencyInjection;
 using WorkMood.MauiApp.Models;
 using WorkMood.MauiApp.Services;
+using WorkMood.MauiApp.Shims;
 using WorkMood.MauiApp.ViewModels;
 using Microsoft.Maui.Controls.Shapes;
 using WorkMood.MauiApp.Pages;
@@ -97,8 +99,14 @@ public partial class History : ContentPage
     /// </summary>
     public async Task HandleVisualizationNavigationAsync()
     {
+        var serviceProvider = Application.Current?.Handler?.MauiContext?.Services
+            ?? throw new InvalidOperationException("Service provider is not available for visualization navigation.");
+
+        var lineGraphService = serviceProvider.GetRequiredService<ILineGraphService>();
+        var dateShim = serviceProvider.GetRequiredService<IDateShim>();
+
         // Use the same mood data service instance so visualization reads the active data location.
-        await _navigationService.NavigateAsync(() => new Visualization(_moodDataService));
+        await _navigationService.NavigateAsync(() => new Visualization(_moodDataService, _navigationService, lineGraphService, dateShim));
     }
 
     private void LogHistoryUI(string message)

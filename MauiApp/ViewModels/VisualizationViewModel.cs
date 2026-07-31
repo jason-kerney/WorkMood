@@ -1,11 +1,13 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows.Input;
 using Microsoft.Maui.Graphics;
 using WorkMood.MauiApp.Infrastructure;
-using WorkMood.MauiApp.Services;
 using WorkMood.MauiApp.Processors;
-using WorkMood.MauiApp.Factories;
+using WorkMood.MauiApp.Services;
 using WorkMood.MauiApp.Adapters;
+using WorkMood.MauiApp.Models;
+using WorkMood.MauiApp.Shims;
 
 namespace WorkMood.MauiApp.ViewModels;
 
@@ -16,22 +18,27 @@ public class VisualizationViewModel : ViewModelBase
 {
     private readonly IMoodDataService _moodDataService;
     private readonly INavigationService _navigationService;
-    private readonly IMoodVisualizationService _visualizationService;
+    private readonly ILineGraphService _lineGraphService;
+    private readonly IDateShim _dateShim;
     
     private MoodVisualizationData? _currentVisualization;
     private string _dateRangeText = "Loading...";
     private string _summaryText = "Loading summary...";
     private bool _isLoading = true;
     private bool _hasData = false;
+    private ImageSource? _chartImageSource;
 
     public VisualizationViewModel(
         IMoodDataService moodDataService,
         INavigationService navigationService,
-        IMoodVisualizationService? visualizationService = null)
+        ILineGraphService lineGraphService,
+        IDateShim dateShim,
+        bool autoLoad = true)
     {
         _moodDataService = moodDataService ?? throw new ArgumentNullException(nameof(moodDataService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-        _visualizationService = visualizationService ?? new VisualizationServiceFactory().CreateVisualizationService();
+        _lineGraphService = lineGraphService ?? throw new ArgumentNullException(nameof(lineGraphService));
+        _dateShim = dateShim ?? throw new ArgumentNullException(nameof(dateShim));
         
         DailyDataItems = new ObservableCollection<DailyDataItemViewModel>();
         
@@ -40,7 +47,10 @@ public class VisualizationViewModel : ViewModelBase
         BackToHistoryCommand = new RelayCommand(async () => await NavigateBackAsync());
         
         // Load data on initialization
-        _ = LoadVisualizationDataAsync();
+        if (autoLoad)
+        {
+            _ = LoadVisualizationDataAsync();
+        }
     }
 
     #region Properties
@@ -91,6 +101,15 @@ public class VisualizationViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Image source used by the chart host on the visualization page.
+    /// </summary>
+    public ImageSource? ChartImageSource
+    {
+        get => _chartImageSource;
+        private set => SetProperty(ref _chartImageSource, value);
+    }
+
+    /// <summary>
     /// Collection of daily data items for display
     /// </summary>
     public ObservableCollection<DailyDataItemViewModel> DailyDataItems { get; }
@@ -138,9 +157,14 @@ public class VisualizationViewModel : ViewModelBase
             DateRangeText = "Loading visualization...";
             SummaryText = "Loading summary...";
             DailyDataItems.Clear();
+            ChartImageSource = null;
 
             // Get visualization data
             CurrentVisualization = await _moodDataService.GetTwoWeekVisualizationAsync();
+
+            // Build chart image from the consolidated graph pipeline.
+            var moodCollection = await _moodDataService.LoadMoodDataAsync();
+            await UpdateChartImageAsync(moodCollection.Entries);
             
             // Update date range
             DateRangeText = $"{CurrentVisualization.StartDate:MMM dd} - {CurrentVisualization.EndDate:MMM dd, yyyy}";
@@ -169,19 +193,19 @@ public class VisualizationViewModel : ViewModelBase
     /// <summary>
     /// Populates the daily data items collection
     /// </summary>
-    private async Task PopulateDailyDataItemsAsync(List<MoodDayInfo> dailyInfoList)
+    private Task PopulateDailyDataItemsAsync(List<MoodDayInfo> dailyInfoList)
     {
-        await Task.Run(() =>
-        {
-            var items = dailyInfoList.Select(dayInfo => new DailyDataItemViewModel(
-                dayInfo.Date,
-                dayInfo.Value,
-                dayInfo.HasData,
-                GetColorForDay(dayInfo.Date),
-                dayInfo.ValueDescription
-            )).ToList();
+        var items = dailyInfoList.Select(dayInfo => new DailyDataItemViewModel(
+            dayInfo.Date,
+            dayInfo.Value,
+            dayInfo.HasData,
+            GetColorForDay(dayInfo.Date),
+            dayInfo.ValueDescription
+        )).ToList();
 
-            Application.Current?.Dispatcher.Dispatch(() =>
+        if (Application.Current?.Dispatcher is { } dispatcher)
+        {
+            dispatcher.Dispatch(() =>
             {
                 DailyDataItems.Clear();
                 foreach (var item in items)
@@ -189,7 +213,57 @@ public class VisualizationViewModel : ViewModelBase
                     DailyDataItems.Add(item);
                 }
             });
-        });
+            return Task.CompletedTask;
+        }
+
+        DailyDataItems.Clear();
+        foreach (var item in items)
+        {
+            DailyDataItems.Add(item);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task UpdateChartImageAsync(IEnumerable<MoodEntry> entries)
+    {
+        var dateRange = GetVisualizationDateRange();
+
+        var entriesInRange = entries
+            .Where(entry => entry.Date >= dateRange.StartDate && entry.Date <= dateRange.EndDate)
+            .OrderBy(entry => entry.Date)
+            .ToList();
+
+        if (entriesInRange.Count == 0)
+        {
+            ChartImageSource = null;
+            return;
+        }
+
+        var imageData = await _lineGraphService.GenerateGraphAsync(
+            entriesInRange,
+            GraphMode.Impact,
+            dateRange,
+            showDataPoints: true,
+            showAxesAndGrid: true,
+            showTitle: false,
+            showTrendLine: false,
+            lineColor: Colors.DarkBlue,
+            width: 800,
+            height: 220);
+
+        ChartImageSource = imageData.Length == 0
+            ? null
+            : new StreamImageSource
+            {
+                Stream = _ => Task.FromResult<Stream>(new MemoryStream(imageData))
+            };
+    }
+
+    private DateRangeInfo GetVisualizationDateRange()
+    {
+        var endDate = _dateShim.GetTodayDate().AddDays(-1);
+        return new DateRangeInfo(DateRange.Last14Days, endDate);
     }
 
     /// <summary>
@@ -218,6 +292,7 @@ public class VisualizationViewModel : ViewModelBase
         DateRangeText = "No data available";
         SummaryText = "Start recording your daily moods to see trends and visualizations!";
         HasData = false;
+        ChartImageSource = null;
         
         // Create empty visualization for display
         await CreateEmptyVisualizationAsync();
@@ -226,37 +301,37 @@ public class VisualizationViewModel : ViewModelBase
     /// <summary>
     /// Creates an empty visualization when no data is available
     /// </summary>
-    private async Task CreateEmptyVisualizationAsync()
+    private Task CreateEmptyVisualizationAsync()
     {
-        await Task.Run(() =>
+        var endDate = _dateShim.GetTodayDate().AddDays(-1); // End yesterday to prevent anchoring bias
+        var startDate = endDate.AddDays(-13); // 14 days total
+
+        var emptyDailyValues = new DailyMoodValue[14];
+        for (int day = 0; day < 14; day++)
         {
-            var endDate = DateOnly.FromDateTime(DateTime.Today).AddDays(-1); // End yesterday to prevent anchoring bias
-            var startDate = endDate.AddDays(-13); // 14 days total
-
-            var emptyDailyValues = new DailyMoodValue[14];
-            for (int day = 0; day < 14; day++)
+            emptyDailyValues[day] = new DailyMoodValue
             {
-                emptyDailyValues[day] = new DailyMoodValue
-                {
-                    Date = startDate.AddDays(day),
-                    Value = null,
-                    HasData = false,
-                    Color = Colors.LightGray
-                };
-            }
-
-            CurrentVisualization = new MoodVisualizationData
-            {
-                DailyValues = emptyDailyValues,
-                DisplayValues = VisualizationDisplayValueFilter.BuildDisplayValues(emptyDailyValues),
-                StartDate = startDate,
-                EndDate = endDate,
-                Width = 280,
-                Height = 100,
-                MaxAbsoluteValue = 1.0
+                Date = startDate.AddDays(day),
+                Value = null,
+                HasData = false,
+                Color = Colors.LightGray
             };
+        }
 
-            Application.Current?.Dispatcher.Dispatch(() =>
+        CurrentVisualization = new MoodVisualizationData
+        {
+            DailyValues = emptyDailyValues,
+            DisplayValues = VisualizationDisplayValueFilter.BuildDisplayValues(emptyDailyValues),
+            StartDate = startDate,
+            EndDate = endDate,
+            Width = 280,
+            Height = 100,
+            MaxAbsoluteValue = 1.0
+        };
+
+        if (Application.Current?.Dispatcher is { } dispatcher)
+        {
+            dispatcher.Dispatch(() =>
             {
                 DailyDataItems.Clear();
                 DailyDataItems.Add(new DailyDataItemViewModel(
@@ -267,7 +342,19 @@ public class VisualizationViewModel : ViewModelBase
                     "No mood data available for the last 2 weeks.\nStart recording your daily moods to see trends here!"
                 ));
             });
-        });
+            return Task.CompletedTask;
+        }
+
+        DailyDataItems.Clear();
+        DailyDataItems.Add(new DailyDataItemViewModel(
+            endDate,
+            null,
+            false,
+            Colors.Gray,
+            "No mood data available for the last 2 weeks.\nStart recording your daily moods to see trends here!"
+        ));
+
+        return Task.CompletedTask;
     }
 
     /// <summary>
