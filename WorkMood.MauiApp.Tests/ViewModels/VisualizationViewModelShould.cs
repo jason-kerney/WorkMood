@@ -49,8 +49,9 @@ public class VisualizationViewModelShould
                 It.IsAny<Color>(),
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<GapDisplayMode>()))
-            .Callback<IEnumerable<MoodEntry>, GraphMode, DateRangeInfo, bool, bool, bool, bool, Color, int, int, GapDisplayMode>((_, mode, range, _, _, _, _, _, _, _, _) =>
+                It.IsAny<GapDisplayMode>(),
+                It.IsAny<GapSegmentSecondaryPenMode?>()))
+            .Callback<IEnumerable<MoodEntry>, GraphMode, DateRangeInfo, bool, bool, bool, bool, Color, int, int, GapDisplayMode, GapSegmentSecondaryPenMode?>((_, mode, range, _, _, _, _, _, _, _, _, _) =>
             {
                 capturedMode = mode;
                 capturedDateRange = range;
@@ -83,7 +84,8 @@ public class VisualizationViewModelShould
             It.IsAny<Color>(),
             It.IsAny<int>(),
             It.IsAny<int>(),
-            It.IsAny<GapDisplayMode>()), Times.Once);
+            It.IsAny<GapDisplayMode>(),
+            It.IsAny<GapSegmentSecondaryPenMode?>()), Times.Once);
     }
 
     [Fact]
@@ -127,7 +129,8 @@ public class VisualizationViewModelShould
             It.IsAny<Color>(),
             It.IsAny<int>(),
             It.IsAny<int>(),
-            It.IsAny<GapDisplayMode>()), Times.Never);
+            It.IsAny<GapDisplayMode>(),
+            It.IsAny<GapSegmentSecondaryPenMode?>()), Times.Never);
     }
 
     [Fact]
@@ -164,7 +167,8 @@ public class VisualizationViewModelShould
                 It.IsAny<Color>(),
                 It.IsAny<int>(),
                 It.IsAny<int>(),
-                It.IsAny<GapDisplayMode>()))
+                It.IsAny<GapDisplayMode>(),
+                It.IsAny<GapSegmentSecondaryPenMode?>()))
             .ThrowsAsync(new InvalidOperationException("graph failure"));
 
         var viewModel = new VisualizationViewModel(

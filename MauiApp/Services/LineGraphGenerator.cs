@@ -202,7 +202,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         }
 
         // Draw data line and optionally points with proportional positioning
-        DrawDataLine(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY, xAxisMapper);
+        DrawDataLine(canvas, graphArea, dataPoints, requestedStartDateTime, requestedEndDateTime, lineColor, minY, maxY, xAxisMapper, graphData.GapSegmentSecondaryPenMode);
         
         if (showDataPoints)
         {
@@ -307,17 +307,15 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         canvas.DrawText("No data available for the selected range", centerX, centerY, textPaint);
     }
 
-    private void DrawDataLine(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, Color lineColor, int minY, int maxY, WeekendAwareXAxisMapper xAxisMapper)
+    private void DrawDataLine(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, Color lineColor, int minY, int maxY, WeekendAwareXAxisMapper xAxisMapper, GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode)
     {
         if (dataPoints.Count < 2) return;
 
-        using var linePaint = drawShimFactory.PaintFromArgs(new PaintShimArgs
-        {
-            Color = drawShimFactory.Colors.FromArgb((byte)(lineColor.Red * 255), (byte)(lineColor.Green * 255), (byte)(lineColor.Blue * 255), 255),
-            Style = SKPaintStyle.Stroke,
-            StrokeWidth = 3,
-            IsAntialias = true
-        });
+        using var linePaint = CreateStrokePaint(lineColor);
+
+        using var secondaryLinePaint = dataPoints.Any(point => point.IsSyntheticGapFill) && gapSegmentSecondaryPenMode.HasValue
+            ? CreateStrokePaint(GetDerivedGapSegmentColor(lineColor, gapSegmentSecondaryPenMode.Value))
+            : null;
 
         // Draw one path per weekend-aware segment so Friday->Monday remains connected when
         // only unrecorded weekend days are missing.
@@ -334,25 +332,179 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
         {
             if (segment.Count < 2) continue;
 
-            using var path = new SKPath();
+            DrawSegmentRuns(canvas, area, segment, minY, maxY, xAxisMapper, linePaint, secondaryLinePaint);
+        }
+    }
 
-            for (int i = 0; i < segment.Count; i++)
+    private void DrawSegmentRuns(
+        ICanvasShim canvas,
+        SKRect area,
+        IReadOnlyList<FilledGraphDataPoint> segment,
+        int minY,
+        int maxY,
+        WeekendAwareXAxisMapper xAxisMapper,
+        IPaintShim primaryPaint,
+        IPaintShim? secondaryPaint)
+    {
+        var currentRun = new List<FilledGraphDataPoint> { segment[0] };
+        var currentUsesSecondary = false;
+
+        for (var index = 0; index < segment.Count - 1; index++)
+        {
+            var currentPoint = segment[index];
+            var nextPoint = segment[index + 1];
+            var edgeUsesSecondary = secondaryPaint != null && (currentPoint.IsSyntheticGapFill || nextPoint.IsSyntheticGapFill);
+
+            if (currentRun.Count == 1)
             {
-                var dataPoint = segment[i];
-                var normalizedX = xAxisMapper.GetNormalizedX(dataPoint.Timestamp);
-                var x = area.Left + (normalizedX * area.Width);
-
-                var value = dataPoint.Value ?? 0; // Use 0 if null (shouldn't happen for filled data points)
-                var y = (float)(area.Bottom - ((value - minY) * area.Height / (maxY - minY)));
-
-                if (i == 0)
-                    path.MoveTo(x, y);
-                else
-                    path.LineTo(x, y);
+                currentUsesSecondary = edgeUsesSecondary;
+                currentRun.Add(nextPoint);
+                continue;
             }
 
-            canvas.DrawPath(path, linePaint);
+            if (edgeUsesSecondary == currentUsesSecondary)
+            {
+                currentRun.Add(nextPoint);
+                continue;
+            }
+
+            DrawRunPath(canvas, area, currentRun, minY, maxY, xAxisMapper, currentUsesSecondary ? secondaryPaint! : primaryPaint);
+            currentRun = new List<FilledGraphDataPoint> { currentPoint, nextPoint };
+            currentUsesSecondary = edgeUsesSecondary;
         }
+
+        if (currentRun.Count >= 2)
+        {
+            DrawRunPath(canvas, area, currentRun, minY, maxY, xAxisMapper, currentUsesSecondary ? secondaryPaint! : primaryPaint);
+        }
+    }
+
+    private void DrawRunPath(
+        ICanvasShim canvas,
+        SKRect area,
+        IReadOnlyList<FilledGraphDataPoint> run,
+        int minY,
+        int maxY,
+        WeekendAwareXAxisMapper xAxisMapper,
+        IPaintShim paint)
+    {
+        using var path = new SKPath();
+
+        for (var index = 0; index < run.Count; index++)
+        {
+            var dataPoint = run[index];
+            var normalizedX = xAxisMapper.GetNormalizedX(dataPoint.Timestamp);
+            var x = area.Left + (normalizedX * area.Width);
+            var value = dataPoint.Value ?? 0;
+            var y = (float)(area.Bottom - ((value - minY) * area.Height / (maxY - minY)));
+
+            if (index == 0)
+            {
+                path.MoveTo(x, y);
+            }
+            else
+            {
+                path.LineTo(x, y);
+            }
+        }
+
+        canvas.DrawPath(path, paint);
+    }
+
+    private IPaintShim CreateStrokePaint(Color color)
+    {
+        return drawShimFactory.PaintFromArgs(new PaintShimArgs
+        {
+            Color = drawShimFactory.Colors.FromArgb((byte)(color.Red * 255), (byte)(color.Green * 255), (byte)(color.Blue * 255), 255),
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 3,
+            IsAntialias = true
+        });
+    }
+
+    private static Color GetDerivedGapSegmentColor(Color primaryColor, GapSegmentSecondaryPenMode gapSegmentSecondaryPenMode)
+    {
+        var (hue, saturation, value) = RgbToHsv(primaryColor);
+
+        var derivedHue = gapSegmentSecondaryPenMode switch
+        {
+            GapSegmentSecondaryPenMode.Complementary => NormalizeHue(hue + 180f),
+            GapSegmentSecondaryPenMode.FirstTriadic => NormalizeHue(hue + 120f),
+            GapSegmentSecondaryPenMode.SecondTriadic => NormalizeHue(hue + 240f),
+            _ => hue
+        };
+
+        return HsvToColor(derivedHue, saturation, value);
+    }
+
+    private static (float Hue, float Saturation, float Value) RgbToHsv(Color color)
+    {
+        var red = color.Red;
+        var green = color.Green;
+        var blue = color.Blue;
+
+        var max = Math.Max(red, Math.Max(green, blue));
+        var min = Math.Min(red, Math.Min(green, blue));
+        var delta = max - min;
+
+        if (delta == 0)
+        {
+            return (0f, 0f, max);
+        }
+
+        float hue;
+        if (max == red)
+        {
+            hue = 60f * (((green - blue) / delta) % 6f);
+        }
+        else if (max == green)
+        {
+            hue = 60f * (((blue - red) / delta) + 2f);
+        }
+        else
+        {
+            hue = 60f * (((red - green) / delta) + 4f);
+        }
+
+        if (hue < 0f)
+        {
+            hue += 360f;
+        }
+
+        var saturation = max == 0f ? 0f : delta / max;
+        return (hue, saturation, max);
+    }
+
+    private static Color HsvToColor(float hue, float saturation, float value)
+    {
+        if (saturation == 0f)
+        {
+            return Color.FromRgb(value, value, value);
+        }
+
+        var sector = hue / 60f;
+        var sectorIndex = (int)Math.Floor(sector) % 6;
+        var fraction = sector - (float)Math.Floor(sector);
+
+        var p = value * (1f - saturation);
+        var q = value * (1f - saturation * fraction);
+        var t = value * (1f - saturation * (1f - fraction));
+
+        return sectorIndex switch
+        {
+            0 => Color.FromRgb(value, t, p),
+            1 => Color.FromRgb(q, value, p),
+            2 => Color.FromRgb(p, value, t),
+            3 => Color.FromRgb(p, q, value),
+            4 => Color.FromRgb(t, p, value),
+            _ => Color.FromRgb(value, p, q)
+        };
+    }
+
+    private static float NormalizeHue(float hue)
+    {
+        var normalizedHue = hue % 360f;
+        return normalizedHue < 0f ? normalizedHue + 360f : normalizedHue;
     }
 
     private void DrawDataPoints(ICanvasShim canvas, SKRect area, List<FilledGraphDataPoint> dataPoints, DateTime requestedStartDateTime, DateTime requestedEndDateTime, Color lineColor, int minY, int maxY, WeekendAwareXAxisMapper xAxisMapper)

@@ -82,14 +82,21 @@ Graph rendering includes a checkbox named **Show Missing Weekdays as Zero** in t
 - When the checkbox is off, missing weekdays remain gaps in the data line.
 - When the checkbox is on, missing weekdays are rendered as zero-value points.
 
+When gap-fill is on, you can also choose a **Gap Segment Accent** for line segments touching generated gap-fill days:
+
+- **Complementary** uses the opposite hue of the primary line color.
+- **First Triadic** uses the first triadic companion of the primary line color.
+- **Second Triadic** uses the second triadic companion of the primary line color.
+
 Weekend compression behavior does not change for either mode.
 
 Example task:
 
 1. On the main dashboard, select **Generate Graph**.
 2. In the graph controls, enable **Show Missing Weekdays as Zero**.
-3. Record mood on Monday and Wednesday only.
-4. Review the graph.
+3. Optionally choose a **Gap Segment Accent**.
+4. Record mood on Monday and Wednesday only.
+5. Review the graph.
 
 Expected result:
 

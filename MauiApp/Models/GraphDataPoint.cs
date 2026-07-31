@@ -5,4 +5,5 @@ namespace WorkMood.MauiApp.Models;
 /// </summary>
 /// <param name="Value">The numeric value to plot on the Y-axis</param>
 /// <param name="Timestamp">The timestamp for X-axis positioning</param>
-public record FilledGraphDataPoint(DateTime Timestamp, float? Value);
+/// <param name="IsSyntheticGapFill">Whether the point was synthesized to represent a missing weekday gap</param>
+public record FilledGraphDataPoint(DateTime Timestamp, float? Value, bool IsSyntheticGapFill = false);

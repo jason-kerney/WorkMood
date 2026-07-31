@@ -93,6 +93,22 @@
                        FontSize="12"
                        Margin="5,0,0,0" />
                 </StackLayout>
+
+                  <StackLayout IsVisible="{Binding ShowMissingWeekdaysAsZero}"
+                         Orientation="Vertical"
+                         Spacing="6"
+                         Margin="0,10,0,0">
+                  <Label Text="Gap Segment Accent"
+                      FontAttributes="Bold" />
+                  <Label Text="Used only on line segments touching generated gap-fill days."
+                      FontSize="12"
+                      TextColor="Gray" />
+                  <Picker x:Name="GapSegmentSecondaryPenModePicker"
+                       ItemsSource="{Binding GapSegmentSecondaryPenModes}"
+                       SelectedItem="{Binding SelectedGapSegmentSecondaryPenModeItem}"
+                       ItemDisplayBinding="{Binding DisplayName}"
+                       Title="Choose gap segment accent" />
+                  </StackLayout>
             
                 <!-- Inline Color Picker (Expandable) -->
                 <StackLayout IsVisible="{Binding IsColorPickerVisible}" 

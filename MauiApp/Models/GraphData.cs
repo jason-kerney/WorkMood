@@ -51,4 +51,9 @@ public class GraphData
     /// Description of what the data represents
     /// </summary>
     public string Description { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Optional derived-color mode for line segments touching synthesized gap-fill points.
+    /// </summary>
+    public GapSegmentSecondaryPenMode? GapSegmentSecondaryPenMode { get; set; }
 }

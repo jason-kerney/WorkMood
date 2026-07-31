@@ -30,51 +30,53 @@ public class LineGraphService : ILineGraphService
     /// <summary>
     /// Generates a line graph PNG image with white background for the specified graph mode
     /// </summary>
-    public async Task<byte[]> GenerateGraphAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, Color lineColor, int width = 800, int height = 600, GapDisplayMode gapDisplayMode = GapDisplayMode.ShowGaps)
+    public async Task<byte[]> GenerateGraphAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, Color lineColor, int width = 800, int height = 600, GapDisplayMode gapDisplayMode = GapDisplayMode.ShowGaps, GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode = null)
     {
-        return await GenerateGraphInternalAsync(moodEntries, graphMode, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath: null, lineColor, width, height, gapDisplayMode);
+        return await GenerateGraphInternalAsync(moodEntries, graphMode, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath: null, lineColor, width, height, gapDisplayMode, gapSegmentSecondaryPenMode);
     }
 
     /// <summary>
     /// Generates a line graph PNG image with custom background for the specified graph mode
     /// </summary>
-    public async Task<byte[]> GenerateGraphAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string backgroundImagePath, Color lineColor, int width = 800, int height = 600, GapDisplayMode gapDisplayMode = GapDisplayMode.ShowGaps)
+    public async Task<byte[]> GenerateGraphAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string backgroundImagePath, Color lineColor, int width = 800, int height = 600, GapDisplayMode gapDisplayMode = GapDisplayMode.ShowGaps, GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode = null)
     {
-        return await GenerateGraphInternalAsync(moodEntries, graphMode, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath, lineColor, width, height, gapDisplayMode);
+        return await GenerateGraphInternalAsync(moodEntries, graphMode, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath, lineColor, width, height, gapDisplayMode, gapSegmentSecondaryPenMode);
     }
 
     /// <summary>
     /// Saves a line graph PNG image to the specified file path with white background for the specified graph mode
     /// </summary>
-    public async Task SaveGraphAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, Color lineColor, int width = 800, int height = 600, GapDisplayMode gapDisplayMode = GapDisplayMode.ShowGaps)
+    public async Task SaveGraphAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, Color lineColor, int width = 800, int height = 600, GapDisplayMode gapDisplayMode = GapDisplayMode.ShowGaps, GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode = null)
     {
-        await SaveGraphInternalAsync(moodEntries, graphMode, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, filePath, backgroundImagePath: null, lineColor, width, height, gapDisplayMode);
+        await SaveGraphInternalAsync(moodEntries, graphMode, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, filePath, backgroundImagePath: null, lineColor, width, height, gapDisplayMode, gapSegmentSecondaryPenMode);
     }
 
     /// <summary>
     /// Saves a line graph PNG image to the specified file path with custom background for the specified graph mode
     /// </summary>
-    public async Task SaveGraphAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600, GapDisplayMode gapDisplayMode = GapDisplayMode.ShowGaps)
+    public async Task SaveGraphAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, string backgroundImagePath, Color lineColor, int width = 800, int height = 600, GapDisplayMode gapDisplayMode = GapDisplayMode.ShowGaps, GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode = null)
     {
-        await SaveGraphInternalAsync(moodEntries, graphMode, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, filePath, backgroundImagePath, lineColor, width, height, gapDisplayMode);
+        await SaveGraphInternalAsync(moodEntries, graphMode, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, filePath, backgroundImagePath, lineColor, width, height, gapDisplayMode, gapSegmentSecondaryPenMode);
     }
 
-    private async Task<byte[]> GenerateGraphInternalAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string? backgroundImagePath, Color lineColor, int width, int height, GapDisplayMode gapDisplayMode)
+    private async Task<byte[]> GenerateGraphInternalAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string? backgroundImagePath, Color lineColor, int width, int height, GapDisplayMode gapDisplayMode, GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode)
     {
         ValidateGraphMode(graphMode);
 
         var graphData = _graphDataTransformer.TransformMoodEntries(moodEntries, graphMode, dateRange, gapDisplayMode);
+        graphData.GapSegmentSecondaryPenMode = gapDisplayMode == GapDisplayMode.GapsAsZero ? gapSegmentSecondaryPenMode : null;
 
         return string.IsNullOrWhiteSpace(backgroundImagePath)
             ? await _lineGraphGenerator.GenerateLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, lineColor, width, height)
             : await _lineGraphGenerator.GenerateLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath, lineColor, width, height);
     }
 
-    private async Task SaveGraphInternalAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, string? backgroundImagePath, Color lineColor, int width, int height, GapDisplayMode gapDisplayMode)
+    private async Task SaveGraphInternalAsync(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, string? backgroundImagePath, Color lineColor, int width, int height, GapDisplayMode gapDisplayMode, GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode)
     {
         ValidateGraphMode(graphMode);
 
         var graphData = _graphDataTransformer.TransformMoodEntries(moodEntries, graphMode, dateRange, gapDisplayMode);
+        graphData.GapSegmentSecondaryPenMode = gapDisplayMode == GapDisplayMode.GapsAsZero ? gapSegmentSecondaryPenMode : null;
 
         if (string.IsNullOrWhiteSpace(backgroundImagePath))
         {

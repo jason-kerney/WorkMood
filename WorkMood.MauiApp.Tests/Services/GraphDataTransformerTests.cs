@@ -699,6 +699,50 @@ public class GraphDataTransformerTests
     }
 
     [Fact]
+    public void TransformMoodEntries_WithGapsAsZero_ShouldMarkInsertedWeekdayZeroPointsAsSynthetic()
+    {
+        var entries = new List<MoodEntry>
+        {
+            new()
+            {
+                Date = new DateOnly(2025, 1, 6),
+                StartOfWork = 5,
+                EndOfWork = 7,
+                CreatedAt = new DateTime(2025, 1, 6, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 6, 17, 0, 0)
+            },
+            new()
+            {
+                Date = new DateOnly(2025, 1, 8),
+                StartOfWork = 6,
+                EndOfWork = 7,
+                CreatedAt = new DateTime(2025, 1, 8, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 8, 17, 0, 0)
+            }
+        };
+
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 8));
+
+        var result = _transformer.TransformMoodEntries(entries, GraphMode.Impact, dateRange, GapDisplayMode.GapsAsZero);
+
+        var syntheticDates = result.DataPoints
+            .Where(point => point.IsSyntheticGapFill)
+            .Select(point => DateOnly.FromDateTime(point.Timestamp))
+            .ToHashSet();
+
+        Assert.Equal(new HashSet<DateOnly>
+        {
+            new(2025, 1, 2),
+            new(2025, 1, 3),
+            new(2025, 1, 7)
+        }, syntheticDates);
+
+        Assert.All(
+            result.DataPoints.Where(point => !syntheticDates.Contains(DateOnly.FromDateTime(point.Timestamp))),
+            point => Assert.False(point.IsSyntheticGapFill));
+    }
+
+    [Fact]
     public void TransformMoodEntries_WithGapsAsZero_ShouldNotInsertWeekendZeroPoints()
     {
         // Arrange

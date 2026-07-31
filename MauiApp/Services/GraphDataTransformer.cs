@@ -73,7 +73,7 @@ public class GraphDataTransformer : IGraphDataTransformer
                 continue;
             }
 
-            result.Add(new FilledGraphDataPoint(date.ToDateTime(TimeOnly.MinValue), 0f));
+            result.Add(new FilledGraphDataPoint(date.ToDateTime(TimeOnly.MinValue), 0f, IsSyntheticGapFill: true));
         }
 
         return result;

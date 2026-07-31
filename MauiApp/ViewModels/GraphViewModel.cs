@@ -38,6 +38,7 @@ public class GraphViewModel : ViewModelBase
     private bool _isGraphConfigVisible = true;
     private GraphMode _selectedGraphMode = GraphMode.Impact;
     private GraphModeItem _selectedGraphModeItem = null!;
+    private GapSegmentSecondaryPenModeItem _selectedGapSegmentSecondaryPenModeItem = null!;
     private double _availableContainerWidth = 800; // Default fallback
     private double _availableContainerHeight = 400; // Default fallback
     
@@ -54,8 +55,12 @@ public class GraphViewModel : ViewModelBase
         GraphModes = new ObservableCollection<GraphModeItem>();
         InitializeGraphModes();
 
+        GapSegmentSecondaryPenModes = new ObservableCollection<GapSegmentSecondaryPenModeItem>();
+        InitializeGapSegmentSecondaryPenModes();
+
         _selectedDateRange = DateRanges.First();
         _selectedGraphModeItem = GraphModes.First();
+        _selectedGapSegmentSecondaryPenModeItem = GapSegmentSecondaryPenModes.First();
 
         // Initialize commands
         ExportGraphCommand = new RelayCommand(async () => await ExportGraphAsync());
@@ -375,6 +380,11 @@ public class GraphViewModel : ViewModelBase
     public ObservableCollection<GraphModeItem> GraphModes { get; }
 
     /// <summary>
+    /// Collection of available secondary pen modes for gap-adjacent segments.
+    /// </summary>
+    public ObservableCollection<GapSegmentSecondaryPenModeItem> GapSegmentSecondaryPenModes { get; }
+
+    /// <summary>
     /// Selected graph mode item for the picker
     /// </summary>
     public GraphModeItem SelectedGraphModeItem
@@ -385,6 +395,21 @@ public class GraphViewModel : ViewModelBase
             if (SetProperty(ref _selectedGraphModeItem, value) && value != null)
             {
                 SelectedGraphMode = value.GraphMode;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Selected derived-color mode for segments touching synthesized gap-fill points.
+    /// </summary>
+    public GapSegmentSecondaryPenModeItem SelectedGapSegmentSecondaryPenModeItem
+    {
+        get => _selectedGapSegmentSecondaryPenModeItem;
+        set
+        {
+            if (SetProperty(ref _selectedGapSegmentSecondaryPenModeItem, value) && value != null)
+            {
+                _ = UpdateGraphAsync();
             }
         }
     }
@@ -583,16 +608,17 @@ public class GraphViewModel : ViewModelBase
             }
             
             var gapDisplayMode = ShowMissingWeekdaysAsZero ? GapDisplayMode.GapsAsZero : GapDisplayMode.ShowGaps;
+            GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode = ShowMissingWeekdaysAsZero ? SelectedGapSegmentSecondaryPenModeItem.GapSegmentSecondaryPenMode : null;
 
             // Use consolidated method for all graph modes
             byte[] imageData;
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
-                imageData = await _lineGraphService.GenerateGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight, gapDisplayMode);
+                imageData = await _lineGraphService.GenerateGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
             }
             else
             {
-                imageData = await _lineGraphService.GenerateGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight, gapDisplayMode);
+                imageData = await _lineGraphService.GenerateGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
             }
             
             GraphImageSource = ImageSource.FromStream(() => new MemoryStream(imageData));
@@ -636,15 +662,16 @@ public class GraphViewModel : ViewModelBase
             var exportWidth = HasCustomBackground ? CustomBackgroundWidth : ExportGraphWidth;
             var exportHeight = HasCustomBackground ? CustomBackgroundHeight : 900;
             var gapDisplayMode = ShowMissingWeekdaysAsZero ? GapDisplayMode.GapsAsZero : GapDisplayMode.ShowGaps;
+            GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode = ShowMissingWeekdaysAsZero ? SelectedGapSegmentSecondaryPenModeItem.GapSegmentSecondaryPenMode : null;
 
             // Use consolidated method for all graph modes
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
-                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode);
+                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
             }
             else
             {
-                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode);
+                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
             }
             
             ShowStatusMessage($"Graph exported to: {filePath}");
@@ -678,15 +705,16 @@ public class GraphViewModel : ViewModelBase
             var exportWidth = HasCustomBackground ? CustomBackgroundWidth : ExportGraphWidth;
             var exportHeight = HasCustomBackground ? CustomBackgroundHeight : 900;
             var gapDisplayMode = ShowMissingWeekdaysAsZero ? GapDisplayMode.GapsAsZero : GapDisplayMode.ShowGaps;
+            GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode = ShowMissingWeekdaysAsZero ? SelectedGapSegmentSecondaryPenModeItem.GapSegmentSecondaryPenMode : null;
             
             // Use consolidated method for all graph modes
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
-                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode);
+                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
             }
             else
             {
-                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode);
+                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
             }
             
             await Share.RequestAsync(new ShareFileRequest
@@ -740,6 +768,16 @@ public class GraphViewModel : ViewModelBase
         GraphModes.Add(new GraphModeItem(GraphMode.StartOfDay, "Opening Mood (Start of Day)"));
         GraphModes.Add(new GraphModeItem(GraphMode.EndOfDay, "Closing Mood (End of Day)"));
         GraphModes.Add(new GraphModeItem(GraphMode.RawData, "Raw Data (Individual Recordings)"));
+    }
+
+    /// <summary>
+    /// Initializes the secondary pen mode collection.
+    /// </summary>
+    private void InitializeGapSegmentSecondaryPenModes()
+    {
+        GapSegmentSecondaryPenModes.Add(new GapSegmentSecondaryPenModeItem(GapSegmentSecondaryPenMode.Complementary, "Complementary"));
+        GapSegmentSecondaryPenModes.Add(new GapSegmentSecondaryPenModeItem(GapSegmentSecondaryPenMode.FirstTriadic, "First Triadic"));
+        GapSegmentSecondaryPenModes.Add(new GapSegmentSecondaryPenModeItem(GapSegmentSecondaryPenMode.SecondTriadic, "Second Triadic"));
     }
     
     /// <summary>
@@ -981,5 +1019,20 @@ public class GraphModeItem
     }
     
     public GraphMode GraphMode { get; }
+    public string DisplayName { get; }
+}
+
+/// <summary>
+/// Wrapper class for secondary gap-segment pen modes to provide display names.
+/// </summary>
+public class GapSegmentSecondaryPenModeItem
+{
+    public GapSegmentSecondaryPenModeItem(GapSegmentSecondaryPenMode gapSegmentSecondaryPenMode, string displayName)
+    {
+        GapSegmentSecondaryPenMode = gapSegmentSecondaryPenMode;
+        DisplayName = displayName;
+    }
+
+    public GapSegmentSecondaryPenMode GapSegmentSecondaryPenMode { get; }
     public string DisplayName { get; }
 }
