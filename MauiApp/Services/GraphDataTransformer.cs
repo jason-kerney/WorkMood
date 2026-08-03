@@ -42,7 +42,7 @@ public class GraphDataTransformer : IGraphDataTransformer
         var normalizedDataPoints = gapDisplayMode switch
         {
             GapDisplayMode.ShowGaps => dataPoints,
-            GapDisplayMode.GapsAsZero => ApplyGapDisplayMode(dataPoints, dateRangeInfo, 0f),
+            GapDisplayMode.GapsAsMin => ApplyGapDisplayMode(dataPoints, dateRangeInfo, GetGapDisplayModeMinValue(graphMode)),
             GapDisplayMode.GapsAsMax => ApplyGapDisplayMode(dataPoints, dateRangeInfo, GetGapDisplayModeMaxValue(graphMode)),
             GapDisplayMode.GapsAsAverage => ApplyAverageGapDisplayMode(dataPoints, dateRangeInfo),
             GapDisplayMode.GapsAsSurroundingAverage => ApplySurroundingAverageGapDisplayMode(dataPoints, dateRangeInfo),
@@ -103,16 +103,26 @@ public class GraphDataTransformer : IGraphDataTransformer
         return ApplyGapDisplayMode(visiblePoints, dateRangeInfo, averageFillValue);
     }
 
+    private static float GetGapDisplayModeMinValue(GraphMode graphMode)
+    {
+        return GetGapDisplayModeAxisRange(graphMode).Min;
+    }
+
     private static float GetGapDisplayModeMaxValue(GraphMode graphMode)
+    {
+        return GetGapDisplayModeAxisRange(graphMode).Max;
+    }
+
+    private static AxisRange GetGapDisplayModeAxisRange(GraphMode graphMode)
     {
         return graphMode switch
         {
-            GraphMode.Impact => AxisRange.Impact.Max,
-            GraphMode.GeneralImpact => AxisRange.Impact.Max,
-            GraphMode.Average => AxisRange.Average.Max,
-            GraphMode.StartOfDay => AxisRange.RawData.Max,
-            GraphMode.EndOfDay => AxisRange.RawData.Max,
-            GraphMode.RawData => AxisRange.RawData.Max,
+            GraphMode.Impact => AxisRange.Impact,
+            GraphMode.GeneralImpact => AxisRange.Impact,
+            GraphMode.Average => AxisRange.Average,
+            GraphMode.StartOfDay => AxisRange.RawData,
+            GraphMode.EndOfDay => AxisRange.RawData,
+            GraphMode.RawData => AxisRange.RawData,
             _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, "Unsupported graph mode")
         };
     }

@@ -74,17 +74,17 @@ namespace WorkMood.MauiApp.Tests.Services
             var dateRange = new DateRangeInfo(DateRange.Last7Days, DateOnly.FromDateTime(DateTime.Today));
             var moodEntries = new List<MoodEntry>();
 
-            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange, GapDisplayMode.GapsAsZero))
+            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange, GapDisplayMode.GapsAsMin))
                 .Returns(transformedData);
             mockGenerator.Setup(g => g.GenerateLineGraphAsync(transformedData, dateRange, true, true, true, true, Colors.Blue, 800, 600))
                 .ReturnsAsync(expectedBytes);
 
             // Act
-            var result = await service.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, true, true, true, true, Colors.Blue, gapDisplayMode: GapDisplayMode.GapsAsZero);
+            var result = await service.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, true, true, true, true, Colors.Blue, gapDisplayMode: GapDisplayMode.GapsAsMin);
 
             // Assert
             Assert.Equal(expectedBytes, result);
-            mockTransformer.Verify(t => t.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange, GapDisplayMode.GapsAsZero), Times.Once);
+            mockTransformer.Verify(t => t.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange, GapDisplayMode.GapsAsMin), Times.Once);
         }
 
         [Fact]

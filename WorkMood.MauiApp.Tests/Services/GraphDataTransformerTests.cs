@@ -571,7 +571,7 @@ public class GraphDataTransformerTests
 
 
     [Fact]
-    public void TransformMoodEntries_RawDataMode_WithGapsAsZero_ShouldInsertWeekdayZeroPoint_SkipWeekends_AndPreserveOrdering()
+        public void TransformMoodEntries_RawDataMode_WithGapsAsMin_ShouldInsertWeekdayMinPoint_SkipWeekends_AndPreserveOrdering()
     {
         // Arrange
         var moodEntries = new List<MoodEntry>
@@ -597,7 +597,7 @@ public class GraphDataTransformerTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 8));
 
         // Act
-        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.RawData, dateRange, GapDisplayMode.GapsAsZero);
+        var result = _transformer.TransformMoodEntries(moodEntries, GraphMode.RawData, dateRange, GapDisplayMode.GapsAsMin);
 
         // Assert
         var dataPoints = result.DataPoints.ToList();
@@ -606,9 +606,9 @@ public class GraphDataTransformerTests
         var tuesday = new DateOnly(2025, 1, 7).ToDateTime(TimeOnly.MinValue);
 
         Assert.Equal(7, dataPoints.Count);
-        Assert.Contains(dataPoints, point => point.Timestamp == thursday && point.Value == 0f);
-        Assert.Contains(dataPoints, point => point.Timestamp == monday && point.Value == 0f);
-        Assert.Contains(dataPoints, point => point.Timestamp == tuesday && point.Value == 0f);
+        Assert.Contains(dataPoints, point => point.Timestamp == thursday && point.Value == 1f);
+        Assert.Contains(dataPoints, point => point.Timestamp == monday && point.Value == 1f);
+        Assert.Contains(dataPoints, point => point.Timestamp == tuesday && point.Value == 1f);
         Assert.DoesNotContain(dataPoints, point => DateOnly.FromDateTime(point.Timestamp) == new DateOnly(2025, 1, 4));
         Assert.DoesNotContain(dataPoints, point => DateOnly.FromDateTime(point.Timestamp) == new DateOnly(2025, 1, 5));
 
@@ -661,8 +661,13 @@ public class GraphDataTransformerTests
             _transformer.TransformMoodEntries(null!, GraphMode.Impact, CreateDateRangeInfo(DateRange.Last3Years)));
     }
 
-    [Fact]
-    public void TransformMoodEntries_WithGapsAsZero_ShouldInsertWeekdayZeroPoints()
+    [Theory]
+    [InlineData(GraphMode.Impact, -9f)]
+    [InlineData(GraphMode.GeneralImpact, -9f)]
+    [InlineData(GraphMode.Average, -5f)]
+    [InlineData(GraphMode.StartOfDay, 1f)]
+    [InlineData(GraphMode.EndOfDay, 1f)]
+    public void TransformMoodEntries_WithGapsAsMin_ShouldInsertWeekdayMinPointsForGraphMode(GraphMode graphMode, float expectedGapFillValue)
     {
         // Arrange
         var entries = new List<MoodEntry>
@@ -688,18 +693,18 @@ public class GraphDataTransformerTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 8));
 
         // Act
-        var result = _transformer.TransformMoodEntries(entries, GraphMode.Impact, dateRange, GapDisplayMode.GapsAsZero);
+        var result = _transformer.TransformMoodEntries(entries, graphMode, dateRange, GapDisplayMode.GapsAsMin);
 
         // Assert
         var pointsByDate = result.DataPoints
             .ToDictionary(point => DateOnly.FromDateTime(point.Timestamp), point => point.Value);
 
         Assert.Contains(new DateOnly(2025, 1, 7), pointsByDate.Keys);
-        Assert.Equal(0f, pointsByDate[new DateOnly(2025, 1, 7)]);
+        Assert.Equal(expectedGapFillValue, pointsByDate[new DateOnly(2025, 1, 7)]);
     }
 
     [Fact]
-    public void TransformMoodEntries_WithGapsAsZero_ShouldMarkInsertedWeekdayZeroPointsAsSynthetic()
+    public void TransformMoodEntries_WithGapsAsMin_ShouldMarkInsertedWeekdayMinPointsAsSynthetic()
     {
         var entries = new List<MoodEntry>
         {
@@ -723,7 +728,7 @@ public class GraphDataTransformerTests
 
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 8));
 
-        var result = _transformer.TransformMoodEntries(entries, GraphMode.Impact, dateRange, GapDisplayMode.GapsAsZero);
+        var result = _transformer.TransformMoodEntries(entries, GraphMode.Impact, dateRange, GapDisplayMode.GapsAsMin);
 
         var syntheticDates = result.DataPoints
             .Where(point => point.IsSyntheticGapFill)
@@ -743,7 +748,7 @@ public class GraphDataTransformerTests
     }
 
     [Fact]
-    public void TransformMoodEntries_WithGapsAsZero_ShouldNotInsertWeekendZeroPoints()
+    public void TransformMoodEntries_WithGapsAsMin_ShouldNotInsertWeekendMinPoints()
     {
         // Arrange
         var entries = new List<MoodEntry>
@@ -769,7 +774,7 @@ public class GraphDataTransformerTests
         var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 6));
 
         // Act
-        var result = _transformer.TransformMoodEntries(entries, GraphMode.Impact, dateRange, GapDisplayMode.GapsAsZero);
+        var result = _transformer.TransformMoodEntries(entries, GraphMode.Impact, dateRange, GapDisplayMode.GapsAsMin);
 
         // Assert
         var dates = result.DataPoints

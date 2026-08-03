@@ -224,14 +224,14 @@ public class GraphViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Whether missing weekdays should be rendered as zero-value points.
+    /// Whether missing weekdays should be rendered as minimum-value points.
     /// </summary>
-    public bool ShowMissingWeekdaysAsZero
+    public bool ShowMissingWeekdaysAsMin
     {
-        get => SelectedGapDisplayMode == GapDisplayMode.GapsAsZero;
+        get => SelectedGapDisplayMode == GapDisplayMode.GapsAsMin;
         set
         {
-            var targetMode = value ? GapDisplayMode.GapsAsZero : GapDisplayMode.ShowGaps;
+            var targetMode = value ? GapDisplayMode.GapsAsMin : GapDisplayMode.ShowGaps;
             var targetItem = GapDisplayModes.FirstOrDefault(mode => mode.GapDisplayMode == targetMode);
 
             if (targetItem != null && !ReferenceEquals(SelectedGapDisplayModeItem, targetItem))
@@ -421,7 +421,7 @@ public class GraphViewModel : ViewModelBase
         {
             if (SetProperty(ref _selectedGapDisplayModeItem, value) && value != null)
             {
-                OnPropertyChanged(nameof(ShowMissingWeekdaysAsZero));
+                OnPropertyChanged(nameof(ShowMissingWeekdaysAsMin));
                 OnPropertyChanged(nameof(IsGapSegmentAccentVisible));
                 _ = UpdateGraphAsync();
             }
@@ -810,7 +810,7 @@ public class GraphViewModel : ViewModelBase
     private void InitializeGapDisplayModes()
     {
         GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.ShowGaps, "Show Gaps"));
-        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsZero, "Gaps as Zero"));
+        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsMin, "Gaps as Min"));
         GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsMax, "Gaps as Max"));
         GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsAverage, "Gaps as Average"));
         GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsSurroundingAverage, "Gaps as Surrounding Average"));

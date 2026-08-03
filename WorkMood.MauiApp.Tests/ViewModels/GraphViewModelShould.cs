@@ -107,7 +107,7 @@ public class GraphViewModelShould
     }
 
     [Fact]
-    public async Task LoadDataAsync_WhenGapDisplayModeIsGapsAsZero_ShouldRequestGapsAsZero()
+    public async Task LoadDataAsync_WhenGapDisplayModeIsGapsAsMin_ShouldRequestGapsAsMin()
     {
         var capturedGapDisplayMode = GapDisplayMode.ShowGaps;
         var viewModel = CreateViewModel();
@@ -139,15 +139,15 @@ public class GraphViewModelShould
             })
             .ReturnsAsync([1, 2, 3]);
 
-        viewModel.SelectedGapDisplayModeItem = viewModel.GapDisplayModes.Single(mode => mode.GapDisplayMode == GapDisplayMode.GapsAsZero);
+        viewModel.SelectedGapDisplayModeItem = viewModel.GapDisplayModes.Single(mode => mode.GapDisplayMode == GapDisplayMode.GapsAsMin);
 
         await viewModel.LoadDataAsync();
 
-        Assert.Equal(GapDisplayMode.GapsAsZero, capturedGapDisplayMode);
+        Assert.Equal(GapDisplayMode.GapsAsMin, capturedGapDisplayMode);
     }
 
     [Fact]
-    public async Task LoadDataAsync_WhenGapDisplayModeIsGapsAsZeroAndGapSegmentSecondaryPenModeChanges_ShouldRequestSelectedSecondaryPenMode()
+    public async Task LoadDataAsync_WhenGapDisplayModeIsGapsAsMinAndGapSegmentSecondaryPenModeChanges_ShouldRequestSelectedSecondaryPenMode()
     {
         GapSegmentSecondaryPenMode? capturedGapSegmentSecondaryPenMode = null;
         var viewModel = CreateViewModel();
@@ -179,7 +179,7 @@ public class GraphViewModelShould
             })
             .ReturnsAsync([1, 2, 3]);
 
-        viewModel.SelectedGapDisplayModeItem = viewModel.GapDisplayModes.Single(mode => mode.GapDisplayMode == GapDisplayMode.GapsAsZero);
+        viewModel.SelectedGapDisplayModeItem = viewModel.GapDisplayModes.Single(mode => mode.GapDisplayMode == GapDisplayMode.GapsAsMin);
         viewModel.SelectedGapSegmentSecondaryPenModeItem = viewModel.GapSegmentSecondaryPenModes.Single(mode => mode.GapSegmentSecondaryPenMode == GapSegmentSecondaryPenMode.FirstTriadic);
 
         await viewModel.LoadDataAsync();

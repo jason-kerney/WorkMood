@@ -80,10 +80,16 @@ This applies to every graph mode, including Raw Data. In Raw Data mode, start/en
 Graph rendering includes a dropdown named **Gap Display Mode** in the graph controls.
 
 - When **Gap Display Mode** is set to **Show Gaps**, missing weekdays remain gaps in the data line.
-- When **Gap Display Mode** is set to **Gaps as Zero**, missing weekdays are rendered as zero-value points.
+- When **Gap Display Mode** is set to **Gaps as Min**, missing weekdays are rendered as minimum-value points for the active graph mode.
 - When **Gap Display Mode** is set to **Gaps as Max**, missing weekdays are rendered as max-value points for the active graph mode.
 - When **Gap Display Mode** is set to **Gaps as Average**, missing weekdays are rendered using the arithmetic mean of all currently visible recorded points for the selected graph mode and date range.
 - When **Gap Display Mode** is set to **Gaps as Surrounding Average**, each missing weekday is rendered using the arithmetic mean of the nearest previous and nearest next visible recorded points.
+
+Min-value mapping by graph mode:
+
+- **Impact** and **General Impact** use `-9`.
+- **Average** uses `-5`.
+- **Opening Mood**, **Closing Mood**, and **Raw Data** use `1`.
 
 Max-value mapping by graph mode:
 
@@ -91,7 +97,7 @@ Max-value mapping by graph mode:
 - **Average** uses `5`.
 - **Opening Mood**, **Closing Mood**, and **Raw Data** use `10`.
 
-When gap-fill is on (**Gaps as Zero** or **Gaps as Max**), you can also choose a **Gap Segment Accent** for line segments and synthetic point markers generated for gap-fill days:
+When gap-fill is on (**Gaps as Min**, **Gaps as Max**, **Gaps as Average**, or **Gaps as Surrounding Average**), you can also choose a **Gap Segment Accent** for line segments and synthetic point markers generated for gap-fill days:
 
 - **Complementary** uses the opposite hue of the primary line color.
 - **First Triadic** uses the first triadic companion of the primary line color.
@@ -117,14 +123,14 @@ For **Gaps as Surrounding Average**:
 Example task:
 
 1. On the main dashboard, select **Generate Graph**.
-2. In the graph controls, set **Gap Display Mode** to **Gaps as Zero**, **Gaps as Max**, **Gaps as Average**, or **Gaps as Surrounding Average**.
+2. In the graph controls, set **Gap Display Mode** to **Gaps as Min**, **Gaps as Max**, **Gaps as Average**, or **Gaps as Surrounding Average**.
 3. Optionally choose a **Gap Segment Accent**.
 4. Record mood on Monday and Wednesday only.
 5. Review the graph.
 
 Expected result:
 
-- Tuesday is rendered as a synthetic gap-fill point at zero for **Gaps as Zero**, or at the mode maximum for **Gaps as Max**.
+- Tuesday is rendered as a synthetic gap-fill point at the mode minimum for **Gaps as Min**, or at the mode maximum for **Gaps as Max**.
 - For **Gaps as Average**, Tuesday is rendered as a synthetic gap-fill point at the arithmetic mean of visible recorded points in the selected graph mode and date range.
 - For **Gaps as Surrounding Average**, Tuesday is rendered as a synthetic gap-fill point at the average of the nearest visible point before Tuesday and the nearest visible point after Tuesday.
 - The generated Tuesday point marker and adjacent line segments use the selected gap accent color.
