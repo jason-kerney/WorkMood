@@ -631,7 +631,8 @@ public class GraphViewModel : ViewModelBase
         try
         {
             var moodCollection = await _moodDataService.LoadMoodDataAsync();
-            var filteredEntries = FilterEntriesByDateRange(moodCollection.Entries, _selectedDateRange.DateRange);
+            var allEntries = moodCollection.Entries.ToList();
+            var filteredEntries = FilterEntriesByDateRange(allEntries, _selectedDateRange.DateRange);
             
             if (!filteredEntries.Any())
             {
@@ -648,11 +649,11 @@ public class GraphViewModel : ViewModelBase
             byte[] imageData;
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
-                imageData = await _lineGraphService.GenerateGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
+                imageData = await _lineGraphService.GenerateGraphAsync(allEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
             }
             else
             {
-                imageData = await _lineGraphService.GenerateGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
+                imageData = await _lineGraphService.GenerateGraphAsync(allEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
             }
             
             GraphImageSource = ImageSource.FromStream(() => new MemoryStream(imageData));
@@ -687,7 +688,7 @@ public class GraphViewModel : ViewModelBase
         try
         {
             var moodCollection = await _moodDataService.LoadMoodDataAsync();
-            var filteredEntries = FilterEntriesByDateRange(moodCollection.Entries, _selectedDateRange.DateRange);
+            var allEntries = moodCollection.Entries.ToList();
             
             var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             var fileName = $"mood-graph-{_selectedDateRange.DateRange.ToString().ToLower()}-{DateTime.Now:yyyyMMdd-HHmmss}.png";
@@ -701,11 +702,11 @@ public class GraphViewModel : ViewModelBase
             // Use consolidated method for all graph modes
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
-                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
+                await _lineGraphService.SaveGraphAsync(allEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
             }
             else
             {
-                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
+                await _lineGraphService.SaveGraphAsync(allEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
             }
             
             ShowStatusMessage($"Graph exported to: {filePath}");
@@ -730,7 +731,7 @@ public class GraphViewModel : ViewModelBase
         try
         {
             var moodCollection = await _moodDataService.LoadMoodDataAsync();
-            var filteredEntries = FilterEntriesByDateRange(moodCollection.Entries, _selectedDateRange.DateRange);
+            var allEntries = moodCollection.Entries.ToList();
             
             var tempPath = Path.GetTempPath();
             var fileName = $"mood-graph-{DateTime.Now:yyyyMMdd-HHmmss}.png";
@@ -744,11 +745,11 @@ public class GraphViewModel : ViewModelBase
             // Use consolidated method for all graph modes
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
-                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
+                await _lineGraphService.SaveGraphAsync(allEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
             }
             else
             {
-                await _lineGraphService.SaveGraphAsync(filteredEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
+                await _lineGraphService.SaveGraphAsync(allEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
             }
             
             await Share.RequestAsync(new ShareFileRequest

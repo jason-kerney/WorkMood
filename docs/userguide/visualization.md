@@ -128,12 +128,14 @@ For **Match the Previous Value**:
 - Each missing weekday is filled from the nearest visible recorded point before that day.
 - Consecutive missing weekdays between two recorded days all use the same last-known value.
 - If no previous visible value exists, that day is left as a gap.
+- A previous point just outside the selected date range can still be used as the source value.
 
 For **Match the Following Value**:
 
 - Each missing weekday is filled from the nearest visible recorded point after that day.
 - Consecutive missing weekdays between two recorded days all use the same next-known value.
 - If no following visible value exists, that day is left as a gap.
+- A following point just outside the selected date range can still be used as the source value.
 
 Example task:
 

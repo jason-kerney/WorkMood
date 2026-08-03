@@ -483,6 +483,61 @@ public class GraphViewModelShould
         Assert.Equal(GapDisplayMode.GapsAsMatchFollowingValue, capturedGapDisplayMode);
     }
 
+    [Fact]
+    public async Task LoadDataAsync_ShouldPassFullHistoryEntriesToGraphService_EvenWhenSomeAreOutsideSelectedRange()
+    {
+        IEnumerable<MoodEntry>? capturedEntries = null;
+        var viewModel = CreateViewModel();
+
+        var inRangeEntry = new MoodEntry(new DateOnly(2026, 7, 29))
+        {
+            StartOfWork = 4,
+            EndOfWork = 6,
+            CreatedAt = new DateTime(2026, 7, 29, 8, 0, 0),
+            LastModified = new DateTime(2026, 7, 29, 17, 0, 0)
+        };
+
+        var outOfRangeEntry = new MoodEntry(new DateOnly(2026, 6, 1))
+        {
+            StartOfWork = 7,
+            EndOfWork = 8,
+            CreatedAt = new DateTime(2026, 6, 1, 8, 0, 0),
+            LastModified = new DateTime(2026, 6, 1, 17, 0, 0)
+        };
+
+        _mockMoodDataService
+            .Setup(service => service.LoadMoodDataAsync())
+            .ReturnsAsync(new MoodCollection(new[] { inRangeEntry, outOfRangeEntry }));
+
+        _mockLineGraphService
+            .Setup(service => service.GenerateGraphAsync(
+                It.IsAny<IEnumerable<MoodEntry>>(),
+                It.IsAny<GraphMode>(),
+                It.IsAny<DateRangeInfo>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<Color>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<GapDisplayMode>(),
+                It.IsAny<GapSegmentSecondaryPenMode?>()))
+            .Callback<IEnumerable<MoodEntry>, GraphMode, DateRangeInfo, bool, bool, bool, bool, Color, int, int, GapDisplayMode, GapSegmentSecondaryPenMode?>((entries, _, _, _, _, _, _, _, _, _, _, _) =>
+            {
+                capturedEntries = entries;
+            })
+            .ReturnsAsync([1, 2, 3]);
+
+        await viewModel.LoadDataAsync();
+
+        Assert.NotNull(capturedEntries);
+        var entriesList = capturedEntries!.ToList();
+        Assert.Equal(2, entriesList.Count);
+        Assert.Contains(entriesList, entry => entry.Date == new DateOnly(2026, 7, 29));
+        Assert.Contains(entriesList, entry => entry.Date == new DateOnly(2026, 6, 1));
+    }
+
     private GraphViewModel CreateViewModel()
     {
         return new GraphViewModel(

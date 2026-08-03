@@ -22,22 +22,17 @@ public class GraphDataTransformer : IGraphDataTransformer
         DateRangeInfo dateRangeInfo,
         GapDisplayMode gapDisplayMode = GapDisplayMode.ShowGaps)
     {
-        var entriesInRange = moodEntries
-            .Where(entry => entry.Date >= dateRangeInfo.StartDate && entry.Date <= dateRangeInfo.EndDate)
+        var orderedEntries = moodEntries
             .OrderBy(entry => entry.Date)
             .ThenBy(entry => entry.CreatedAt)
             .ToList();
 
-        var dataPoints = graphMode switch
-        {
-            GraphMode.Impact => CreateSinglePointPerEntryData(entriesInRange, GraphMode.Impact),
-            GraphMode.GeneralImpact => CreateGeneralImpactData(entriesInRange),
-            GraphMode.Average => CreateSinglePointPerEntryData(entriesInRange, GraphMode.Average),
-            GraphMode.StartOfDay => CreateSinglePointPerEntryData(entriesInRange, GraphMode.StartOfDay),
-            GraphMode.EndOfDay => CreateSinglePointPerEntryData(entriesInRange, GraphMode.EndOfDay),
-            GraphMode.RawData => CreateRawData(entriesInRange),
-            _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, "Unsupported graph mode")
-        };
+        var entriesInRange = orderedEntries
+            .Where(entry => entry.Date >= dateRangeInfo.StartDate && entry.Date <= dateRangeInfo.EndDate)
+            .ToList();
+
+        var dataPoints = CreateDataPointsForMode(entriesInRange, graphMode);
+        var fullHistoryDataPoints = CreateDataPointsForMode(orderedEntries, graphMode);
 
         var normalizedDataPoints = gapDisplayMode switch
         {
@@ -46,8 +41,8 @@ public class GraphDataTransformer : IGraphDataTransformer
             GapDisplayMode.GapsAsMax => ApplyGapDisplayMode(dataPoints, dateRangeInfo, GetGapDisplayModeMaxValue(graphMode)),
             GapDisplayMode.GapsAsAverage => ApplyAverageGapDisplayMode(dataPoints, dateRangeInfo),
             GapDisplayMode.GapsAsSurroundingAverage => ApplySurroundingAverageGapDisplayMode(dataPoints, dateRangeInfo),
-            GapDisplayMode.GapsAsMatchPreviousValue => ApplyDirectionalGapDisplayMode(dataPoints, dateRangeInfo, usePreviousValue: true),
-            GapDisplayMode.GapsAsMatchFollowingValue => ApplyDirectionalGapDisplayMode(dataPoints, dateRangeInfo, usePreviousValue: false),
+            GapDisplayMode.GapsAsMatchPreviousValue => ApplyDirectionalGapDisplayMode(dataPoints, fullHistoryDataPoints, dateRangeInfo, usePreviousValue: true),
+            GapDisplayMode.GapsAsMatchFollowingValue => ApplyDirectionalGapDisplayMode(dataPoints, fullHistoryDataPoints, dateRangeInfo, usePreviousValue: false),
             _ => throw new ArgumentOutOfRangeException(nameof(gapDisplayMode), gapDisplayMode, "Unsupported gap display mode")
         };
 
@@ -174,10 +169,16 @@ public class GraphDataTransformer : IGraphDataTransformer
 
     private static IEnumerable<FilledGraphDataPoint> ApplyDirectionalGapDisplayMode(
         IEnumerable<FilledGraphDataPoint> dataPoints,
+        IEnumerable<FilledGraphDataPoint> fullHistoryDataPoints,
         DateRangeInfo dateRangeInfo,
         bool usePreviousValue)
     {
         var visiblePoints = dataPoints
+            .Where(point => !point.IsSyntheticGapFill && point.Value.HasValue)
+            .OrderBy(point => point.Timestamp)
+            .ToList();
+
+        var fullHistoryVisiblePoints = fullHistoryDataPoints
             .Where(point => !point.IsSyntheticGapFill && point.Value.HasValue)
             .OrderBy(point => point.Timestamp)
             .ToList();
@@ -202,8 +203,8 @@ public class GraphDataTransformer : IGraphDataTransformer
             }
 
             var sourcePoint = usePreviousValue
-                ? visiblePoints.LastOrDefault(point => DateOnly.FromDateTime(point.Timestamp) < date)
-                : visiblePoints.FirstOrDefault(point => DateOnly.FromDateTime(point.Timestamp) > date);
+                ? fullHistoryVisiblePoints.LastOrDefault(point => DateOnly.FromDateTime(point.Timestamp) < date)
+                : fullHistoryVisiblePoints.FirstOrDefault(point => DateOnly.FromDateTime(point.Timestamp) > date);
 
             if (sourcePoint?.Value is not float sourceValue)
             {
@@ -214,6 +215,22 @@ public class GraphDataTransformer : IGraphDataTransformer
         }
 
         return result;
+    }
+
+    private static IEnumerable<FilledGraphDataPoint> CreateDataPointsForMode(
+        IEnumerable<MoodEntry> moodEntries,
+        GraphMode graphMode)
+    {
+        return graphMode switch
+        {
+            GraphMode.Impact => CreateSinglePointPerEntryData(moodEntries, GraphMode.Impact),
+            GraphMode.GeneralImpact => CreateGeneralImpactData(moodEntries),
+            GraphMode.Average => CreateSinglePointPerEntryData(moodEntries, GraphMode.Average),
+            GraphMode.StartOfDay => CreateSinglePointPerEntryData(moodEntries, GraphMode.StartOfDay),
+            GraphMode.EndOfDay => CreateSinglePointPerEntryData(moodEntries, GraphMode.EndOfDay),
+            GraphMode.RawData => CreateRawData(moodEntries),
+            _ => throw new ArgumentOutOfRangeException(nameof(graphMode), graphMode, "Unsupported graph mode")
+        };
     }
 
     private static IEnumerable<FilledGraphDataPoint> CreateSinglePointPerEntryData(IEnumerable<MoodEntry> moodEntries, GraphMode graphMode)
