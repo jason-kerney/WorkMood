@@ -188,6 +188,49 @@ public class GraphViewModelShould
     }
 
     [Fact]
+    public async Task LoadDataAsync_WhenGapDisplayModeIsGapsAsMinAndGapFillColorIsMatchLineColor_ShouldRequestNullSecondaryPenMode()
+    {
+        GapSegmentSecondaryPenMode? capturedGapSegmentSecondaryPenMode = GapSegmentSecondaryPenMode.Complementary;
+        var viewModel = CreateViewModel();
+
+        _mockMoodDataService
+            .Setup(service => service.LoadMoodDataAsync())
+            .ReturnsAsync(new MoodCollection(new[]
+            {
+                new MoodEntry(new DateOnly(2026, 7, 29)) { StartOfWork = 4, EndOfWork = 6 }
+            }));
+
+        _mockLineGraphService
+            .Setup(service => service.GenerateGraphAsync(
+                It.IsAny<IEnumerable<MoodEntry>>(),
+                It.IsAny<GraphMode>(),
+                It.IsAny<DateRangeInfo>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<Color>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<GapDisplayMode>(),
+                It.IsAny<GapSegmentSecondaryPenMode?>()))
+            .Callback<IEnumerable<MoodEntry>, GraphMode, DateRangeInfo, bool, bool, bool, bool, Color, int, int, GapDisplayMode, GapSegmentSecondaryPenMode?>((_, _, _, _, _, _, _, _, _, _, _, gapSegmentSecondaryPenMode) =>
+            {
+                capturedGapSegmentSecondaryPenMode = gapSegmentSecondaryPenMode;
+            })
+            .ReturnsAsync([1, 2, 3]);
+
+        viewModel.SelectedGapDisplayModeItem = viewModel.GapDisplayModes.Single(mode => mode.GapDisplayMode == GapDisplayMode.GapsAsMin);
+
+        var matchLineColorOption = viewModel.GapSegmentSecondaryPenModes.Single(mode => mode.DisplayName == "Match Line Color");
+        viewModel.SelectedGapSegmentSecondaryPenModeItem = matchLineColorOption;
+
+        await viewModel.LoadDataAsync();
+
+        Assert.Null(capturedGapSegmentSecondaryPenMode);
+    }
+
+    [Fact]
     public async Task LoadDataAsync_WhenGapDisplayModeIsShowGaps_ShouldNotRequestSecondaryPenMode()
     {
         GapSegmentSecondaryPenMode? capturedGapSegmentSecondaryPenMode = GapSegmentSecondaryPenMode.Complementary;

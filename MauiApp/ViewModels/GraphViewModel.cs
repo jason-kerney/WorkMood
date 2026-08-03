@@ -434,7 +434,7 @@ public class GraphViewModel : ViewModelBase
     public bool IsGapSegmentAccentVisible => SelectedGapDisplayMode != GapDisplayMode.ShowGaps;
 
     /// <summary>
-    /// Selected derived-color mode for segments touching synthesized gap-fill points.
+    /// Selected gap-fill color mode for segments touching synthesized gap-fill points.
     /// </summary>
     public GapSegmentSecondaryPenModeItem SelectedGapSegmentSecondaryPenModeItem
     {
@@ -824,6 +824,7 @@ public class GraphViewModel : ViewModelBase
         GapSegmentSecondaryPenModes.Add(new GapSegmentSecondaryPenModeItem(GapSegmentSecondaryPenMode.Complementary, "Complementary"));
         GapSegmentSecondaryPenModes.Add(new GapSegmentSecondaryPenModeItem(GapSegmentSecondaryPenMode.FirstTriadic, "First Triadic"));
         GapSegmentSecondaryPenModes.Add(new GapSegmentSecondaryPenModeItem(GapSegmentSecondaryPenMode.SecondTriadic, "Second Triadic"));
+        GapSegmentSecondaryPenModes.Add(new GapSegmentSecondaryPenModeItem(null, "Match Line Color"));
     }
     
     /// <summary>
@@ -1086,16 +1087,16 @@ public class GapDisplayModeItem
 }
 
 /// <summary>
-/// Wrapper class for secondary gap-segment pen modes to provide display names.
+/// Wrapper class for gap-fill color choices to provide display names.
 /// </summary>
 public class GapSegmentSecondaryPenModeItem
 {
-    public GapSegmentSecondaryPenModeItem(GapSegmentSecondaryPenMode gapSegmentSecondaryPenMode, string displayName)
+    public GapSegmentSecondaryPenModeItem(GapSegmentSecondaryPenMode? gapSegmentSecondaryPenMode, string displayName)
     {
         GapSegmentSecondaryPenMode = gapSegmentSecondaryPenMode;
         DisplayName = displayName;
     }
 
-    public GapSegmentSecondaryPenMode GapSegmentSecondaryPenMode { get; }
+    public GapSegmentSecondaryPenMode? GapSegmentSecondaryPenMode { get; }
     public string DisplayName { get; }
 }

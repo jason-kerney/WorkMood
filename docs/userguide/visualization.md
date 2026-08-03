@@ -97,13 +97,14 @@ Max-value mapping by graph mode:
 - **Average** uses `5`.
 - **Opening Mood**, **Closing Mood**, and **Raw Data** use `10`.
 
-When gap-fill is on (**Gaps as Min**, **Gaps as Max**, **Gaps as Average**, or **Gaps as Surrounding Average**), you can also choose a **Gap Segment Accent** for line segments and synthetic point markers generated for gap-fill days:
+When gap-fill is on (**Gaps as Min**, **Gaps as Max**, **Gaps as Average**, or **Gaps as Surrounding Average**), you can also choose a **Gap Fill Color** for line segments and synthetic point markers generated for gap-fill days:
 
 - **Complementary** uses the opposite hue of the primary line color.
 - **First Triadic** uses the first triadic companion of the primary line color.
 - **Second Triadic** uses the second triadic companion of the primary line color.
+- **Match Line Color** keeps gap-fill segments and synthetic gap markers on the same primary line color.
 
-When **Gap Display Mode** is **Show Gaps**, gap accenting is not applied and point markers continue using the primary marker color.
+When **Gap Display Mode** is **Show Gaps**, the gap fill color setting is not applied and point markers continue using the primary marker color.
 
 Weekend compression behavior does not change for either mode.
 
@@ -124,7 +125,7 @@ Example task:
 
 1. On the main dashboard, select **Generate Graph**.
 2. In the graph controls, set **Gap Display Mode** to **Gaps as Min**, **Gaps as Max**, **Gaps as Average**, or **Gaps as Surrounding Average**.
-3. Optionally choose a **Gap Segment Accent**.
+3. Optionally choose a **Gap Fill Color**.
 4. Record mood on Monday and Wednesday only.
 5. Review the graph.
 
@@ -133,7 +134,7 @@ Expected result:
 - Tuesday is rendered as a synthetic gap-fill point at the mode minimum for **Gaps as Min**, or at the mode maximum for **Gaps as Max**.
 - For **Gaps as Average**, Tuesday is rendered as a synthetic gap-fill point at the arithmetic mean of visible recorded points in the selected graph mode and date range.
 - For **Gaps as Surrounding Average**, Tuesday is rendered as a synthetic gap-fill point at the average of the nearest visible point before Tuesday and the nearest visible point after Tuesday.
-- The generated Tuesday point marker and adjacent line segments use the selected gap accent color.
+- The generated Tuesday point marker and adjacent line segments use the selected gap fill color. With **Match Line Color**, they stay on the primary line color instead of switching to a contrasting accent.
 - If Saturday and Sunday are unrecorded, they are still compressed out of spacing.
 
 <!-- (dl (### Graph Controls Visibility)) -->

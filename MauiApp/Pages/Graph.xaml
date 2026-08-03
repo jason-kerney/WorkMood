@@ -100,13 +100,13 @@
                          Spacing="8"
                          Margin="20,0,0,0"
                          VerticalOptions="Center">
-                      <Label Text="Gap Segment Accent:"
+                                            <Label Text="Gap Fill Color:"
                           VerticalOptions="Center" />
                       <Picker x:Name="GapSegmentSecondaryPenModePicker"
                         ItemsSource="{Binding GapSegmentSecondaryPenModes}"
                         SelectedItem="{Binding SelectedGapSegmentSecondaryPenModeItem}"
                         ItemDisplayBinding="{Binding DisplayName}"
-                        Title="Choose gap segment accent"
+                                                Title="Choose gap fill color"
                         VerticalOptions="Center"
                         MinimumWidthRequest="180" />
                   </StackLayout>
