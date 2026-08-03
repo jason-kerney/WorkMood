@@ -3,6 +3,7 @@
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:WorkMood.MauiApp.Models"
+             xmlns:services="clr-namespace:WorkMood.MauiApp.Services"
              xmlns:viewmodels="clr-namespace:WorkMood.MauiApp.ViewModels"
              x:DataType="viewmodels:GraphViewModel"
              Title="Mood Graph">
@@ -222,6 +223,43 @@
                         HeightRequest="30" 
                         HorizontalOptions="Center" 
                         Margin="0,0,0,10" />
+
+                <StackLayout IsVisible="{Binding IsBackgroundColorSuggestionVisible}"
+                         Orientation="Vertical"
+                         Spacing="8"
+                         Margin="0,0,0,10">
+                    <Label Text="Quick matches for the current line color:"
+                       FontAttributes="Bold" />
+                    <FlexLayout Direction="Row"
+                        Wrap="Wrap"
+                        JustifyContent="Start"
+                        AlignItems="Start">
+                    <Button Text="Contrast"
+                        Command="{Binding ApplyBackgroundSuggestionCommand}"
+                        CommandParameter="{x:Static services:GraphColorSuggestionMode.HighContrast}"
+                        BackgroundColor="{Binding SuggestedHighContrastBackgroundColor}"
+                        TextColor="{Binding SuggestedHighContrastTextColor}"
+                        Margin="0,0,8,8" />
+                    <Button Text="Complementary"
+                        Command="{Binding ApplyBackgroundSuggestionCommand}"
+                        CommandParameter="{x:Static services:GraphColorSuggestionMode.Complementary}"
+                        BackgroundColor="{Binding SuggestedComplementaryBackgroundColor}"
+                        TextColor="{Binding SuggestedComplementaryTextColor}"
+                        Margin="0,0,8,8" />
+                    <Button Text="Triadic 1"
+                        Command="{Binding ApplyBackgroundSuggestionCommand}"
+                        CommandParameter="{x:Static services:GraphColorSuggestionMode.FirstTriadic}"
+                        BackgroundColor="{Binding SuggestedFirstTriadicBackgroundColor}"
+                        TextColor="{Binding SuggestedFirstTriadicTextColor}"
+                        Margin="0,0,8,8" />
+                    <Button Text="Triadic 2"
+                        Command="{Binding ApplyBackgroundSuggestionCommand}"
+                        CommandParameter="{x:Static services:GraphColorSuggestionMode.SecondTriadic}"
+                        BackgroundColor="{Binding SuggestedSecondTriadicBackgroundColor}"
+                        TextColor="{Binding SuggestedSecondTriadicTextColor}"
+                        Margin="0,0,8,8" />
+                    </FlexLayout>
+                </StackLayout>
                 
                 <!-- RGB Sliders -->
                 <Grid ColumnDefinitions="30,*,50" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">

@@ -606,6 +606,43 @@ public class GraphViewModelShould
         Assert.Equal(Colors.LightYellow, capturedBackgroundColor);
     }
 
+    [Fact]
+    public void ToggleBackgroundColorPickerCommand_ShouldShowDerivedSuggestions_AndApplyComplementaryToBackgroundOnly()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.SelectedLineColor = Colors.Blue;
+
+        viewModel.ToggleBackgroundColorPickerCommand.Execute(null);
+
+        Assert.True(viewModel.IsBackgroundColorSuggestionVisible);
+        Assert.Equal(Colors.White, viewModel.SelectedBackgroundColor);
+
+        viewModel.ApplyBackgroundSuggestionCommand.Execute(GraphColorSuggestionMode.Complementary);
+
+        Assert.Equal(Colors.Blue, viewModel.SelectedLineColor);
+        Assert.Equal(Colors.Yellow, viewModel.SelectedBackgroundColor);
+        Assert.True(viewModel.IsBackgroundColorCustomized);
+    }
+
+    [Fact]
+    public void ToggleBackgroundColorPickerCommand_WhenOpened_ShouldRaiseBackgroundSuggestionVisibilityAsTrue()
+    {
+        var viewModel = CreateViewModel();
+        List<bool> raisedVisibilityValues = [];
+
+        viewModel.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(GraphViewModel.IsBackgroundColorSuggestionVisible))
+            {
+                raisedVisibilityValues.Add(viewModel.IsBackgroundColorSuggestionVisible);
+            }
+        };
+
+        viewModel.ToggleBackgroundColorPickerCommand.Execute(null);
+
+        Assert.Equal([true], raisedVisibilityValues);
+    }
+
     private GraphViewModel CreateViewModel()
     {
         return new GraphViewModel(

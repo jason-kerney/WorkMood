@@ -84,6 +84,7 @@ public class GraphViewModel : ViewModelBase
         CloseColorPickerCommand = new RelayCommand(CloseColorPicker);
         SelectColorCommand = new RelayCommand<string>(SelectColor);
         ResetBackgroundColorCommand = new RelayCommand(ResetBackgroundColor);
+        ApplyBackgroundSuggestionCommand = new RelayCommand<GraphColorSuggestionMode>(ApplyBackgroundSuggestion);
         ToggleGraphConfigCommand = new RelayCommand(ToggleGraphConfig);
     }
     
@@ -345,6 +346,7 @@ public class GraphViewModel : ViewModelBase
                 OnPropertyChanged(nameof(RedValue));
                 OnPropertyChanged(nameof(GreenValue));
                 OnPropertyChanged(nameof(BlueValue));
+                NotifyBackgroundSuggestionPropertiesChanged();
                 // Auto-update graph when color changes
                 _ = UpdateGraphAsync();
             }
@@ -389,6 +391,27 @@ public class GraphViewModel : ViewModelBase
     public Color ActivePickerColor => _activeColorPickerTarget == ColorPickerTarget.Line
         ? SelectedLineColor
         : SelectedBackgroundColor;
+
+    /// <summary>
+    /// Whether quick mathematically-derived background suggestions should be shown.
+    /// </summary>
+    public bool IsBackgroundColorSuggestionVisible => IsColorPickerVisible && _activeColorPickerTarget == ColorPickerTarget.Background;
+
+    public Color SuggestedHighContrastBackgroundColor => GraphColorHarmony.GetSuggestedBackgroundColor(SelectedLineColor, GraphColorSuggestionMode.HighContrast);
+
+    public Color SuggestedComplementaryBackgroundColor => GraphColorHarmony.GetSuggestedBackgroundColor(SelectedLineColor, GraphColorSuggestionMode.Complementary);
+
+    public Color SuggestedFirstTriadicBackgroundColor => GraphColorHarmony.GetSuggestedBackgroundColor(SelectedLineColor, GraphColorSuggestionMode.FirstTriadic);
+
+    public Color SuggestedSecondTriadicBackgroundColor => GraphColorHarmony.GetSuggestedBackgroundColor(SelectedLineColor, GraphColorSuggestionMode.SecondTriadic);
+
+    public Color SuggestedHighContrastTextColor => GraphColorHarmony.GetReadableTextColor(SuggestedHighContrastBackgroundColor);
+
+    public Color SuggestedComplementaryTextColor => GraphColorHarmony.GetReadableTextColor(SuggestedComplementaryBackgroundColor);
+
+    public Color SuggestedFirstTriadicTextColor => GraphColorHarmony.GetReadableTextColor(SuggestedFirstTriadicBackgroundColor);
+
+    public Color SuggestedSecondTriadicTextColor => GraphColorHarmony.GetReadableTextColor(SuggestedSecondTriadicBackgroundColor);
     
     /// <summary>
     /// Whether the inline color picker is visible
@@ -396,7 +419,13 @@ public class GraphViewModel : ViewModelBase
     public bool IsColorPickerVisible
     {
         get => _isColorPickerVisible;
-        set => SetProperty(ref _isColorPickerVisible, value);
+        set
+        {
+            if (SetProperty(ref _isColorPickerVisible, value))
+            {
+                OnPropertyChanged(nameof(IsBackgroundColorSuggestionVisible));
+            }
+        }
     }
 
     /// <summary>
@@ -676,6 +705,11 @@ public class GraphViewModel : ViewModelBase
     /// Command to reset background color to white
     /// </summary>
     public ICommand ResetBackgroundColorCommand { get; }
+
+    /// <summary>
+    /// Command to apply a derived background color suggestion based on the current line color.
+    /// </summary>
+    public ICommand ApplyBackgroundSuggestionCommand { get; }
 
     /// <summary>
     /// Command to toggle visibility of graph configuration controls
@@ -1098,6 +1132,7 @@ public class GraphViewModel : ViewModelBase
         if (isCollapsing)
         {
             IsColorPickerVisible = false;
+            OnPropertyChanged(nameof(IsBackgroundColorSuggestionVisible));
         }
     }
     
@@ -1165,8 +1200,13 @@ public class GraphViewModel : ViewModelBase
         OnPropertyChanged(nameof(RedValue));
         OnPropertyChanged(nameof(GreenValue));
         OnPropertyChanged(nameof(BlueValue));
-
         IsColorPickerVisible = true;
+    }
+
+    private void ApplyBackgroundSuggestion(GraphColorSuggestionMode suggestionMode)
+    {
+        SelectedBackgroundColor = GraphColorHarmony.GetSuggestedBackgroundColor(SelectedLineColor, suggestionMode);
+        ShowStatusMessage($"Background color matched using {GetSuggestionDisplayName(suggestionMode)}.");
     }
 
     private void ResetBackgroundColor()
@@ -1187,6 +1227,30 @@ public class GraphViewModel : ViewModelBase
             && Math.Abs(first.Green - second.Green) < tolerance
             && Math.Abs(first.Blue - second.Blue) < tolerance
             && Math.Abs(first.Alpha - second.Alpha) < tolerance;
+    }
+
+    private void NotifyBackgroundSuggestionPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(SuggestedHighContrastBackgroundColor));
+        OnPropertyChanged(nameof(SuggestedComplementaryBackgroundColor));
+        OnPropertyChanged(nameof(SuggestedFirstTriadicBackgroundColor));
+        OnPropertyChanged(nameof(SuggestedSecondTriadicBackgroundColor));
+        OnPropertyChanged(nameof(SuggestedHighContrastTextColor));
+        OnPropertyChanged(nameof(SuggestedComplementaryTextColor));
+        OnPropertyChanged(nameof(SuggestedFirstTriadicTextColor));
+        OnPropertyChanged(nameof(SuggestedSecondTriadicTextColor));
+    }
+
+    private static string GetSuggestionDisplayName(GraphColorSuggestionMode suggestionMode)
+    {
+        return suggestionMode switch
+        {
+            GraphColorSuggestionMode.HighContrast => "High Contrast",
+            GraphColorSuggestionMode.Complementary => "Complementary",
+            GraphColorSuggestionMode.FirstTriadic => "Triadic 1",
+            GraphColorSuggestionMode.SecondTriadic => "Triadic 2",
+            _ => "Suggested Color"
+        };
     }
 
     private GapDisplayMode SelectedGapDisplayMode => SelectedGapDisplayModeItem?.GapDisplayMode ?? GapDisplayMode.ShowGaps;
