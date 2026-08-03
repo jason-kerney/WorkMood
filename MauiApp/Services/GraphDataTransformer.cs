@@ -202,6 +202,15 @@ public class GraphDataTransformer : IGraphDataTransformer
                 continue;
             }
 
+            if (!usePreviousValue)
+            {
+                var hasPriorHistory = fullHistoryVisiblePoints.Any(point => DateOnly.FromDateTime(point.Timestamp) < date);
+                if (!hasPriorHistory)
+                {
+                    continue;
+                }
+            }
+
             var sourcePoint = usePreviousValue
                 ? fullHistoryVisiblePoints.LastOrDefault(point => DateOnly.FromDateTime(point.Timestamp) < date)
                 : fullHistoryVisiblePoints.FirstOrDefault(point => DateOnly.FromDateTime(point.Timestamp) > date);

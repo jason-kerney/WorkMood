@@ -1138,6 +1138,33 @@ public class GraphDataTransformerTests
     }
 
     [Fact]
+    public void TransformMoodEntries_WithGapsAsMatchFollowingValue_WhenNoPriorHistoryExists_ShouldLeaveLeadingWeekdayGapsUnfilled()
+    {
+        var entries = new List<MoodEntry>
+        {
+            new()
+            {
+                Date = new DateOnly(2025, 1, 8),
+                StartOfWork = 9,
+                EndOfWork = 10,
+                CreatedAt = new DateTime(2025, 1, 8, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 8, 17, 0, 0)
+            }
+        };
+
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 8));
+
+        var result = _transformer.TransformMoodEntries(entries, GraphMode.StartOfDay, dateRange, GapDisplayMode.GapsAsMatchFollowingValue);
+        var dates = result.DataPoints.Select(point => DateOnly.FromDateTime(point.Timestamp)).ToHashSet();
+
+        Assert.DoesNotContain(new DateOnly(2025, 1, 2), dates);
+        Assert.DoesNotContain(new DateOnly(2025, 1, 3), dates);
+        Assert.DoesNotContain(new DateOnly(2025, 1, 6), dates);
+        Assert.DoesNotContain(new DateOnly(2025, 1, 7), dates);
+        Assert.Contains(new DateOnly(2025, 1, 8), dates);
+    }
+
+    [Fact]
     public void TransformMoodEntries_WithGapsAsMatchPreviousValue_ShouldUseSamePreviousValueAcrossConsecutiveGapDays()
     {
         var entries = new List<MoodEntry>
