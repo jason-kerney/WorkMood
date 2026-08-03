@@ -239,6 +239,32 @@ namespace WorkMood.MauiApp.Tests.Services
             Assert.Contains("Unsupported graph mode", exception.Message);
         }
 
+        [Fact]
+        public async Task GenerateGraphAsync_WithSolidBackgroundColor_ShouldForwardBackgroundColorToGenerator()
+        {
+            // Arrange
+            var mockTransformer = new Mock<IGraphDataTransformer>();
+            var mockGenerator = new Mock<ILineGraphGenerator>();
+            var service = new LineGraphService(mockTransformer.Object, mockGenerator.Object);
+
+            var expectedBytes = new byte[] { 3, 2, 1 };
+            var transformedData = new GraphData();
+            var dateRange = new DateRangeInfo(DateRange.Last7Days, DateOnly.FromDateTime(DateTime.Today));
+            var moodEntries = new List<MoodEntry>();
+
+            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange, GapDisplayMode.ShowGaps))
+                .Returns(transformedData);
+            mockGenerator.Setup(g => g.GenerateLineGraphAsync(transformedData, dateRange, true, true, true, true, Colors.Blue, Colors.LightYellow, 800, 600))
+                .ReturnsAsync(expectedBytes);
+
+            // Act
+            var result = await service.GenerateGraphAsync(moodEntries, GraphMode.Impact, dateRange, true, true, true, true, Colors.Blue, Colors.LightYellow);
+
+            // Assert
+            Assert.Equal(expectedBytes, result);
+            mockGenerator.Verify(g => g.GenerateLineGraphAsync(transformedData, dateRange, true, true, true, true, Colors.Blue, Colors.LightYellow, 800, 600), Times.Once);
+        }
+
         #endregion
 
         #region GenerateGraphAsync Tests (Custom Background)
@@ -349,6 +375,31 @@ namespace WorkMood.MauiApp.Tests.Services
             var exception = await Assert.ThrowsAsync<ArgumentException>(
                 () => service.SaveGraphAsync(moodEntries, invalidGraphMode, dateRange, true, true, true, true, filePath, Colors.Blue));
             Assert.Contains("Unsupported graph mode", exception.Message);
+        }
+
+        [Fact]
+        public async Task SaveGraphAsync_WithSolidBackgroundColor_ShouldForwardBackgroundColorToGenerator()
+        {
+            // Arrange
+            var mockTransformer = new Mock<IGraphDataTransformer>();
+            var mockGenerator = new Mock<ILineGraphGenerator>();
+            var service = new LineGraphService(mockTransformer.Object, mockGenerator.Object);
+
+            var transformedData = new GraphData();
+            var dateRange = new DateRangeInfo(DateRange.LastMonth, DateOnly.FromDateTime(DateTime.Today));
+            var moodEntries = new List<MoodEntry>();
+            var filePath = "solid-background-save.png";
+
+            mockTransformer.Setup(t => t.TransformMoodEntries(moodEntries, GraphMode.Impact, dateRange, GapDisplayMode.ShowGaps))
+                .Returns(transformedData);
+            mockGenerator.Setup(g => g.SaveLineGraphAsync(transformedData, dateRange, true, true, true, true, filePath, Colors.Red, Colors.LightGray, 800, 600))
+                .Returns(Task.CompletedTask);
+
+            // Act
+            await service.SaveGraphAsync(moodEntries, GraphMode.Impact, dateRange, true, true, true, true, filePath, Colors.Red, Colors.LightGray);
+
+            // Assert
+            mockGenerator.Verify(g => g.SaveLineGraphAsync(transformedData, dateRange, true, true, true, true, filePath, Colors.Red, Colors.LightGray, 800, 600), Times.Once);
         }
 
         #endregion

@@ -77,7 +77,15 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
     /// </summary>
     public async Task<byte[]> GenerateLineGraphAsync(GraphData graphData, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, Color lineColor, int width = 800, int height = 600)
     {
-        return await RenderGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath: null, lineColor, width, height);
+        return await RenderGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath: null, lineColor, backgroundColor: null, width, height);
+    }
+
+    /// <summary>
+    /// Generates a line graph PNG image from GraphData with a solid background color
+    /// </summary>
+    public async Task<byte[]> GenerateLineGraphAsync(GraphData graphData, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, Color lineColor, Color backgroundColor, int width = 800, int height = 600)
+    {
+        return await RenderGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath: null, lineColor, backgroundColor, width, height);
     }
 
     /// <summary>
@@ -85,14 +93,14 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
     /// </summary>
     public async Task<byte[]> GenerateLineGraphAsync(GraphData graphData, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string backgroundImagePath, Color lineColor, int width = 800, int height = 600)
     {
-        return await RenderGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath, lineColor, width, height);
+        return await RenderGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, backgroundImagePath, lineColor, backgroundColor: null, width, height);
     }
 
-    private async Task<byte[]> RenderGraphAsync(GraphData graphData, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string? backgroundImagePath, Color lineColor, int width, int height)
+    private async Task<byte[]> RenderGraphAsync(GraphData graphData, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string? backgroundImagePath, Color lineColor, Color? backgroundColor, int width, int height)
     {
         return await GenerateImageAsync(width, height, async canvas =>
         {
-            var hasWhiteBackground = SetupCanvasBackground(canvas, backgroundImagePath, width, height);
+            var hasWhiteBackground = SetupCanvasBackground(canvas, backgroundImagePath, backgroundColor, width, height);
             await Task.Run(() => DrawGraph(canvas, graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, width, height, lineColor, hasWhiteBackground));
         });
     }
@@ -103,6 +111,15 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
     public async Task SaveLineGraphAsync(GraphData graphData, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, Color lineColor, int width = 800, int height = 600)
     {
         var imageData = await GenerateLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, lineColor, width, height);
+        await SaveImageDataAsync(imageData, filePath);
+    }
+
+    /// <summary>
+    /// Saves a line graph PNG image to the specified file path with a solid background color
+    /// </summary>
+    public async Task SaveLineGraphAsync(GraphData graphData, DateRangeInfo dateRange, bool showDataPoints, bool showAxesAndGrid, bool showTitle, bool showTrendLine, string filePath, Color lineColor, Color backgroundColor, int width = 800, int height = 600)
+    {
+        var imageData = await GenerateLineGraphAsync(graphData, dateRange, showDataPoints, showAxesAndGrid, showTitle, showTrendLine, lineColor, backgroundColor, width, height);
         await SaveImageDataAsync(imageData, filePath);
     }
 
@@ -133,7 +150,7 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
     /// <summary>
     /// Sets up the canvas background - either white or custom image
     /// </summary>
-    private bool SetupCanvasBackground(ICanvasShim canvas, string? backgroundImagePath, int width, int height)
+    private bool SetupCanvasBackground(ICanvasShim canvas, string? backgroundImagePath, Color? backgroundColor, int width, int height)
     {
         if (!string.IsNullOrEmpty(backgroundImagePath))
         {
@@ -148,8 +165,18 @@ public class LineGraphGenerator(IDrawShimFactory drawShimFactory, IFileShimFacto
                 }
             }
         }
-        
-        // Fallback to white background
+
+        if (backgroundColor is not null)
+        {
+            var customColor = backgroundColor;
+            canvas.Clear(drawShimFactory.Colors.FromArgb(
+                (byte)(customColor.Red * 255),
+                (byte)(customColor.Green * 255),
+                (byte)(customColor.Blue * 255),
+                (byte)(customColor.Alpha * 255)));
+            return false;
+        }
+
         canvas.Clear(drawShimFactory.Colors.White);
         return true;
     }

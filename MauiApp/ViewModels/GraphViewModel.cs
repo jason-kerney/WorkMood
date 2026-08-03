@@ -12,6 +12,12 @@ namespace WorkMood.MauiApp.ViewModels;
 /// </summary>
 public class GraphViewModel : ViewModelBase
 {
+    private enum ColorPickerTarget
+    {
+        Line,
+        Background
+    }
+
     private readonly IMoodDataService _moodDataService;
     private readonly ILineGraphService _lineGraphService;
     private readonly IDateShim _dateShim;
@@ -33,8 +39,10 @@ public class GraphViewModel : ViewModelBase
     private int _customBackgroundHeight = 0;
     private string _customBackgroundPath = string.Empty;
     private Color _selectedLineColor = Colors.Blue;
+    private Color _selectedBackgroundColor = Colors.White;
     private bool _isColorPickerVisible = false;
     private bool _isGraphConfigVisible = true;
+    private ColorPickerTarget _activeColorPickerTarget = ColorPickerTarget.Line;
     private GraphMode _selectedGraphMode = GraphMode.Impact;
     private GraphModeItem _selectedGraphModeItem = null!;
     private GapDisplayModeItem _selectedGapDisplayModeItem = null!;
@@ -72,7 +80,10 @@ public class GraphViewModel : ViewModelBase
         LoadCustomBackgroundCommand = new RelayCommand(async () => await LoadCustomBackgroundAsync());
         ClearCustomBackgroundCommand = new RelayCommand(ClearCustomBackground);
         ToggleColorPickerCommand = new RelayCommand(ToggleColorPicker);
+        ToggleBackgroundColorPickerCommand = new RelayCommand(ToggleBackgroundColorPicker);
+        CloseColorPickerCommand = new RelayCommand(CloseColorPicker);
         SelectColorCommand = new RelayCommand<string>(SelectColor);
+        ResetBackgroundColorCommand = new RelayCommand(ResetBackgroundColor);
         ToggleGraphConfigCommand = new RelayCommand(ToggleGraphConfig);
     }
     
@@ -330,11 +341,54 @@ public class GraphViewModel : ViewModelBase
         {
             if (SetProperty(ref _selectedLineColor, value))
             {
+                OnPropertyChanged(nameof(ActivePickerColor));
+                OnPropertyChanged(nameof(RedValue));
+                OnPropertyChanged(nameof(GreenValue));
+                OnPropertyChanged(nameof(BlueValue));
                 // Auto-update graph when color changes
                 _ = UpdateGraphAsync();
             }
         }
     }
+
+    /// <summary>
+    /// Selected color for the graph background when custom image background is not in use
+    /// </summary>
+    public Color SelectedBackgroundColor
+    {
+        get => _selectedBackgroundColor;
+        set
+        {
+            if (SetProperty(ref _selectedBackgroundColor, value))
+            {
+                OnPropertyChanged(nameof(IsBackgroundColorCustomized));
+                OnPropertyChanged(nameof(ActivePickerColor));
+                OnPropertyChanged(nameof(RedValue));
+                OnPropertyChanged(nameof(GreenValue));
+                OnPropertyChanged(nameof(BlueValue));
+                _ = UpdateGraphAsync();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Whether selected background color differs from white
+    /// </summary>
+    public bool IsBackgroundColorCustomized => !ColorsEqual(SelectedBackgroundColor, Colors.White);
+
+    /// <summary>
+    /// Header text for the currently active color picker target
+    /// </summary>
+    public string ColorPickerHeaderText => _activeColorPickerTarget == ColorPickerTarget.Line
+        ? "Choose a line color:"
+        : "Choose a background color:";
+
+    /// <summary>
+    /// Color preview for whichever element is currently being edited by the picker
+    /// </summary>
+    public Color ActivePickerColor => _activeColorPickerTarget == ColorPickerTarget.Line
+        ? SelectedLineColor
+        : SelectedBackgroundColor;
     
     /// <summary>
     /// Whether the inline color picker is visible
@@ -454,8 +508,8 @@ public class GraphViewModel : ViewModelBase
     /// </summary>
     public double RedValue
     {
-        get => _selectedLineColor.Red * 255;
-        set => UpdateCustomColor((float)(value / 255.0), _selectedLineColor.Green, _selectedLineColor.Blue);
+        get => ActivePickerColor.Red * 255;
+        set => UpdateCustomColor((float)(value / 255.0), ActivePickerColor.Green, ActivePickerColor.Blue);
     }
     
     /// <summary>
@@ -463,8 +517,8 @@ public class GraphViewModel : ViewModelBase
     /// </summary>
     public double GreenValue
     {
-        get => _selectedLineColor.Green * 255;
-        set => UpdateCustomColor(_selectedLineColor.Red, (float)(value / 255.0), _selectedLineColor.Blue);
+        get => ActivePickerColor.Green * 255;
+        set => UpdateCustomColor(ActivePickerColor.Red, (float)(value / 255.0), ActivePickerColor.Blue);
     }
     
     /// <summary>
@@ -472,8 +526,8 @@ public class GraphViewModel : ViewModelBase
     /// </summary>
     public double BlueValue
     {
-        get => _selectedLineColor.Blue * 255;
-        set => UpdateCustomColor(_selectedLineColor.Red, _selectedLineColor.Green, (float)(value / 255.0));
+        get => ActivePickerColor.Blue * 255;
+        set => UpdateCustomColor(ActivePickerColor.Red, ActivePickerColor.Green, (float)(value / 255.0));
     }
     
     /// <summary>
@@ -482,13 +536,18 @@ public class GraphViewModel : ViewModelBase
     private void UpdateCustomColor(float red, float green, float blue)
     {
         var newColor = Color.FromRgba(red, green, blue, 1.0f);
-        if (SelectedLineColor != newColor)
+        if (ColorsEqual(ActivePickerColor, newColor))
+        {
+            return;
+        }
+
+        if (_activeColorPickerTarget == ColorPickerTarget.Line)
         {
             SelectedLineColor = newColor;
-            OnPropertyChanged(nameof(RedValue));
-            OnPropertyChanged(nameof(GreenValue));
-            OnPropertyChanged(nameof(BlueValue));
+            return;
         }
+
+        SelectedBackgroundColor = newColor;
     }
     
     /// <summary>
@@ -597,11 +656,26 @@ public class GraphViewModel : ViewModelBase
     /// Command to toggle the inline color picker visibility
     /// </summary>
     public ICommand ToggleColorPickerCommand { get; }
+
+    /// <summary>
+    /// Command to toggle background color picker visibility
+    /// </summary>
+    public ICommand ToggleBackgroundColorPickerCommand { get; }
+
+    /// <summary>
+    /// Command to close the inline color picker
+    /// </summary>
+    public ICommand CloseColorPickerCommand { get; }
     
     /// <summary>
     /// Command to select a color from the inline color picker
     /// </summary>
     public ICommand SelectColorCommand { get; }
+
+    /// <summary>
+    /// Command to reset background color to white
+    /// </summary>
+    public ICommand ResetBackgroundColorCommand { get; }
 
     /// <summary>
     /// Command to toggle visibility of graph configuration controls
@@ -650,6 +724,10 @@ public class GraphViewModel : ViewModelBase
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
                 imageData = await _lineGraphService.GenerateGraphAsync(allEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, CustomBackgroundPath, SelectedLineColor, EffectiveGraphWidth, EffectiveGraphHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
+            }
+            else if (IsBackgroundColorCustomized)
+            {
+                imageData = await _lineGraphService.GenerateGraphAsync(allEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, SelectedLineColor, SelectedBackgroundColor, EffectiveGraphWidth, EffectiveGraphHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
             }
             else
             {
@@ -704,6 +782,10 @@ public class GraphViewModel : ViewModelBase
             {
                 await _lineGraphService.SaveGraphAsync(allEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
             }
+            else if (IsBackgroundColorCustomized)
+            {
+                await _lineGraphService.SaveGraphAsync(allEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, SelectedBackgroundColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
+            }
             else
             {
                 await _lineGraphService.SaveGraphAsync(allEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
@@ -746,6 +828,10 @@ public class GraphViewModel : ViewModelBase
             if (HasCustomBackground && !string.IsNullOrEmpty(CustomBackgroundPath))
             {
                 await _lineGraphService.SaveGraphAsync(allEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, CustomBackgroundPath, SelectedLineColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
+            }
+            else if (IsBackgroundColorCustomized)
+            {
+                await _lineGraphService.SaveGraphAsync(allEntries, SelectedGraphMode, _selectedDateRange.DateRange, _showDataPoints, _showAxesAndGrid, _showTitle, _showTrendLine, filePath, SelectedLineColor, SelectedBackgroundColor, exportWidth, exportHeight, gapDisplayMode, gapSegmentSecondaryPenMode);
             }
             else
             {
@@ -982,7 +1068,23 @@ public class GraphViewModel : ViewModelBase
     /// </summary>
     private void ToggleColorPicker()
     {
-        IsColorPickerVisible = !IsColorPickerVisible;
+        ToggleColorPickerForTarget(ColorPickerTarget.Line);
+    }
+
+    /// <summary>
+    /// Toggles the visibility of the inline background color picker
+    /// </summary>
+    private void ToggleBackgroundColorPicker()
+    {
+        ToggleColorPickerForTarget(ColorPickerTarget.Background);
+    }
+
+    /// <summary>
+    /// Closes the inline color picker
+    /// </summary>
+    private void CloseColorPicker()
+    {
+        IsColorPickerVisible = false;
     }
 
     /// <summary>
@@ -1029,14 +1131,62 @@ public class GraphViewModel : ViewModelBase
                 _ => Colors.Blue // Default fallback
             };
             
-            SelectedLineColor = selectedColor;
+            if (_activeColorPickerTarget == ColorPickerTarget.Line)
+            {
+                SelectedLineColor = selectedColor;
+            }
+            else
+            {
+                SelectedBackgroundColor = selectedColor;
+            }
+
             IsColorPickerVisible = false; // Hide picker after selection
-            ShowStatusMessage($"Color changed to: {colorName}");
+            ShowStatusMessage(_activeColorPickerTarget == ColorPickerTarget.Line
+                ? $"Line color changed to: {colorName}"
+                : $"Background color changed to: {colorName}");
         }
         catch (Exception ex)
         {
             ShowStatusMessage($"Error selecting color: {ex.Message}");
         }
+    }
+
+    private void ToggleColorPickerForTarget(ColorPickerTarget target)
+    {
+        if (IsColorPickerVisible && _activeColorPickerTarget == target)
+        {
+            IsColorPickerVisible = false;
+            return;
+        }
+
+        _activeColorPickerTarget = target;
+        OnPropertyChanged(nameof(ColorPickerHeaderText));
+        OnPropertyChanged(nameof(ActivePickerColor));
+        OnPropertyChanged(nameof(RedValue));
+        OnPropertyChanged(nameof(GreenValue));
+        OnPropertyChanged(nameof(BlueValue));
+
+        IsColorPickerVisible = true;
+    }
+
+    private void ResetBackgroundColor()
+    {
+        if (!IsBackgroundColorCustomized)
+        {
+            return;
+        }
+
+        SelectedBackgroundColor = Colors.White;
+        ShowStatusMessage("Background color reset to white.");
+    }
+
+    private static bool ColorsEqual(Color first, Color second)
+    {
+        const float tolerance = 0.0001f;
+        return Math.Abs(first.Red - second.Red) < tolerance
+            && Math.Abs(first.Green - second.Green) < tolerance
+            && Math.Abs(first.Blue - second.Blue) < tolerance
+            && Math.Abs(first.Alpha - second.Alpha) < tolerance;
     }
 
     private GapDisplayMode SelectedGapDisplayMode => SelectedGapDisplayModeItem?.GapDisplayMode ?? GapDisplayMode.ShowGaps;

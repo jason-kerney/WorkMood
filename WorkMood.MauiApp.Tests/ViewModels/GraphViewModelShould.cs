@@ -538,6 +538,74 @@ public class GraphViewModelShould
         Assert.Contains(entriesList, entry => entry.Date == new DateOnly(2026, 6, 1));
     }
 
+    [Fact]
+    public void SelectedBackgroundColor_DefaultsToWhite_AndNotCustomized()
+    {
+        var viewModel = CreateViewModel();
+
+        Assert.Equal(Colors.White, viewModel.SelectedBackgroundColor);
+        Assert.False(viewModel.IsBackgroundColorCustomized);
+    }
+
+    [Fact]
+    public void BackgroundColorPicker_AllowsSelection_AndResetCommandReturnsToWhite()
+    {
+        var viewModel = CreateViewModel();
+
+        viewModel.ToggleBackgroundColorPickerCommand.Execute(null);
+        viewModel.SelectColorCommand.Execute("Red");
+
+        Assert.Equal(Colors.Red, viewModel.SelectedBackgroundColor);
+        Assert.True(viewModel.IsBackgroundColorCustomized);
+        Assert.False(viewModel.IsColorPickerVisible);
+
+        viewModel.ResetBackgroundColorCommand.Execute(null);
+
+        Assert.Equal(Colors.White, viewModel.SelectedBackgroundColor);
+        Assert.False(viewModel.IsBackgroundColorCustomized);
+    }
+
+    [Fact]
+    public async Task LoadDataAsync_WhenBackgroundColorIsCustomized_ShouldUseBackgroundColorOverload()
+    {
+        Color capturedBackgroundColor = Colors.White;
+        var viewModel = CreateViewModel();
+
+        _mockMoodDataService
+            .Setup(service => service.LoadMoodDataAsync())
+            .ReturnsAsync(new MoodCollection(new[]
+            {
+                new MoodEntry(new DateOnly(2026, 7, 29)) { StartOfWork = 4, EndOfWork = 6 }
+            }));
+
+        _mockLineGraphService
+            .Setup(service => service.GenerateGraphAsync(
+                It.IsAny<IEnumerable<MoodEntry>>(),
+                It.IsAny<GraphMode>(),
+                It.IsAny<DateRangeInfo>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<Color>(),
+                It.IsAny<Color>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<GapDisplayMode>(),
+                It.IsAny<GapSegmentSecondaryPenMode?>()))
+            .Callback<IEnumerable<MoodEntry>, GraphMode, DateRangeInfo, bool, bool, bool, bool, Color, Color, int, int, GapDisplayMode, GapSegmentSecondaryPenMode?>((_, _, _, _, _, _, _, _, backgroundColor, _, _, _, _) =>
+            {
+                capturedBackgroundColor = backgroundColor;
+            })
+            .ReturnsAsync([1, 2, 3]);
+
+        viewModel.SelectedBackgroundColor = Colors.LightYellow;
+
+        await viewModel.LoadDataAsync();
+
+        Assert.Equal(Colors.LightYellow, capturedBackgroundColor);
+    }
+
     private GraphViewModel CreateViewModel()
     {
         return new GraphViewModel(

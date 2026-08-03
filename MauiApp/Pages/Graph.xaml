@@ -86,6 +86,26 @@
                        TextColor="Gray"
                        FontSize="12"
                        Margin="5,0,0,0" />
+                <Label Text="Background Color:"
+                       VerticalOptions="Center"
+                       Margin="20,0,0,0" />
+                <Border Stroke="Gray"
+                        StrokeThickness="1"
+                        BackgroundColor="{Binding SelectedBackgroundColor}"
+                        WidthRequest="30"
+                        HeightRequest="30"
+                        VerticalOptions="Center">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ToggleBackgroundColorPickerCommand}" />
+                    </Border.GestureRecognizers>
+                </Border>
+                <Button Text="Reset"
+                        Command="{Binding ResetBackgroundColorCommand}"
+                        IsVisible="{Binding IsBackgroundColorCustomized}"
+                        BackgroundColor="LightGray"
+                        TextColor="Black"
+                        VerticalOptions="Center"
+                        Padding="10,4" />
                   <Label Text="Gap Mode:"
                       VerticalOptions="Center"
                       Margin="20,0,0,0" />
@@ -119,7 +139,7 @@
                         Margin="0,10,0,0"
                         BackgroundColor="LightGray"
                         Padding="15">
-                <Label Text="Choose a color:" FontAttributes="Bold" />
+                <Label Text="{Binding ColorPickerHeaderText}" FontAttributes="Bold" />
                 
                 <!-- Color Grid -->
                 <FlexLayout Direction="Row" 
@@ -195,7 +215,7 @@
                 <Label Text="Custom Color:" FontAttributes="Bold" Margin="0,15,0,5" />
                 
                 <!-- Color Preview -->
-                <Border BackgroundColor="{Binding SelectedLineColor}" 
+                <Border BackgroundColor="{Binding ActivePickerColor}" 
                         Stroke="Gray" 
                         StrokeThickness="2" 
                         WidthRequest="50" 
@@ -234,7 +254,7 @@
                 </Grid>
                 
                 <Button Text="Close" 
-                        Command="{Binding ToggleColorPickerCommand}"
+                    Command="{Binding CloseColorPickerCommand}"
                         BackgroundColor="Gray"
                         TextColor="White"
                         WidthRequest="100"
