@@ -46,7 +46,11 @@ public static class GraphColorHarmony
 
     private static Color GetHighContrastBackgroundColor(Color lineColor)
     {
-        return CalculateLuminance(lineColor) < 0.5f ? Colors.White : Colors.Black;
+        var invertedColor = Color.FromRgb(1f - lineColor.Red, 1f - lineColor.Green, 1f - lineColor.Blue);
+        var (hue, saturation, _) = RgbToHsv(invertedColor);
+        var targetValue = CalculateLuminance(lineColor) < 0.5f ? 0.95f : 0.18f;
+
+        return HsvToColor(hue, saturation, targetValue);
     }
 
     private static float CalculateLuminance(Color color)

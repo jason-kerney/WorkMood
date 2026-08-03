@@ -56,6 +56,23 @@ The visualization page provides simple interaction options:
 - **Hide Graph Controls**: Collapses graph configuration controls to free more space for the graph image
 - **Show Graph Controls**: Restores graph configuration controls when you want to change options
 
+<!-- (dl (### Background Color Suggestions)) -->
+
+When you open the background color picker in the Graph controls, WorkMood shows quick suggestions based on the current line color:
+
+- **High Contrast** inverts the line color and flips brightness so dark lines get a light opposite-tone background and light lines get a dark opposite-tone background.
+- **Complementary** uses the opposite hue of the current line color.
+- **Triadic 1** uses the first triadic companion of the current line color.
+- **Triadic 2** uses the second triadic companion of the current line color.
+
+**Example**:
+
+1. Open the Graph page.
+2. Choose a line color in the graph controls.
+3. Open the background color picker.
+4. Select **High Contrast**.
+5. Review the updated background preview before loading the graph again.
+
 <!-- (dl (### Graph Modes)) -->
 
 The graph view supports multiple modes so you can focus on different insights:

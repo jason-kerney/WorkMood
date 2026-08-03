@@ -20,19 +20,39 @@ public class GraphColorHarmonyShould
     }
 
     [Fact]
-    public void GetSuggestedBackgroundColor_ShouldReturnWhiteForDarkLine_WhenHighContrastRequested()
+    public void GetSuggestedBackgroundColor_ShouldReturnLightChromaticContrast_ForDarkLine_WhenHighContrastRequested()
     {
-        var result = GraphColorHarmony.GetSuggestedBackgroundColor(Colors.DarkBlue, GraphColorSuggestionMode.HighContrast);
+        var lineColor = Color.FromRgb(0.05f, 0.15f, 0.65f);
+        var result = GraphColorHarmony.GetSuggestedBackgroundColor(lineColor, GraphColorSuggestionMode.HighContrast);
 
-        Assert.Equal(Colors.White, result);
+        Assert.NotEqual(Colors.White, result);
+        Assert.NotEqual(Colors.Black, result);
+        Assert.True(CalculateRelativeLuminance(result) > CalculateRelativeLuminance(lineColor));
+        Assert.True(CalculateContrastRatio(lineColor, result) >= 3.0d);
     }
 
     [Fact]
-    public void GetSuggestedBackgroundColor_ShouldReturnBlackForLightLine_WhenHighContrastRequested()
+    public void GetSuggestedBackgroundColor_ShouldReturnDarkChromaticContrast_ForLightLine_WhenHighContrastRequested()
     {
-        var result = GraphColorHarmony.GetSuggestedBackgroundColor(Colors.LightYellow, GraphColorSuggestionMode.HighContrast);
+        var lineColor = Color.FromRgb(0.95f, 0.9f, 0.35f);
+        var result = GraphColorHarmony.GetSuggestedBackgroundColor(lineColor, GraphColorSuggestionMode.HighContrast);
 
-        Assert.Equal(Colors.Black, result);
+        Assert.NotEqual(Colors.White, result);
+        Assert.NotEqual(Colors.Black, result);
+        Assert.True(CalculateRelativeLuminance(result) < CalculateRelativeLuminance(lineColor));
+        Assert.True(CalculateContrastRatio(lineColor, result) >= 3.0d);
+    }
+
+    [Fact]
+    public void GetSuggestedBackgroundColor_ShouldReturnOppositeToneNeutral_ForNeutralLine_WhenHighContrastRequested()
+    {
+        var lineColor = Color.FromRgb(0.5f, 0.5f, 0.5f);
+        var result = GraphColorHarmony.GetSuggestedBackgroundColor(lineColor, GraphColorSuggestionMode.HighContrast);
+
+        Assert.NotEqual(lineColor, result);
+        Assert.Equal(result.Red, result.Green, 3);
+        Assert.Equal(result.Green, result.Blue, 3);
+        Assert.True(CalculateContrastRatio(lineColor, result) >= 3.0d);
     }
 
     [Fact]
@@ -42,5 +62,29 @@ public class GraphColorHarmonyShould
 
         Assert.Equal(result.Red, result.Green, 3);
         Assert.Equal(result.Green, result.Blue, 3);
+    }
+
+    private static double CalculateContrastRatio(Color first, Color second)
+    {
+        var firstLuminance = CalculateRelativeLuminance(first);
+        var secondLuminance = CalculateRelativeLuminance(second);
+        var lighter = Math.Max(firstLuminance, secondLuminance);
+        var darker = Math.Min(firstLuminance, secondLuminance);
+
+        return (lighter + 0.05d) / (darker + 0.05d);
+    }
+
+    private static double CalculateRelativeLuminance(Color color)
+    {
+        return (0.2126d * ConvertToLinear(color.Red))
+            + (0.7152d * ConvertToLinear(color.Green))
+            + (0.0722d * ConvertToLinear(color.Blue));
+    }
+
+    private static double ConvertToLinear(float channel)
+    {
+        return channel <= 0.03928f
+            ? channel / 12.92d
+            : Math.Pow((channel + 0.055d) / 1.055d, 2.4d);
     }
 }
