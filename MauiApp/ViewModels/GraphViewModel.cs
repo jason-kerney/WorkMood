@@ -810,12 +810,12 @@ public class GraphViewModel : ViewModelBase
     private void InitializeGapDisplayModes()
     {
         GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.ShowGaps, "Show Gaps"));
-        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsMin, "Gaps as Min"));
-        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsMax, "Gaps as Max"));
-        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsAverage, "Gaps as Average"));
-        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsSurroundingAverage, "Gaps as Surrounding Average"));
-        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsMatchPreviousValue, "Match the Previous Value"));
-        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsMatchFollowingValue, "Match the Following Value"));
+        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsMin, "Min Fill"));
+        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsMax, "Max Fill"));
+        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsAverage, "Mean Fill"));
+        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsSurroundingAverage, "Surrounding Average Fill"));
+        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsMatchPreviousValue, "Match the Previous Value Fill"));
+        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsMatchFollowingValue, "Match the Following Value Fill"));
     }
 
     /// <summary>

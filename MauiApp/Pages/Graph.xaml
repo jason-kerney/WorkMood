@@ -86,13 +86,13 @@
                        TextColor="Gray"
                        FontSize="12"
                        Margin="5,0,0,0" />
-                  <Label Text="Gap Display Mode:"
+                  <Label Text="Gap Mode:"
                       VerticalOptions="Center"
                       Margin="20,0,0,0" />
                   <Picker ItemsSource="{Binding GapDisplayModes}"
                         SelectedItem="{Binding SelectedGapDisplayModeItem}"
                         ItemDisplayBinding="{Binding DisplayName}"
-                        Title="Choose gap display mode (Show Gaps, Gaps as Min, Gaps as Max, Gaps as Average, Gaps as Surrounding Average, Match the Previous Value, or Match the Following Value)"
+                         Title="Choose how missing weekdays are filled"
                         VerticalOptions="Center"
                         MinimumWidthRequest="170" />
                   <StackLayout IsVisible="{Binding IsGapSegmentAccentVisible}"
