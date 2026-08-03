@@ -1026,6 +1026,184 @@ public class GraphDataTransformerTests
     }
 
     [Fact]
+    public void TransformMoodEntries_WithGapsAsMatchPreviousValue_ShouldInsertWeekdayPoint_UsingNearestPreviousVisibleValue()
+    {
+        var entries = new List<MoodEntry>
+        {
+            new()
+            {
+                Date = new DateOnly(2025, 1, 6),
+                StartOfWork = 4,
+                EndOfWork = 5,
+                CreatedAt = new DateTime(2025, 1, 6, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 6, 17, 0, 0)
+            },
+            new()
+            {
+                Date = new DateOnly(2025, 1, 8),
+                StartOfWork = 9,
+                EndOfWork = 9,
+                CreatedAt = new DateTime(2025, 1, 8, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 8, 17, 0, 0)
+            }
+        };
+
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 8));
+
+        var result = _transformer.TransformMoodEntries(entries, GraphMode.StartOfDay, dateRange, GapDisplayMode.GapsAsMatchPreviousValue);
+        var gapPoint = result.DataPoints.Single(point => DateOnly.FromDateTime(point.Timestamp) == new DateOnly(2025, 1, 7));
+
+        Assert.Equal(4f, gapPoint.Value);
+        Assert.True(gapPoint.IsSyntheticGapFill);
+    }
+
+    [Fact]
+    public void TransformMoodEntries_WithGapsAsMatchFollowingValue_ShouldInsertWeekdayPoint_UsingNearestFollowingVisibleValue()
+    {
+        var entries = new List<MoodEntry>
+        {
+            new()
+            {
+                Date = new DateOnly(2025, 1, 6),
+                StartOfWork = 3,
+                EndOfWork = 3,
+                CreatedAt = new DateTime(2025, 1, 6, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 6, 17, 0, 0)
+            },
+            new()
+            {
+                Date = new DateOnly(2025, 1, 8),
+                StartOfWork = 8,
+                EndOfWork = 9,
+                CreatedAt = new DateTime(2025, 1, 8, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 8, 17, 0, 0)
+            }
+        };
+
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 8));
+
+        var result = _transformer.TransformMoodEntries(entries, GraphMode.StartOfDay, dateRange, GapDisplayMode.GapsAsMatchFollowingValue);
+        var gapPoint = result.DataPoints.Single(point => DateOnly.FromDateTime(point.Timestamp) == new DateOnly(2025, 1, 7));
+
+        Assert.Equal(8f, gapPoint.Value);
+        Assert.True(gapPoint.IsSyntheticGapFill);
+    }
+
+    [Fact]
+    public void TransformMoodEntries_WithGapsAsMatchPreviousValue_WhenNoPreviousValueExists_ShouldLeaveGapUnfilled()
+    {
+        var entries = new List<MoodEntry>
+        {
+            new()
+            {
+                Date = new DateOnly(2025, 1, 8),
+                StartOfWork = 7,
+                EndOfWork = 8,
+                CreatedAt = new DateTime(2025, 1, 8, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 8, 17, 0, 0)
+            }
+        };
+
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 8));
+
+        var result = _transformer.TransformMoodEntries(entries, GraphMode.StartOfDay, dateRange, GapDisplayMode.GapsAsMatchPreviousValue);
+        var dates = result.DataPoints.Select(point => DateOnly.FromDateTime(point.Timestamp)).ToHashSet();
+
+        Assert.DoesNotContain(new DateOnly(2025, 1, 6), dates);
+        Assert.DoesNotContain(new DateOnly(2025, 1, 7), dates);
+    }
+
+    [Fact]
+    public void TransformMoodEntries_WithGapsAsMatchFollowingValue_WhenNoFollowingValueExists_ShouldLeaveGapUnfilled()
+    {
+        var entries = new List<MoodEntry>
+        {
+            new()
+            {
+                Date = new DateOnly(2025, 1, 6),
+                StartOfWork = 5,
+                EndOfWork = 6,
+                CreatedAt = new DateTime(2025, 1, 6, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 6, 17, 0, 0)
+            }
+        };
+
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 8));
+
+        var result = _transformer.TransformMoodEntries(entries, GraphMode.StartOfDay, dateRange, GapDisplayMode.GapsAsMatchFollowingValue);
+        var dates = result.DataPoints.Select(point => DateOnly.FromDateTime(point.Timestamp)).ToHashSet();
+
+        Assert.DoesNotContain(new DateOnly(2025, 1, 7), dates);
+        Assert.DoesNotContain(new DateOnly(2025, 1, 8), dates);
+    }
+
+    [Fact]
+    public void TransformMoodEntries_WithGapsAsMatchPreviousValue_ShouldUseSamePreviousValueAcrossConsecutiveGapDays()
+    {
+        var entries = new List<MoodEntry>
+        {
+            new()
+            {
+                Date = new DateOnly(2025, 1, 6),
+                StartOfWork = 2,
+                EndOfWork = 3,
+                CreatedAt = new DateTime(2025, 1, 6, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 6, 17, 0, 0)
+            },
+            new()
+            {
+                Date = new DateOnly(2025, 1, 10),
+                StartOfWork = 9,
+                EndOfWork = 10,
+                CreatedAt = new DateTime(2025, 1, 10, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 10, 17, 0, 0)
+            }
+        };
+
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 10));
+
+        var result = _transformer.TransformMoodEntries(entries, GraphMode.StartOfDay, dateRange, GapDisplayMode.GapsAsMatchPreviousValue);
+        var pointsByDate = result.DataPoints.ToDictionary(point => DateOnly.FromDateTime(point.Timestamp));
+
+        Assert.Equal(2f, pointsByDate[new DateOnly(2025, 1, 7)].Value);
+        Assert.Equal(2f, pointsByDate[new DateOnly(2025, 1, 8)].Value);
+        Assert.Equal(2f, pointsByDate[new DateOnly(2025, 1, 9)].Value);
+    }
+
+    [Fact]
+    public void TransformMoodEntries_WithGapsAsMatchFollowingValue_ShouldUseSameFollowingValueAcrossConsecutiveGapDays()
+    {
+        var entries = new List<MoodEntry>
+        {
+            new()
+            {
+                Date = new DateOnly(2025, 1, 6),
+                StartOfWork = 2,
+                EndOfWork = 3,
+                CreatedAt = new DateTime(2025, 1, 6, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 6, 17, 0, 0)
+            },
+            new()
+            {
+                Date = new DateOnly(2025, 1, 10),
+                StartOfWork = 9,
+                EndOfWork = 10,
+                CreatedAt = new DateTime(2025, 1, 10, 8, 0, 0),
+                LastModified = new DateTime(2025, 1, 10, 17, 0, 0)
+            }
+        };
+
+        var dateRange = new DateRangeInfo(DateRange.Last7Days, new DateOnly(2025, 1, 10));
+
+        var result = _transformer.TransformMoodEntries(entries, GraphMode.StartOfDay, dateRange, GapDisplayMode.GapsAsMatchFollowingValue);
+        var pointsByDate = result.DataPoints.ToDictionary(point => DateOnly.FromDateTime(point.Timestamp));
+
+        Assert.Equal(9f, pointsByDate[new DateOnly(2025, 1, 7)].Value);
+        Assert.Equal(9f, pointsByDate[new DateOnly(2025, 1, 8)].Value);
+        Assert.Equal(9f, pointsByDate[new DateOnly(2025, 1, 9)].Value);
+    }
+
+    [Fact]
     public void TransformMoodEntries_RawDataMode_WithGapsAsSurroundingAverage_ShouldUseNearestPreviousAndNextVisiblePoints()
     {
         var moodEntries = new List<MoodEntry>

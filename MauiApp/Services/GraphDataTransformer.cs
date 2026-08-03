@@ -46,6 +46,8 @@ public class GraphDataTransformer : IGraphDataTransformer
             GapDisplayMode.GapsAsMax => ApplyGapDisplayMode(dataPoints, dateRangeInfo, GetGapDisplayModeMaxValue(graphMode)),
             GapDisplayMode.GapsAsAverage => ApplyAverageGapDisplayMode(dataPoints, dateRangeInfo),
             GapDisplayMode.GapsAsSurroundingAverage => ApplySurroundingAverageGapDisplayMode(dataPoints, dateRangeInfo),
+            GapDisplayMode.GapsAsMatchPreviousValue => ApplyDirectionalGapDisplayMode(dataPoints, dateRangeInfo, usePreviousValue: true),
+            GapDisplayMode.GapsAsMatchFollowingValue => ApplyDirectionalGapDisplayMode(dataPoints, dateRangeInfo, usePreviousValue: false),
             _ => throw new ArgumentOutOfRangeException(nameof(gapDisplayMode), gapDisplayMode, "Unsupported gap display mode")
         };
 
@@ -165,6 +167,50 @@ public class GraphDataTransformer : IGraphDataTransformer
 
             var averageValue = (previousValue + nextValue) / 2f;
             result.Add(new FilledGraphDataPoint(date.ToDateTime(TimeOnly.MinValue), averageValue, IsSyntheticGapFill: true));
+        }
+
+        return result;
+    }
+
+    private static IEnumerable<FilledGraphDataPoint> ApplyDirectionalGapDisplayMode(
+        IEnumerable<FilledGraphDataPoint> dataPoints,
+        DateRangeInfo dateRangeInfo,
+        bool usePreviousValue)
+    {
+        var visiblePoints = dataPoints
+            .Where(point => !point.IsSyntheticGapFill && point.Value.HasValue)
+            .OrderBy(point => point.Timestamp)
+            .ToList();
+
+        var pointsByDate = visiblePoints
+            .GroupBy(point => DateOnly.FromDateTime(point.Timestamp))
+            .ToDictionary(group => group.Key, group => group.OrderBy(point => point.Timestamp).ToList());
+
+        var result = new List<FilledGraphDataPoint>();
+
+        for (var date = dateRangeInfo.StartDate; date <= dateRangeInfo.EndDate; date = date.AddDays(1))
+        {
+            if (pointsByDate.TryGetValue(date, out var existingPoints))
+            {
+                result.AddRange(existingPoints);
+                continue;
+            }
+
+            if (CalendarGapPolicy.IsWeekend(date.DayOfWeek))
+            {
+                continue;
+            }
+
+            var sourcePoint = usePreviousValue
+                ? visiblePoints.LastOrDefault(point => DateOnly.FromDateTime(point.Timestamp) < date)
+                : visiblePoints.FirstOrDefault(point => DateOnly.FromDateTime(point.Timestamp) > date);
+
+            if (sourcePoint?.Value is not float sourceValue)
+            {
+                continue;
+            }
+
+            result.Add(new FilledGraphDataPoint(date.ToDateTime(TimeOnly.MinValue), sourceValue, IsSyntheticGapFill: true));
         }
 
         return result;

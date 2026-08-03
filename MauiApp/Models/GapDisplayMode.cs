@@ -9,5 +9,7 @@ public enum GapDisplayMode
     GapsAsMin = 1,
     GapsAsMax = 2,
     GapsAsAverage = 3,
-    GapsAsSurroundingAverage = 4
+    GapsAsSurroundingAverage = 4,
+    GapsAsMatchPreviousValue = 5,
+    GapsAsMatchFollowingValue = 6
 }

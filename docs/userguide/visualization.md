@@ -84,6 +84,8 @@ Graph rendering includes a dropdown named **Gap Display Mode** in the graph cont
 - When **Gap Display Mode** is set to **Gaps as Max**, missing weekdays are rendered as max-value points for the active graph mode.
 - When **Gap Display Mode** is set to **Gaps as Average**, missing weekdays are rendered using the arithmetic mean of all currently visible recorded points for the selected graph mode and date range.
 - When **Gap Display Mode** is set to **Gaps as Surrounding Average**, each missing weekday is rendered using the arithmetic mean of the nearest previous and nearest next visible recorded points.
+- When **Gap Display Mode** is set to **Match the Previous Value**, each missing weekday is rendered using the nearest previous visible recorded value.
+- When **Gap Display Mode** is set to **Match the Following Value**, each missing weekday is rendered using the nearest next visible recorded value.
 
 Min-value mapping by graph mode:
 
@@ -97,7 +99,7 @@ Max-value mapping by graph mode:
 - **Average** uses `5`.
 - **Opening Mood**, **Closing Mood**, and **Raw Data** use `10`.
 
-When gap-fill is on (**Gaps as Min**, **Gaps as Max**, **Gaps as Average**, or **Gaps as Surrounding Average**), you can also choose a **Gap Fill Color** for line segments and synthetic point markers generated for gap-fill days:
+When gap-fill is on (**Gaps as Min**, **Gaps as Max**, **Gaps as Average**, **Gaps as Surrounding Average**, **Match the Previous Value**, or **Match the Following Value**), you can also choose a **Gap Fill Color** for line segments and synthetic point markers generated for gap-fill days:
 
 - **Complementary** uses the opposite hue of the primary line color.
 - **First Triadic** uses the first triadic companion of the primary line color.
@@ -121,10 +123,22 @@ For **Gaps as Surrounding Average**:
 - If either surrounding side is missing, that day is left as a gap.
 - In **Raw Data**, nearest surrounding points are taken from the visible timestamp-ordered points.
 
+For **Match the Previous Value**:
+
+- Each missing weekday is filled from the nearest visible recorded point before that day.
+- Consecutive missing weekdays between two recorded days all use the same last-known value.
+- If no previous visible value exists, that day is left as a gap.
+
+For **Match the Following Value**:
+
+- Each missing weekday is filled from the nearest visible recorded point after that day.
+- Consecutive missing weekdays between two recorded days all use the same next-known value.
+- If no following visible value exists, that day is left as a gap.
+
 Example task:
 
 1. On the main dashboard, select **Generate Graph**.
-2. In the graph controls, set **Gap Display Mode** to **Gaps as Min**, **Gaps as Max**, **Gaps as Average**, or **Gaps as Surrounding Average**.
+2. In the graph controls, set **Gap Display Mode** to **Gaps as Min**, **Gaps as Max**, **Gaps as Average**, **Gaps as Surrounding Average**, **Match the Previous Value**, or **Match the Following Value**.
 3. Optionally choose a **Gap Fill Color**.
 4. Record mood on Monday and Wednesday only.
 5. Review the graph.
@@ -134,6 +148,8 @@ Expected result:
 - Tuesday is rendered as a synthetic gap-fill point at the mode minimum for **Gaps as Min**, or at the mode maximum for **Gaps as Max**.
 - For **Gaps as Average**, Tuesday is rendered as a synthetic gap-fill point at the arithmetic mean of visible recorded points in the selected graph mode and date range.
 - For **Gaps as Surrounding Average**, Tuesday is rendered as a synthetic gap-fill point at the average of the nearest visible point before Tuesday and the nearest visible point after Tuesday.
+- For **Match the Previous Value**, Tuesday is rendered as a synthetic gap-fill point using the nearest visible recorded value before Tuesday.
+- For **Match the Following Value**, Tuesday is rendered as a synthetic gap-fill point using the nearest visible recorded value after Tuesday.
 - The generated Tuesday point marker and adjacent line segments use the selected gap fill color. With **Match Line Color**, they stay on the primary line color instead of switching to a contrasting accent.
 - If Saturday and Sunday are unrecorded, they are still compressed out of spacing.
 

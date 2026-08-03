@@ -814,6 +814,8 @@ public class GraphViewModel : ViewModelBase
         GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsMax, "Gaps as Max"));
         GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsAverage, "Gaps as Average"));
         GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsSurroundingAverage, "Gaps as Surrounding Average"));
+        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsMatchPreviousValue, "Match the Previous Value"));
+        GapDisplayModes.Add(new GapDisplayModeItem(GapDisplayMode.GapsAsMatchFollowingValue, "Match the Following Value"));
     }
 
     /// <summary>
