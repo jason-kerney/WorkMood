@@ -6,7 +6,7 @@
 **WorkMood** - Cross-platform desktop mood tracking application
 - **.NET 9.0 MAUI** (Windows/macOS only, no mobile)
 - **4-project solution**: Main app, Tests, Version library, Version tests
-- **Current Version**: 0.7.2 | **App ID**: `com.workmood.mauiapp`
+- **Current Version**: 0.7.3 | **App ID**: `com.workmood.mauiapp`
 
 ### Essential Commands
 ```bash
