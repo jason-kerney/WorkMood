@@ -258,6 +258,12 @@
                         BackgroundColor="{Binding SuggestedSecondTriadicBackgroundColor}"
                         TextColor="{Binding SuggestedSecondTriadicTextColor}"
                         Margin="0,0,8,8" />
+                    <Button Text="Pure Grayscale"
+                        Command="{Binding ApplyBackgroundSuggestionCommand}"
+                        CommandParameter="{x:Static services:GraphColorSuggestionMode.PureGrayscale}"
+                        BackgroundColor="{Binding SuggestedPureGrayscaleBackgroundColor}"
+                        TextColor="{Binding SuggestedPureGrayscaleTextColor}"
+                        Margin="0,0,8,8" />
                     </FlexLayout>
                 </StackLayout>
                 

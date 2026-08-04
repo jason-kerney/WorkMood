@@ -412,6 +412,10 @@ public class GraphViewModel : ViewModelBase
     public Color SuggestedFirstTriadicTextColor => GraphColorHarmony.GetReadableTextColor(SuggestedFirstTriadicBackgroundColor);
 
     public Color SuggestedSecondTriadicTextColor => GraphColorHarmony.GetReadableTextColor(SuggestedSecondTriadicBackgroundColor);
+
+    public Color SuggestedPureGrayscaleBackgroundColor => GraphColorHarmony.GetSuggestedBackgroundColor(SelectedLineColor, GraphColorSuggestionMode.PureGrayscale);
+
+    public Color SuggestedPureGrayscaleTextColor => GraphColorHarmony.GetReadableTextColor(SuggestedPureGrayscaleBackgroundColor);
     
     /// <summary>
     /// Whether the inline color picker is visible
@@ -1235,10 +1239,12 @@ public class GraphViewModel : ViewModelBase
         OnPropertyChanged(nameof(SuggestedComplementaryBackgroundColor));
         OnPropertyChanged(nameof(SuggestedFirstTriadicBackgroundColor));
         OnPropertyChanged(nameof(SuggestedSecondTriadicBackgroundColor));
+        OnPropertyChanged(nameof(SuggestedPureGrayscaleBackgroundColor));
         OnPropertyChanged(nameof(SuggestedHighContrastTextColor));
         OnPropertyChanged(nameof(SuggestedComplementaryTextColor));
         OnPropertyChanged(nameof(SuggestedFirstTriadicTextColor));
         OnPropertyChanged(nameof(SuggestedSecondTriadicTextColor));
+        OnPropertyChanged(nameof(SuggestedPureGrayscaleTextColor));
     }
 
     private static string GetSuggestionDisplayName(GraphColorSuggestionMode suggestionMode)
@@ -1249,6 +1255,7 @@ public class GraphViewModel : ViewModelBase
             GraphColorSuggestionMode.Complementary => "Complementary",
             GraphColorSuggestionMode.FirstTriadic => "Triadic 1",
             GraphColorSuggestionMode.SecondTriadic => "Triadic 2",
+            GraphColorSuggestionMode.PureGrayscale => "Pure Grayscale",
             _ => "Suggested Color"
         };
     }

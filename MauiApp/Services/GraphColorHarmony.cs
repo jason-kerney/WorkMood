@@ -7,7 +7,8 @@ public enum GraphColorSuggestionMode
     HighContrast,
     Complementary,
     FirstTriadic,
-    SecondTriadic
+    SecondTriadic,
+    PureGrayscale
 }
 
 public static class GraphColorHarmony
@@ -35,6 +36,7 @@ public static class GraphColorHarmony
             GraphColorSuggestionMode.Complementary => GetDerivedColor(lineColor, GapSegmentSecondaryPenMode.Complementary),
             GraphColorSuggestionMode.FirstTriadic => GetDerivedColor(lineColor, GapSegmentSecondaryPenMode.FirstTriadic),
             GraphColorSuggestionMode.SecondTriadic => GetDerivedColor(lineColor, GapSegmentSecondaryPenMode.SecondTriadic),
+            GraphColorSuggestionMode.PureGrayscale => GetPureGrayscaleBackground(lineColor),
             _ => Colors.White
         };
     }
@@ -51,6 +53,13 @@ public static class GraphColorHarmony
         var targetValue = CalculateLuminance(lineColor) < 0.5f ? 0.95f : 0.18f;
 
         return HsvToColor(hue, saturation, targetValue);
+    }
+
+    private static Color GetPureGrayscaleBackground(Color lineColor)
+    {
+        var luminance = CalculateLuminance(lineColor);
+        var invertedGrayValue = 1f - luminance;
+        return Color.FromRgb(invertedGrayValue, invertedGrayValue, invertedGrayValue);
     }
 
     private static float CalculateLuminance(Color color)
