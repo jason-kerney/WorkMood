@@ -408,6 +408,7 @@ Update `.github/copilot-instructions.md` when making changes that affect:
 **When responding, always:**
 - Use Arlo's Commit Notation format when suggesting commits
 - Include risk assessment reasoning for commit suggestions
+- **NEVER commit code changes without explicit user request** - prepare commits with messages/diffs, but do NOT run `git commit` unless user explicitly asks
 - **Proactively check instruction accuracy** - suggest updates when detecting project changes
 - **Flag mismatches** - alert if project state differs from documented instructions  
 - **Suggest instruction updates** when making structural changes
